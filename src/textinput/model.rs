@@ -1,7 +1,9 @@
 //! Core model implementation for the textinput component.
 
 use super::keymap::{default_key_map, KeyMap};
-use super::types::{EchoMode, PasteErrMsg, PasteMsg, ValidateFunc};
+#[cfg(feature = "clipboard-support")]
+use super::types::PasteMsg;
+use super::types::{EchoMode, PasteErrMsg, ValidateFunc};
 use crate::cursor::{new as cursor_new, Model as Cursor};
 use bubbletea_rs::{Cmd, Model as BubbleTeaModel, Msg};
 use lipgloss::{Color, Style};
@@ -269,16 +271,23 @@ pub fn blink() -> Cmd {
 pub fn paste() -> Cmd {
     use bubbletea_rs::tick as bubbletea_tick;
     bubbletea_tick(Duration::from_nanos(1), |_| {
-        use clipboard::{ClipboardContext, ClipboardProvider};
-        let res: Result<String, String> = (|| {
-            let mut ctx: ClipboardContext = ClipboardProvider::new()
-                .map_err(|e| format!("Failed to create clipboard context: {}", e))?;
-            ctx.get_contents()
-                .map_err(|e| format!("Failed to read clipboard: {}", e))
-        })();
-        match res {
-            Ok(s) => Box::new(PasteMsg(s)) as Msg,
-            Err(e) => Box::new(PasteErrMsg(e)) as Msg,
+        #[cfg(feature = "clipboard-support")]
+        {
+            use clipboard::{ClipboardContext, ClipboardProvider};
+            let res: Result<String, String> = (|| {
+                let mut ctx: ClipboardContext = ClipboardProvider::new()
+                    .map_err(|e| format!("Failed to create clipboard context: {}", e))?;
+                ctx.get_contents()
+                    .map_err(|e| format!("Failed to read clipboard: {}", e))
+            })();
+            match res {
+                Ok(s) => Box::new(PasteMsg(s)) as Msg,
+                Err(e) => Box::new(PasteErrMsg(e)) as Msg,
+            }
+        }
+        #[cfg(not(feature = "clipboard-support"))]
+        {
+            Box::new(PasteErrMsg("Clipboard support not enabled".to_string())) as Msg
         }
     })
 }

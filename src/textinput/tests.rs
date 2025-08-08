@@ -3,7 +3,7 @@
 use super::*;
 
 #[cfg(test)]
-mod tests {
+mod textinput_tests {
     use super::*;
 
     #[test]

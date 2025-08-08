@@ -690,19 +690,19 @@ impl Model {
         let mut end = self.col;
 
         // If we're not at the end of a word, find the end first
-        while end < line.len() && line.get(end).map_or(false, |&c| !c.is_whitespace()) {
+        while end < line.len() && line.get(end).is_some_and(|&c| !c.is_whitespace()) {
             end += 1;
         }
 
         // Find start of the word we're in or before
-        while start > 0 && line.get(start - 1).map_or(false, |&c| !c.is_whitespace()) {
+        while start > 0 && line.get(start - 1).is_some_and(|&c| !c.is_whitespace()) {
             start -= 1;
         }
 
         // Only include preceding space if cursor is not at end of word
-        if self.col < line.len() && line.get(self.col).map_or(false, |&c| !c.is_whitespace()) {
+        if self.col < line.len() && line.get(self.col).is_some_and(|&c| !c.is_whitespace()) {
             // Cursor is inside word, include preceding space
-            if start > 0 && line.get(start - 1).map_or(false, |&c| c.is_whitespace()) {
+            if start > 0 && line.get(start - 1).is_some_and(|&c| c.is_whitespace()) {
                 start -= 1;
             }
         }
@@ -1366,24 +1366,39 @@ impl Model {
 
     /// Read from system clipboard
     fn read_clipboard() -> Result<String, String> {
-        use clipboard::{ClipboardContext, ClipboardProvider};
+        #[cfg(feature = "clipboard-support")]
+        {
+            use clipboard::{ClipboardContext, ClipboardProvider};
 
-        let mut ctx: ClipboardContext = ClipboardProvider::new()
-            .map_err(|e| format!("Failed to create clipboard context: {}", e))?;
+            let mut ctx: ClipboardContext = ClipboardProvider::new()
+                .map_err(|e| format!("Failed to create clipboard context: {}", e))?;
 
-        ctx.get_contents()
-            .map_err(|e| format!("Failed to read clipboard: {}", e))
+            ctx.get_contents()
+                .map_err(|e| format!("Failed to read clipboard: {}", e))
+        }
+        #[cfg(not(feature = "clipboard-support"))]
+        {
+            Err("Clipboard support not enabled".to_string())
+        }
     }
 
     /// Copy text to system clipboard
     pub fn copy_to_clipboard(&self, text: &str) -> Result<(), String> {
-        use clipboard::{ClipboardContext, ClipboardProvider};
+        #[cfg(feature = "clipboard-support")]
+        {
+            use clipboard::{ClipboardContext, ClipboardProvider};
 
-        let mut ctx: ClipboardContext = ClipboardProvider::new()
-            .map_err(|e| format!("Failed to create clipboard context: {}", e))?;
+            let mut ctx: ClipboardContext = ClipboardProvider::new()
+                .map_err(|e| format!("Failed to create clipboard context: {}", e))?;
 
-        ctx.set_contents(text.to_string())
-            .map_err(|e| format!("Failed to write to clipboard: {}", e))
+            ctx.set_contents(text.to_string())
+                .map_err(|e| format!("Failed to write to clipboard: {}", e))
+        }
+        #[cfg(not(feature = "clipboard-support"))]
+        {
+            let _ = text; // Suppress unused parameter warning
+            Err("Clipboard support not enabled".to_string())
+        }
     }
 
     /// Copy current selection to clipboard (if selection is implemented)
