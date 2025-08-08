@@ -1,38 +1,30 @@
 [package]
-name = "bubble-rs"
-version = "0.1.0"
+name = "bubbles-rs"
+version = "0.0.6"
 edition = "2021"
 description = "A collection of reusable TUI components for building terminal applications with bubbletea-rs"
 license = "MIT"
-repository = "https://github.com/your-username/bubble-rs"
+repository = "https://github.com/whit3rabbit/bubble-rs"
 keywords = ["tui", "terminal", "bubbletea", "components", "ui"]
 categories = ["command-line-utilities", "gui"]
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Whit3rabbit <whit3rabbit@protonmail.com>"]
 
 [lib]
-name = "bubble_rs"
+name = "bubbles_rs"
 path = "src/lib.rs"
 
 [dependencies]
-crossterm = "0.27"
+bubbletea-rs = "0.0.6"
+lipgloss = "0.0.6"
+lipgloss-table = "0.0.6"
+lipgloss-list = "0.0.6"
+crossterm = "0.29"
 unicode-width = "0.1"
-fuzzy-matcher = "0.3"
+fuzzy-matcher = "0.3.7"
+clipboard = "0.5"
+once_cell = "1.19"
+unicode-segmentation = "1.11"
+strip-ansi-escapes = "0.2"
 
 [dev-dependencies]
 tokio = { version = "1.0", features = ["full"] }
-
-[[example]]
-name = "spinner"
-path = "examples/spinner.rs"
-
-[[example]]
-name = "textinput"
-path = "examples/textinput.rs"
-
-[[example]]
-name = "list"
-path = "examples/list.rs"
-
-[[example]]
-name = "progress"
-path = "examples/progress.rs"
