@@ -26,8 +26,8 @@ pub enum Type {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::paginator::PaginatorKeyMap;
-/// use bubbles_rs::key;
+/// use bubbletea_widgets::paginator::PaginatorKeyMap;
+/// use bubbletea_widgets::key;
 ///
 /// let keymap = PaginatorKeyMap::default();
 ///
@@ -66,8 +66,8 @@ impl Default for PaginatorKeyMap {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::PaginatorKeyMap;
-    /// use bubbles_rs::key::KeyMap;
+    /// use bubbletea_widgets::paginator::PaginatorKeyMap;
+    /// use bubbletea_widgets::key::KeyMap;
     ///
     /// let keymap = PaginatorKeyMap::default();
     /// let help = keymap.short_help();
@@ -130,7 +130,7 @@ impl KeyMapTrait for PaginatorKeyMap {
 /// ## Basic Usage
 ///
 /// ```rust
-/// use bubbles_rs::paginator::{Model, Type};
+/// use bubbletea_widgets::paginator::{Model, Type};
 ///
 /// let mut paginator = Model::new()
 ///     .with_per_page(10)
@@ -146,7 +146,7 @@ impl KeyMapTrait for PaginatorKeyMap {
 /// ## Different Display Types
 ///
 /// ```rust
-/// use bubbles_rs::paginator::{Model, Type};
+/// use bubbletea_widgets::paginator::{Model, Type};
 ///
 /// let mut paginator = Model::new()
 ///     .with_total_items(50)
@@ -164,7 +164,7 @@ impl KeyMapTrait for PaginatorKeyMap {
 /// ## Integration with bubbletea-rs
 ///
 /// ```rust
-/// use bubbles_rs::paginator::Model as Paginator;
+/// use bubbletea_widgets::paginator::Model as Paginator;
 /// use bubbletea_rs::{Model, Cmd, Msg};
 ///
 /// struct App {
@@ -237,7 +237,7 @@ impl Default for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::{Model, Type};
+    /// use bubbletea_widgets::paginator::{Model, Type};
     ///
     /// let paginator = Model::default();
     /// assert_eq!(paginator.paginator_type, Type::Arabic);
@@ -268,7 +268,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let paginator = Model::new();
     /// assert_eq!(paginator.page, 0);
@@ -291,7 +291,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let paginator = Model::new()
     ///     .with_per_page(10)
@@ -317,7 +317,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let paginator = Model::new()
     ///     .with_per_page(25)
@@ -347,7 +347,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let mut paginator = Model::new();
     /// paginator.set_per_page(15);
@@ -377,7 +377,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let mut paginator = Model::new();
     /// paginator.set_total_pages(10);
@@ -410,7 +410,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let mut paginator = Model::new().with_per_page(10);
     ///
@@ -456,7 +456,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let mut paginator = Model::new().with_per_page(10);
     ///
@@ -497,7 +497,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let items: Vec<i32> = (1..=100).collect();
     /// let mut paginator = Model::new().with_per_page(10);
@@ -532,7 +532,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let mut paginator = Model::new()
     ///     .with_per_page(10)
@@ -554,7 +554,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let mut paginator = Model::new().with_per_page(10).with_total_items(100);
     /// paginator.page = 5;
@@ -581,7 +581,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let mut paginator = Model::new().with_per_page(10).with_total_items(100);
     /// // total_pages = 10, so last page is 9 (0-indexed)
@@ -610,7 +610,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let mut paginator = Model::new().with_per_page(10).with_total_items(100);
     ///
@@ -630,7 +630,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model;
+    /// use bubbletea_widgets::paginator::Model;
     ///
     /// let mut paginator = Model::new().with_per_page(10).with_total_items(90);
     /// // Creates 9 pages (0-8), so last page is 8
@@ -657,7 +657,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::Model as Paginator;
+    /// use bubbletea_widgets::paginator::Model as Paginator;
     /// use bubbletea_rs::{Model, Msg};
     ///
     /// struct App {
@@ -699,7 +699,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::paginator::{Model, Type};
+    /// use bubbletea_widgets::paginator::{Model, Type};
     ///
     /// let mut paginator = Model::new().with_per_page(10).with_total_items(50);
     /// // Creates 5 pages, currently on page 0

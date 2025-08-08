@@ -17,7 +17,7 @@
 //! # Quick Start
 //!
 //! ```rust
-//! use bubbles_rs::stopwatch::{new, Model};
+//! use bubbletea_widgets::stopwatch::{new, Model};
 //! use bubbletea_rs::{Model as BubbleTeaModel, Msg};
 //!
 //! // Create a stopwatch with 1-second precision
@@ -36,7 +36,7 @@
 //! # Integration with Bubble Tea
 //!
 //! ```rust
-//! use bubbles_rs::stopwatch::{new, Model as StopwatchModel};
+//! use bubbletea_widgets::stopwatch::{new, Model as StopwatchModel};
 //! use bubbletea_rs::{Model as BubbleTeaModel, Cmd, Msg};
 //!
 //! struct App {
@@ -67,7 +67,7 @@
 //! # Custom Tick Intervals
 //!
 //! ```rust
-//! use bubbles_rs::stopwatch::new_with_interval;
+//! use bubbletea_widgets::stopwatch::new_with_interval;
 //! use std::time::Duration;
 //!
 //! // High-precision stopwatch updating every 10ms
@@ -160,7 +160,7 @@ fn format_duration(d: Duration) -> String {
 /// handle them in your application's update loop:
 ///
 /// ```rust
-/// use bubbles_rs::stopwatch::{TickMsg, Model};
+/// use bubbletea_widgets::stopwatch::{TickMsg, Model};
 /// use bubbletea_rs::Msg;
 ///
 /// fn handle_message(stopwatch: &mut Model, msg: Msg) {
@@ -201,7 +201,7 @@ pub struct TickMsg {
 /// Send this message through your application's command system:
 ///
 /// ```rust
-/// use bubbles_rs::stopwatch::new;
+/// use bubbletea_widgets::stopwatch::new;
 ///
 /// let stopwatch = new();
 ///
@@ -219,7 +219,7 @@ pub struct TickMsg {
 ///
 /// Manual creation (rarely needed):
 /// ```rust
-/// use bubbles_rs::stopwatch::new;
+/// use bubbletea_widgets::stopwatch::new;
 ///
 /// let stopwatch = new();
 /// // Use the public API methods instead of constructing messages directly
@@ -254,7 +254,7 @@ pub struct StartStopMsg {
 /// # Usage Pattern
 ///
 /// ```rust
-/// use bubbles_rs::stopwatch::new;
+/// use bubbletea_widgets::stopwatch::new;
 ///
 /// let stopwatch = new();
 /// let reset_cmd = stopwatch.reset(); // Generates ResetMsg
@@ -264,7 +264,7 @@ pub struct StartStopMsg {
 ///
 /// Manual creation (rarely needed):
 /// ```rust
-/// use bubbles_rs::stopwatch::{ResetMsg, new};
+/// use bubbletea_widgets::stopwatch::{ResetMsg, new};
 ///
 /// let stopwatch = new();
 /// let reset_msg = ResetMsg {
@@ -305,7 +305,7 @@ pub struct ResetMsg {
 ///
 /// Basic usage:
 /// ```rust
-/// use bubbles_rs::stopwatch::{new, Model};
+/// use bubbletea_widgets::stopwatch::{new, Model};
 /// use std::time::Duration;
 ///
 /// let mut stopwatch = new();
@@ -315,7 +315,7 @@ pub struct ResetMsg {
 ///
 /// Custom interval for high-precision timing:
 /// ```rust
-/// use bubbles_rs::stopwatch::new_with_interval;
+/// use bubbletea_widgets::stopwatch::new_with_interval;
 /// use std::time::Duration;
 ///
 /// let high_precision = new_with_interval(Duration::from_millis(10));
@@ -324,7 +324,7 @@ pub struct ResetMsg {
 ///
 /// Integration with Bubble Tea:
 /// ```rust
-/// use bubbles_rs::stopwatch::{new, Model as StopwatchModel};
+/// use bubbletea_widgets::stopwatch::{new, Model as StopwatchModel};
 /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd, Msg};
 /// use std::time::Duration;
 ///
@@ -403,7 +403,7 @@ pub struct Model {
 ///
 /// High-precision stopwatch for performance measurement:
 /// ```rust
-/// use bubbles_rs::stopwatch::new_with_interval;
+/// use bubbletea_widgets::stopwatch::new_with_interval;
 /// use std::time::Duration;
 ///
 /// let precise = new_with_interval(Duration::from_millis(1));
@@ -414,7 +414,7 @@ pub struct Model {
 ///
 /// Low-frequency stopwatch for long-running processes:
 /// ```rust
-/// use bubbles_rs::stopwatch::new_with_interval;
+/// use bubbletea_widgets::stopwatch::new_with_interval;
 /// use std::time::Duration;
 ///
 /// let coarse = new_with_interval(Duration::from_secs(10));
@@ -423,7 +423,7 @@ pub struct Model {
 ///
 /// Microsecond precision for benchmarking:
 /// ```rust
-/// use bubbles_rs::stopwatch::new_with_interval;
+/// use bubbletea_widgets::stopwatch::new_with_interval;
 /// use std::time::Duration;
 ///
 /// let benchmark = new_with_interval(Duration::from_micros(100));
@@ -463,7 +463,7 @@ pub fn new_with_interval(interval: Duration) -> Model {
 ///
 /// Basic stopwatch creation:
 /// ```rust
-/// use bubbles_rs::stopwatch::new;
+/// use bubbletea_widgets::stopwatch::new;
 /// use std::time::Duration;
 ///
 /// let stopwatch = new();
@@ -475,7 +475,7 @@ pub fn new_with_interval(interval: Duration) -> Model {
 ///
 /// Multiple independent stopwatches:
 /// ```rust
-/// use bubbles_rs::stopwatch::new;
+/// use bubbletea_widgets::stopwatch::new;
 ///
 /// let timer1 = new();
 /// let timer2 = new();
@@ -486,7 +486,7 @@ pub fn new_with_interval(interval: Duration) -> Model {
 /// # Equivalent To
 ///
 /// ```rust
-/// use bubbles_rs::stopwatch::new_with_interval;
+/// use bubbletea_widgets::stopwatch::new_with_interval;
 /// use std::time::Duration;
 ///
 /// let stopwatch = new_with_interval(Duration::from_secs(1));
@@ -509,7 +509,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let stopwatch1 = new();
     /// let stopwatch2 = new();
@@ -522,7 +522,7 @@ impl Model {
     ///
     /// Using ID for message filtering:
     /// ```rust
-    /// use bubbles_rs::stopwatch::{new, StartStopMsg};
+    /// use bubbletea_widgets::stopwatch::{new, StartStopMsg};
     /// use bubbletea_rs::Msg;
     ///
     /// let stopwatch = new();
@@ -552,7 +552,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let stopwatch = new();
     /// assert!(!stopwatch.running()); // Initially stopped
@@ -560,7 +560,7 @@ impl Model {
     ///
     /// Checking state after operations:
     /// ```rust
-    /// use bubbles_rs::stopwatch::{new, StartStopMsg};
+    /// use bubbletea_widgets::stopwatch::{new, StartStopMsg};
     ///
     /// let mut stopwatch = new();
     /// assert!(!stopwatch.running());
@@ -596,7 +596,7 @@ impl Model {
     ///
     /// Using in a Bubble Tea application:
     /// ```rust
-    /// use bubbles_rs::stopwatch::{new, Model as StopwatchModel};
+    /// use bubbletea_widgets::stopwatch::{new, Model as StopwatchModel};
     /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd, Msg};
     ///
     /// struct App {
@@ -616,7 +616,7 @@ impl Model {
     ///
     /// Manual initialization:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let stopwatch = new();
     /// let init_cmd = stopwatch.init();
@@ -645,7 +645,7 @@ impl Model {
     ///
     /// Basic start operation:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let stopwatch = new();
     /// let start_cmd = stopwatch.start();
@@ -654,7 +654,7 @@ impl Model {
     ///
     /// Integration with application logic:
     /// ```rust
-    /// use bubbles_rs::stopwatch::{new, Model as StopwatchModel};
+    /// use bubbletea_widgets::stopwatch::{new, Model as StopwatchModel};
     /// use bubbletea_rs::{KeyMsg, Cmd, Msg};
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///
@@ -703,7 +703,7 @@ impl Model {
     ///
     /// Basic stop operation:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let stopwatch = new();
     /// let stop_cmd = stopwatch.stop();
@@ -712,7 +712,7 @@ impl Model {
     ///
     /// Stop-watch pattern:
     /// ```rust
-    /// use bubbles_rs::stopwatch::{new, Model as StopwatchModel};
+    /// use bubbletea_widgets::stopwatch::{new, Model as StopwatchModel};
     /// use bubbletea_rs::{KeyMsg, Cmd};
     /// use crossterm::event::KeyCode;
     ///
@@ -734,7 +734,7 @@ impl Model {
     ///
     /// Stopping a stopwatch preserves the current elapsed time:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     /// use std::time::Duration;
     ///
     /// // Imagine stopwatch has been running and shows some elapsed time
@@ -768,7 +768,7 @@ impl Model {
     ///
     /// Basic toggle functionality:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let stopwatch = new();
     /// assert!(!stopwatch.running());
@@ -778,7 +778,7 @@ impl Model {
     ///
     /// Implementing spacebar toggle:
     /// ```rust
-    /// use bubbles_rs::stopwatch::{new, Model as StopwatchModel};
+    /// use bubbletea_widgets::stopwatch::{new, Model as StopwatchModel};
     /// use bubbletea_rs::{KeyMsg, Cmd};
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///
@@ -800,7 +800,7 @@ impl Model {
     /// # Equivalent Implementation
     ///
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let stopwatch = new();
     /// let toggle_cmd = if stopwatch.running() {
@@ -832,7 +832,7 @@ impl Model {
     ///
     /// Basic reset operation:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let stopwatch = new();
     /// let reset_cmd = stopwatch.reset();
@@ -841,7 +841,7 @@ impl Model {
     ///
     /// Reset with state preservation:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     /// use std::time::Duration;
     ///
     /// // Imagine a running stopwatch with accumulated time
@@ -856,7 +856,7 @@ impl Model {
     ///
     /// Implementing a reset button:
     /// ```rust
-    /// use bubbles_rs::stopwatch::{new, Model as StopwatchModel};
+    /// use bubbletea_widgets::stopwatch::{new, Model as StopwatchModel};
     /// use bubbletea_rs::{KeyMsg, Cmd};
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///
@@ -920,7 +920,7 @@ impl Model {
     ///
     /// Basic usage in a Bubble Tea application:
     /// ```rust,ignore
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let mut stopwatch = new();
     ///
@@ -932,7 +932,7 @@ impl Model {
     ///
     /// Handling multiple message types:
     /// ```rust,ignore
-    /// use bubbles_rs::stopwatch::{new, ResetMsg};
+    /// use bubbletea_widgets::stopwatch::{new, ResetMsg};
     /// use std::time::Duration;
     ///
     /// let mut stopwatch = new();
@@ -950,7 +950,7 @@ impl Model {
     ///
     /// Messages are filtered by ID to ensure they're intended for this stopwatch:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let mut stopwatch = new();
     /// // Messages with wrong IDs don't affect state
@@ -1018,7 +1018,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     /// use std::time::Duration;
     ///
     /// let stopwatch = new();
@@ -1027,7 +1027,7 @@ impl Model {
     ///
     /// Displaying elapsed time in UI:
     /// ```rust
-    /// use bubbles_rs::stopwatch::{new, Model as StopwatchModel};
+    /// use bubbletea_widgets::stopwatch::{new, Model as StopwatchModel};
     /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd, Msg};
     ///
     /// struct TimerDisplay {
@@ -1072,7 +1072,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     /// use std::time::Duration;
     ///
     /// let stopwatch = new();
@@ -1081,7 +1081,7 @@ impl Model {
     ///
     /// Precise timing calculations:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     /// use std::time::Duration;
     ///
     /// let stopwatch = new();
@@ -1095,7 +1095,7 @@ impl Model {
     ///
     /// Performance measurement:
     /// ```rust,ignore
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     /// use std::time::Duration;
     ///
     /// let mut stopwatch = new();
@@ -1115,7 +1115,7 @@ impl Model {
     ///
     /// Comparison with thresholds:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     /// use std::time::Duration;
     ///
     /// let stopwatch = new();
@@ -1161,7 +1161,7 @@ impl BubbleTeaModel for Model {
     ///
     /// Using stopwatch as a standalone component:
     /// ```rust
-    /// use bubbles_rs::stopwatch::new;
+    /// use bubbletea_widgets::stopwatch::new;
     ///
     /// let stopwatch = new();
     /// let _init_cmd = stopwatch.init();
@@ -1202,7 +1202,7 @@ impl Default for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::stopwatch::Model;
+    /// use bubbletea_widgets::stopwatch::Model;
     /// use std::time::Duration;
     ///
     /// let stopwatch = Model::default();
@@ -1213,7 +1213,7 @@ impl Default for Model {
     ///
     /// Using with struct initialization:
     /// ```rust
-    /// use bubbles_rs::stopwatch::Model as StopwatchModel;
+    /// use bubbletea_widgets::stopwatch::Model as StopwatchModel;
     ///
     /// #[derive(Default)]
     /// struct App {

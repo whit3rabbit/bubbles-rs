@@ -1,6 +1,6 @@
-# `bubbles-rs` API Documentation
+# `bubbletea-widgets` API Documentation
 
-Welcome to `bubbles-rs`, a collection of reusable, production-ready TUI components for building terminal applications with [bubbletea-rs](https://crates.io/crates/bubbletea-rs). This library is a Rust port of the popular Go library [bubbles](https://github.com/charmbracelet/bubbles).
+Welcome to `bubbletea-widgets`, a collection of reusable, production-ready TUI components for building terminal applications with [bubbletea-rs](https://crates.io/crates/bubbletea-rs). This library is a Rust port of the popular Go library [bubbles](https://github.com/charmbracelet/bubbles).
 
 Each component is designed to be self-contained and easy to integrate into your `bubbletea-rs` applications.
 
@@ -65,7 +65,7 @@ The `key` module provides a robust way to manage keybindings. It allows you to d
 
 **Usage Example:**
 ```rust
-use bubbles_rs::key::{self, Binding};
+use bubbletea_widgets::key::{self, Binding};
 use bubbletea_rs::{KeyMsg, Model as BubbleTeaModel};
 use crossterm::event::{KeyCode, KeyModifiers};
 
@@ -123,7 +123,7 @@ A spinner indicates that an operation is in progress. It's highly customizable, 
 
 **Usage Example:**
 ```rust
-use bubbles_rs::spinner::{self, with_spinner, with_style, TickMsg};
+use bubbletea_widgets::spinner::{self, with_spinner, with_style, TickMsg};
 use bubbletea_rs::{Cmd, Model as BubbleTeaModel, Msg};
 use lipgloss::{Color, Style};
 
@@ -168,7 +168,7 @@ A progress bar to visualize the completion of a task. It can be a solid color or
 
 **Usage Example:**
 ```rust
-use bubbles_rs::progress::{self, with_width, FrameMsg};
+use bubbletea_widgets::progress::{self, with_width, FrameMsg};
 use bubbletea_rs::{Cmd, Model as BubbleTeaModel, Msg};
 use std::time::Duration;
 
@@ -211,7 +211,7 @@ A component for counting down from a specified duration.
 
 **Usage Example:**
 ```rust
-use bubbles_rs::timer::{self, TimeoutMsg};
+use bubbletea_widgets::timer::{self, TimeoutMsg};
 use bubbletea_rs::{Cmd, Model as BubbleTeaModel, Msg};
 use std::time::Duration;
 
@@ -260,7 +260,7 @@ A component for counting up from zero.
 
 **Usage Example:**
 ```rust
-use bubbles_rs::stopwatch;
+use bubbletea_widgets::stopwatch;
 use bubbletea_rs::{Cmd, Model as BubbleTeaModel, Msg};
 
 struct App {
@@ -304,7 +304,7 @@ A single-line text input field, similar to an HTML `<input type="text">`.
 
 **Usage Example:**
 ```rust
-use bubbles_rs::textinput;
+use bubbletea_widgets::textinput;
 use bubbletea_rs::{Cmd, KeyMsg, Model as BubbleTeaModel, Msg};
 use crossterm::event::KeyCode;
 
@@ -355,7 +355,7 @@ A multi-line text input field, similar to an HTML `<textarea>`. It supports soft
 
 **Usage Example:**
 ```rust
-use bubbles_rs::textarea;
+use bubbletea_widgets::textarea;
 use bubbletea_rs::{Cmd, Component, Model as BubbleTeaModel, Msg};
 
 struct App {
@@ -400,7 +400,7 @@ A component for handling pagination logic and rendering pagination UI.
 
 **Usage Example:**
 ```rust
-use bubbles_rs::paginator;
+use bubbletea_widgets::paginator;
 use bubbletea_rs::{KeyMsg, Model as BubbleTeaModel, Msg};
 
 struct App {
@@ -453,7 +453,7 @@ A component for viewing and vertically scrolling large blocks of content.
 
 **Usage Example:**
 ```rust
-use bubbles_rs::viewport;
+use bubbletea_widgets::viewport;
 use bubbletea_rs::{Model as BubbleTeaModel, Msg};
 
 struct App {
@@ -492,7 +492,7 @@ A mini help view that automatically generates itself from a `KeyMap`.
 
 **Usage Example:**
 ```rust
-use bubbles_rs::{help, key};
+use bubbletea_widgets::{help, key};
 use bubbletea_rs::{KeyMsg, Model as BubbleTeaModel, Msg};
 use crossterm::event::KeyCode;
 
@@ -566,7 +566,7 @@ A feature-rich component for browsing a set of items, with filtering, pagination
 
 **Usage Example:**
 ```rust
-use bubbles_rs::list::{self, DefaultItem};
+use bubbletea_widgets::list::{self, DefaultItem};
 use bubbletea_rs::{Model as BubbleTeaModel, Msg};
 
 struct App {
@@ -613,7 +613,7 @@ A component for displaying and navigating tabular data.
 
 **Usage Example:**
 ```rust
-use bubbles_rs::table::{self, Column, Row};
+use bubbletea_widgets::table::{self, Column, Row};
 use bubbletea_rs::{Model as BubbleTeaModel, Msg};
 
 struct App {
@@ -662,7 +662,7 @@ A component for navigating the filesystem and selecting a file or directory.
 
 **Usage Example:**
 ```rust
-use bubbles_rs::filepicker;
+use bubbletea_widgets::filepicker;
 use bubbletea_rs::{Cmd, KeyMsg, Model as BubbleTeaModel, Msg};
 use crossterm::event::KeyCode;
 
@@ -722,7 +722,7 @@ The `cursor` is a low-level component, typically used inside other components li
 This component is not typically used standalone. See the source code for `TextInput` or `TextArea` for integration examples.
 
 ```rust
-use bubbles_rs::cursor;
+use bubbletea_widgets::cursor;
 use lipgloss::{Style, Color};
 
 // Inside a text input component's model:

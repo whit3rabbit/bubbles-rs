@@ -19,7 +19,7 @@
 //!
 //! ### Example
 //! ```rust
-//! use bubbles_rs::{textarea, Component};
+//! use bubbletea_widgets::{textarea, Component};
 //!
 //! // Create a textarea with defaults
 //! let mut ta = textarea::new();

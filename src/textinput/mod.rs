@@ -6,7 +6,7 @@
 //! # Basic Usage
 //!
 //! ```rust
-//! use bubbles_rs::textinput::{new, Model};
+//! use bubbletea_widgets::textinput::{new, Model};
 //! use bubbletea_rs::{Model as BubbleTeaModel, Msg, Cmd};
 //!
 //! // Create a text input with default settings
@@ -21,7 +21,7 @@
 //! # Echo Modes
 //!
 //! ```rust
-//! use bubbles_rs::textinput::{new, EchoMode};
+//! use bubbletea_widgets::textinput::{new, EchoMode};
 //!
 //! let mut input = new();
 //! input.set_echo_mode(EchoMode::EchoPassword); // Hide text with asterisks

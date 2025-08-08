@@ -26,8 +26,8 @@
 //! ## Example
 //!
 //! ```rust
-//! use bubbles_rs::list::ListKeyMap;
-//! use bubbles_rs::key::KeyMap;
+//! use bubbletea_widgets::list::ListKeyMap;
+//! use bubbletea_widgets::key::KeyMap;
 //!
 //! let keymap = ListKeyMap::default();
 //! let help = keymap.short_help(); // Get key bindings for help display

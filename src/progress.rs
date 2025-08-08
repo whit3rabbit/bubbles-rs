@@ -6,7 +6,7 @@
 //! # Basic Usage
 //!
 //! ```rust
-//! use bubbles_rs::progress::{new, with_width, with_solid_fill};
+//! use bubbletea_widgets::progress::{new, with_width, with_solid_fill};
 //!
 //! // Create a progress bar with default settings
 //! let progress = new(&[]);
@@ -21,7 +21,7 @@
 //! # Animation and Control
 //!
 //! ```rust
-//! use bubbles_rs::progress::new;
+//! use bubbletea_widgets::progress::new;
 //!
 //! let mut progress = new(&[]);
 //!
@@ -61,7 +61,7 @@ const DEFAULT_DAMPING: f64 = 1.0;
 ///
 /// ## Basic Customization
 /// ```rust
-/// use bubbles_rs::progress::{new, with_width, with_solid_fill};
+/// use bubbletea_widgets::progress::{new, with_width, with_solid_fill};
 ///
 /// let progress = new(&[
 ///     with_width(60),
@@ -71,7 +71,7 @@ const DEFAULT_DAMPING: f64 = 1.0;
 ///
 /// ## Advanced Gradient Configuration
 /// ```rust
-/// use bubbles_rs::progress::{new, with_gradient, with_width, without_percentage};
+/// use bubbletea_widgets::progress::{new, with_gradient, with_width, without_percentage};
 ///
 /// let gradient_progress = new(&[
 ///     with_width(80),
@@ -156,7 +156,7 @@ impl ProgressOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::{new, with_default_gradient, with_width};
+/// use bubbletea_widgets::progress::{new, with_default_gradient, with_width};
 ///
 /// let progress = new(&[
 ///     with_default_gradient(),
@@ -181,7 +181,7 @@ pub fn with_default_gradient() -> ProgressOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::{new, with_gradient};
+/// use bubbletea_widgets::progress::{new, with_gradient};
 ///
 /// // Red to blue gradient
 /// let progress = new(&[
@@ -206,7 +206,7 @@ pub fn with_gradient(color_a: String, color_b: String) -> ProgressOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::{new, with_default_scaled_gradient};
+/// use bubbletea_widgets::progress::{new, with_default_scaled_gradient};
 ///
 /// let progress = new(&[
 ///     with_default_scaled_gradient(),
@@ -233,7 +233,7 @@ pub fn with_default_scaled_gradient() -> ProgressOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::{new, with_scaled_gradient};
+/// use bubbletea_widgets::progress::{new, with_scaled_gradient};
 ///
 /// let progress = new(&[
 ///     with_scaled_gradient("#ee5a24".to_string(), "#feca57".to_string()),
@@ -259,7 +259,7 @@ pub fn with_scaled_gradient(color_a: String, color_b: String) -> ProgressOption 
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::{new, with_solid_fill, with_width};
+/// use bubbletea_widgets::progress::{new, with_solid_fill, with_width};
 ///
 /// // Solid green progress bar
 /// let success_progress = new(&[
@@ -290,7 +290,7 @@ pub fn with_solid_fill(color: String) -> ProgressOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::{new, with_fill_characters};
+/// use bubbletea_widgets::progress::{new, with_fill_characters};
 ///
 /// // Classic ASCII style
 /// let ascii_progress = new(&[
@@ -320,7 +320,7 @@ pub fn with_fill_characters(full: char, empty: char) -> ProgressOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::{new, without_percentage, with_width, with_solid_fill};
+/// use bubbletea_widgets::progress::{new, without_percentage, with_width, with_solid_fill};
 ///
 /// // Clean progress bar without percentage text
 /// let minimal_progress = new(&[
@@ -351,7 +351,7 @@ pub fn without_percentage() -> ProgressOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::{new, with_width};
+/// use bubbletea_widgets::progress::{new, with_width};
 ///
 /// // Narrow progress bar for compact spaces
 /// let narrow = new(&[with_width(20)]);
@@ -381,7 +381,7 @@ pub fn with_width(w: i32) -> ProgressOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::{new, with_spring_options};
+/// use bubbletea_widgets::progress::{new, with_spring_options};
 ///
 /// // Fast, snappy animation
 /// let snappy = new(&[
@@ -422,7 +422,7 @@ pub fn with_spring_options(frequency: f64, damping: f64) -> ProgressOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::progress::new;
+/// use bubbletea_widgets::progress::new;
 ///
 /// let mut progress = new(&[]);
 ///
@@ -501,7 +501,7 @@ impl Spring {
 ///
 /// ## Basic Usage
 /// ```rust
-/// use bubbles_rs::progress::{new, with_width};
+/// use bubbletea_widgets::progress::{new, with_width};
 ///
 /// let mut progress = new(&[with_width(50)]);
 ///
@@ -515,7 +515,7 @@ impl Spring {
 ///
 /// ## Advanced Configuration
 /// ```rust
-/// use bubbles_rs::progress::*;
+/// use bubbletea_widgets::progress::*;
 ///
 /// let mut progress = new(&[
 ///     with_width(60),
@@ -529,7 +529,7 @@ impl Spring {
 ///
 /// ## Integration with bubbletea-rs
 /// ```rust
-/// use bubbles_rs::progress;
+/// use bubbletea_widgets::progress;
 /// use bubbletea_rs::{Model as TeaModel, Cmd, Msg};
 ///
 /// struct App {
@@ -626,7 +626,7 @@ pub struct Model {
 ///
 /// ## Basic Progress Bar
 /// ```rust
-/// use bubbles_rs::progress::new;
+/// use bubbletea_widgets::progress::new;
 ///
 /// // Create with all defaults
 /// let progress = new(&[]);
@@ -635,7 +635,7 @@ pub struct Model {
 ///
 /// ## Customized Progress Bar
 /// ```rust
-/// use bubbles_rs::progress::*;
+/// use bubbletea_widgets::progress::*;
 ///
 /// let progress = new(&[
 ///     with_width(60),
@@ -647,7 +647,7 @@ pub struct Model {
 ///
 /// ## Gradient Progress Bar
 /// ```rust
-/// use bubbles_rs::progress::*;
+/// use bubbletea_widgets::progress::*;
 ///
 /// let gradient_progress = new(&[
 ///     with_gradient("#667eea".to_string(), "#764ba2".to_string()),
@@ -710,7 +710,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let mut progress = new(&[]);
     ///
@@ -740,7 +740,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let mut progress = new(&[]);
     /// assert_eq!(progress.percent(), 0.0);
@@ -773,11 +773,11 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     /// use bubbletea_rs::{Model, Msg, Cmd};
     ///
     /// struct App {
-    ///     progress: bubbles_rs::progress::Model,
+    ///     progress: bubbletea_widgets::progress::Model,
     /// }
     ///
     /// impl Model for App {
@@ -797,7 +797,7 @@ impl Model {
     ///
     /// ## Direct Usage
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let mut progress = new(&[]);
     ///
@@ -829,7 +829,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let mut progress = new(&[]);
     ///
@@ -848,7 +848,7 @@ impl Model {
     ///
     /// ## Use in Loading Scenarios
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let mut download_progress = new(&[]);
     ///
@@ -879,7 +879,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let mut progress = new(&[]);
     ///
@@ -901,7 +901,7 @@ impl Model {
     ///
     /// ## Use in Error Recovery
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let mut upload_progress = new(&[]);
     /// upload_progress.set_percent(0.7); // 70% uploaded
@@ -936,7 +936,7 @@ impl Model {
     ///
     /// ## Integration with bubbletea-rs
     /// ```rust
-    /// use bubbles_rs::progress;
+    /// use bubbletea_widgets::progress;
     /// use bubbletea_rs::{Model, Msg, Cmd};
     ///
     /// struct App {
@@ -960,7 +960,7 @@ impl Model {
     ///
     /// ## Manual Animation Handling
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let mut progress = new(&[]);
     ///
@@ -1012,7 +1012,7 @@ impl Model {
     ///
     /// ## Basic Rendering
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let progress = new(&[]);
     /// let output = progress.view();
@@ -1021,7 +1021,7 @@ impl Model {
     ///
     /// ## Animated Progress
     /// ```rust
-    /// use bubbles_rs::progress::{new, with_width};
+    /// use bubbletea_widgets::progress::{new, with_width};
     ///
     /// let mut progress = new(&[with_width(20)]);
     ///
@@ -1037,14 +1037,14 @@ impl Model {
     ///
     /// ## Integration Example
     /// ```rust
-    /// use bubbles_rs::progress::{new, with_solid_fill};
+    /// use bubbletea_widgets::progress::{new, with_solid_fill};
     ///
     /// let progress = new(&[
     ///     with_solid_fill("#2ecc71".to_string()),
     /// ]);
     ///
     /// // Use in your application's view method
-    /// fn render_ui(progress: &bubbles_rs::progress::Model) -> String {
+    /// fn render_ui(progress: &bubbletea_widgets::progress::Model) -> String {
     ///     format!("Download Progress:\n{}\n", progress.view())
     /// }
     /// ```
@@ -1070,7 +1070,7 @@ impl Model {
     ///
     /// ## Static Progress Display
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let progress = new(&[]);
     ///
@@ -1082,7 +1082,7 @@ impl Model {
     ///
     /// ## Testing Different Progress Values
     /// ```rust
-    /// use bubbles_rs::progress::{new, with_width, without_percentage};
+    /// use bubbletea_widgets::progress::{new, with_width, without_percentage};
     ///
     /// let progress = new(&[
     ///     with_width(10),
@@ -1096,7 +1096,7 @@ impl Model {
     ///
     /// ## Dynamic Progress Calculation
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let progress = new(&[]);
     ///
@@ -1132,7 +1132,7 @@ impl Model {
     ///
     /// ## Checking Animation State
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let mut progress = new(&[]);
     ///
@@ -1149,7 +1149,7 @@ impl Model {
     ///
     /// ## Conditional Rendering
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
     /// let progress = new(&[]);
     ///
@@ -1163,9 +1163,9 @@ impl Model {
     ///
     /// ## Performance Optimization
     /// ```rust
-    /// use bubbles_rs::progress::new;
+    /// use bubbletea_widgets::progress::new;
     ///
-    /// fn should_update_ui(progress: &bubbles_rs::progress::Model) -> bool {
+    /// fn should_update_ui(progress: &bubbletea_widgets::progress::Model) -> bool {
     ///     // Only redraw UI if progress is changing
     ///     progress.is_animating()
     /// }

@@ -38,7 +38,7 @@
 //! # Quick Start
 //!
 //! ```rust
-//! use bubbles_rs::table::{Model, Column, Row};
+//! use bubbletea_widgets::table::{Model, Column, Row};
 //!
 //! // Define table structure
 //! let columns = vec![
@@ -64,7 +64,7 @@
 //! # Integration with Bubble Tea
 //!
 //! ```rust
-//! use bubbles_rs::table::{Model as TableModel, Column, Row};
+//! use bubbletea_widgets::table::{Model as TableModel, Column, Row};
 //! use bubbletea_rs::{Model as BubbleTeaModel, Cmd, Msg, KeyMsg};
 //!
 //! struct App {
@@ -95,7 +95,7 @@
 //! # Styling and Customization
 //!
 //! ```rust
-//! use bubbles_rs::table::{Model, Column, Row, Styles};
+//! use bubbletea_widgets::table::{Model, Column, Row, Styles};
 //! use lipgloss::{Style, Color};
 //!
 //! let mut table = Model::new(vec![Column::new("Data", 20)]);
@@ -142,7 +142,7 @@ use lipgloss_table::Table as LGTable;
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::table::Column;
+/// use bubbletea_widgets::table::Column;
 ///
 /// // Create a column for names with 20 character width
 /// let name_col = Column::new("Full Name", 20);
@@ -152,7 +152,7 @@ use lipgloss_table::Table as LGTable;
 ///
 /// Multiple columns for a complete table structure:
 /// ```rust
-/// use bubbles_rs::table::Column;
+/// use bubbletea_widgets::table::Column;
 ///
 /// let columns = vec![
 ///     Column::new("ID", 8),           // Short numeric ID
@@ -197,7 +197,7 @@ impl Column {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::table::Column;
+    /// use bubbletea_widgets::table::Column;
     ///
     /// // Using string literals
     /// let col1 = Column::new("User ID", 10);
@@ -213,7 +213,7 @@ impl Column {
     ///
     /// Creating columns for different data types:
     /// ```rust
-    /// use bubbles_rs::table::Column;
+    /// use bubbletea_widgets::table::Column;
     ///
     /// let columns = vec![
     ///     Column::new("#", 5),              // Row numbers
@@ -240,7 +240,7 @@ impl Column {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::table::Row;
+/// use bubbletea_widgets::table::Row;
 ///
 /// // Create a row with user data
 /// let user_row = Row::new(vec![
@@ -254,7 +254,7 @@ impl Column {
 ///
 /// Using the `into()` conversion for convenient syntax:
 /// ```rust
-/// use bubbles_rs::table::Row;
+/// use bubbletea_widgets::table::Row;
 ///
 /// let product_row = Row::new(vec![
 ///     "SKU-001".into(),
@@ -268,7 +268,7 @@ impl Column {
 ///
 /// Cell data should align with column definitions:
 /// ```rust
-/// use bubbles_rs::table::{Column, Row};
+/// use bubbletea_widgets::table::{Column, Row};
 ///
 /// let columns = vec![
 ///     Column::new("ID", 8),
@@ -307,7 +307,7 @@ impl Row {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::table::Row;
+    /// use bubbletea_widgets::table::Row;
     ///
     /// // Create a simple data row
     /// let row = Row::new(vec![
@@ -321,7 +321,7 @@ impl Row {
     ///
     /// Using `.into()` for more concise syntax:
     /// ```rust
-    /// use bubbles_rs::table::Row;
+    /// use bubbletea_widgets::table::Row;
     ///
     /// let employees = vec![
     ///     Row::new(vec!["E001".into(), "Alice".into(), "Manager".into()]),
@@ -336,7 +336,7 @@ impl Row {
     /// number of cells as there are columns in the table:
     ///
     /// ```rust
-    /// use bubbles_rs::table::{Column, Row};
+    /// use bubbletea_widgets::table::{Column, Row};
     ///
     /// let columns = vec![
     ///     Column::new("Name", 15),
@@ -364,7 +364,7 @@ impl Row {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::table::Styles;
+/// use bubbletea_widgets::table::Styles;
 /// use lipgloss::{Style, Color};
 ///
 /// // Create custom styling
@@ -386,7 +386,7 @@ impl Row {
 ///
 /// Using styles with a table:
 /// ```rust
-/// use bubbles_rs::table::{Model, Column, Styles};
+/// use bubbletea_widgets::table::{Model, Column, Styles};
 /// use lipgloss::{Style, Color};
 ///
 /// let mut table = Model::new(vec![Column::new("Name", 20)]);
@@ -433,7 +433,7 @@ impl Default for Styles {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::table::{Styles, Model, Column};
+    /// use bubbletea_widgets::table::{Styles, Model, Column};
     ///
     /// // Using default styles
     /// let table = Model::new(vec![Column::new("Data", 20)]);
@@ -473,8 +473,8 @@ impl Default for Styles {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::table::{TableKeyMap, Model, Column};
-/// use bubbles_rs::key;
+/// use bubbletea_widgets::table::{TableKeyMap, Model, Column};
+/// use bubbletea_widgets::key;
 /// use crossterm::event::KeyCode;
 ///
 /// // Create table with custom key bindings
@@ -487,8 +487,8 @@ impl Default for Styles {
 ///
 /// Using with help system:
 /// ```rust
-/// use bubbles_rs::table::Model;
-/// use bubbles_rs::key::KeyMap as KeyMapTrait;
+/// use bubbletea_widgets::table::Model;
+/// use bubbletea_widgets::key::KeyMap as KeyMapTrait;
 ///
 /// let table = Model::new(vec![]);
 /// let help_bindings = table.keymap.short_help();
@@ -563,7 +563,7 @@ impl Default for TableKeyMap {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::table::TableKeyMap;
+    /// use bubbletea_widgets::table::TableKeyMap;
     ///
     /// // Using default key bindings
     /// let keymap = TableKeyMap::default();
@@ -829,7 +829,7 @@ impl BubbleTeaModel for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::table::Model;
+    /// use bubbletea_widgets::table::Model;
     /// use bubbletea_rs::Model as BubbleTeaModel;
     ///
     /// // This is typically called by the Bubble Tea framework
@@ -875,7 +875,7 @@ impl BubbleTeaModel for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::table::{Model, Column};
+    /// use bubbletea_widgets::table::{Model, Column};
     /// use bubbletea_rs::{KeyMsg, Model as BubbleTeaModel};
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///
@@ -951,7 +951,7 @@ impl BubbleTeaModel for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::table::{Model, Column, Row};
+    /// use bubbletea_widgets::table::{Model, Column, Row};
     /// use bubbletea_rs::Model as BubbleTeaModel;
     ///
     /// let mut table = Model::new(vec![Column::new("Name", 15)]);
@@ -966,7 +966,7 @@ impl BubbleTeaModel for Model {
     /// This method is typically called from your application's main `view()` method:
     ///
     /// ```rust
-    /// use bubbles_rs::table::Model as TableModel;
+    /// use bubbletea_widgets::table::Model as TableModel;
     /// use bubbletea_rs::Model as BubbleTeaModel;
     ///
     /// struct App {
@@ -1011,8 +1011,8 @@ impl help::KeyMap for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::table::{Model, Column};
-    /// use bubbles_rs::help::KeyMap;
+    /// use bubbletea_widgets::table::{Model, Column};
+    /// use bubbletea_widgets::help::KeyMap;
     ///
     /// let table = Model::new(vec![Column::new("Data", 20)]);
     /// let short_bindings = table.short_help();
@@ -1049,8 +1049,8 @@ impl help::KeyMap for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::table::{Model, Column};
-    /// use bubbles_rs::help::KeyMap;
+    /// use bubbletea_widgets::table::{Model, Column};
+    /// use bubbletea_widgets::help::KeyMap;
     ///
     /// let table = Model::new(vec![Column::new("Data", 20)]);
     /// let full_bindings = table.full_help();

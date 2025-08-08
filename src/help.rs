@@ -27,7 +27,7 @@ pub trait KeyMap {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::help::Styles;
+/// use bubbletea_widgets::help::Styles;
 /// use lipgloss::{style::Style, Color};
 ///
 /// let custom_styles = Styles {
@@ -65,7 +65,7 @@ impl Default for Styles {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::help::Styles;
+    /// use bubbletea_widgets::help::Styles;
     ///
     /// let styles = Styles::default();
     /// ```
@@ -96,8 +96,8 @@ impl Default for Styles {
 ///
 /// Basic usage:
 /// ```rust
-/// use bubbles_rs::help::{Model, KeyMap};
-/// use bubbles_rs::key;
+/// use bubbletea_widgets::help::{Model, KeyMap};
+/// use bubbletea_widgets::key;
 ///
 /// // Create a new help model
 /// let help = Model::new().with_width(80);
@@ -153,7 +153,7 @@ impl Default for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::help::Model;
+    /// use bubbletea_widgets::help::Model;
     ///
     /// let help = Model::default();
     /// assert_eq!(help.show_all, false);
@@ -180,7 +180,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::help::Model;
+    /// use bubbletea_widgets::help::Model;
     ///
     /// let help = Model::new();
     /// ```
@@ -200,7 +200,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::help::Model;
+    /// use bubbletea_widgets::help::Model;
     ///
     /// let help = Model::new().with_width(80);
     /// assert_eq!(help.width, 80);
@@ -227,8 +227,8 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::help::{Model, KeyMap};
-    /// use bubbles_rs::key;
+    /// use bubbletea_widgets::help::{Model, KeyMap};
+    /// use bubbletea_widgets::key;
     ///
     /// struct MyKeyMap;
     /// impl KeyMap for MyKeyMap {
@@ -265,8 +265,8 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::help::Model;
-    /// use bubbles_rs::key;
+    /// use bubbletea_widgets::help::Model;
+    /// use bubbletea_widgets::key;
     ///
     /// let help = Model::new();
     /// let bindings = vec![]; // Your key bindings
@@ -343,8 +343,8 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::help::Model;
-    /// use bubbles_rs::key;
+    /// use bubbletea_widgets::help::Model;
+    /// use bubbletea_widgets::key;
     ///
     /// let help = Model::new();
     /// let groups = vec![vec![]]; // Your grouped key bindings

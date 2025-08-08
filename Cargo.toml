@@ -1,16 +1,16 @@
 [package]
-name = "bubbles-rs"
+name = "bubbletea-widgets"
 version = "0.0.6"
 edition = "2021"
 description = "A collection of reusable TUI components for building terminal applications with bubbletea-rs"
 license = "MIT"
-repository = "https://github.com/whit3rabbit/bubble-rs"
+repository = "https://github.com/whit3rabbit/bubbletea-widgets"
 keywords = ["tui", "terminal", "bubbletea", "components", "ui"]
 categories = ["command-line-utilities", "gui"]
 authors = ["Whit3rabbit <whit3rabbit@protonmail.com>"]
 
 [lib]
-name = "bubbles_rs"
+name = "bubbletea_widgets"
 path = "src/lib.rs"
 
 [dependencies]

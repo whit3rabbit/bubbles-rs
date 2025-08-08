@@ -6,7 +6,7 @@
 //! # Basic Usage
 //!
 //! ```rust
-//! use bubbles_rs::timer::{new, new_with_interval};
+//! use bubbletea_widgets::timer::{new, new_with_interval};
 //! use std::time::Duration;
 //!
 //! // Create a timer with default 1 second interval
@@ -20,7 +20,7 @@
 //!
 //! ```rust
 //! use bubbletea_rs::{Model as BubbleTeaModel, Msg, Cmd};
-//! use bubbles_rs::timer::{new, Model, TickMsg, StartStopMsg, TimeoutMsg};
+//! use bubbletea_widgets::timer::{new, Model, TickMsg, StartStopMsg, TimeoutMsg};
 //! use std::time::Duration;
 //!
 //! struct MyApp {
@@ -55,7 +55,7 @@
 //! # Start/Stop Control
 //!
 //! ```rust
-//! use bubbles_rs::timer::new;
+//! use bubbletea_widgets::timer::new;
 //! use std::time::Duration;
 //!
 //! let timer = new(Duration::from_secs(30));
@@ -171,7 +171,7 @@ fn format_duration(d: Duration) -> String {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::timer::new;
+/// use bubbletea_widgets::timer::new;
 /// use std::time::Duration;
 ///
 /// let timer = new(Duration::from_secs(30));
@@ -215,7 +215,7 @@ pub struct StartStopMsg {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::timer::{TickMsg, new};
+/// use bubbletea_widgets::timer::{TickMsg, new};
 /// use std::time::Duration;
 ///
 /// let timer = new(Duration::from_secs(30));
@@ -268,12 +268,12 @@ pub struct TickMsg {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::timer::{TimeoutMsg, new};
+/// use bubbletea_widgets::timer::{TimeoutMsg, new};
 /// use bubbletea_rs::{Model as BubbleTeaModel, Msg};
 /// use std::time::Duration;
 ///
 /// struct App {
-///     timer: bubbles_rs::timer::Model,
+///     timer: bubbletea_widgets::timer::Model,
 ///     message: String,
 /// }
 ///
@@ -327,7 +327,7 @@ pub struct TimeoutMsg {
 ///
 /// Basic timer usage:
 /// ```rust
-/// use bubbles_rs::timer::{new, new_with_interval};
+/// use bubbletea_widgets::timer::{new, new_with_interval};
 /// use std::time::Duration;
 ///
 /// // Create a 30-second timer with default 1-second ticks
@@ -345,7 +345,7 @@ pub struct TimeoutMsg {
 ///
 /// Integration with Bubble Tea:
 /// ```rust
-/// use bubbles_rs::timer::{new, Model as TimerModel, TimeoutMsg};
+/// use bubbletea_widgets::timer::{new, Model as TimerModel, TimeoutMsg};
 /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd, Msg};
 /// use std::time::Duration;
 ///
@@ -451,7 +451,7 @@ pub struct Model {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::timer::new_with_interval;
+/// use bubbletea_widgets::timer::new_with_interval;
 /// use std::time::Duration;
 ///
 /// // Create a 30-second timer that updates every 100ms (smooth display)
@@ -466,7 +466,7 @@ pub struct Model {
 ///
 /// Different use cases:
 /// ```rust
-/// use bubbles_rs::timer::new_with_interval;
+/// use bubbletea_widgets::timer::new_with_interval;
 /// use std::time::Duration;
 ///
 /// // High-precision timer for animations (60 FPS)
@@ -533,7 +533,7 @@ pub fn new_with_interval(timeout: Duration, interval: Duration) -> Model {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::timer::new;
+/// use bubbletea_widgets::timer::new;
 /// use std::time::Duration;
 ///
 /// // Create a 30-second countdown timer
@@ -546,7 +546,7 @@ pub fn new_with_interval(timeout: Duration, interval: Duration) -> Model {
 ///
 /// Common timer durations:
 /// ```rust
-/// use bubbles_rs::timer::new;
+/// use bubbletea_widgets::timer::new;
 /// use std::time::Duration;
 ///
 /// // Short timer for notifications
@@ -564,12 +564,12 @@ pub fn new_with_interval(timeout: Duration, interval: Duration) -> Model {
 ///
 /// Integration with Bubble Tea:
 /// ```rust
-/// use bubbles_rs::timer::new;
+/// use bubbletea_widgets::timer::new;
 /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd};
 /// use std::time::Duration;
 ///
 /// struct App {
-///     timer: bubbles_rs::timer::Model,
+///     timer: bubbletea_widgets::timer::Model,
 /// }
 ///
 /// impl BubbleTeaModel for App {
@@ -628,7 +628,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let timer1 = new(Duration::from_secs(30));
@@ -642,13 +642,13 @@ impl Model {
     ///
     /// Using ID to identify timer messages:
     /// ```rust
-    /// use bubbles_rs::timer::{new, TimeoutMsg};
+    /// use bubbletea_widgets::timer::{new, TimeoutMsg};
     /// use bubbletea_rs::{Model as BubbleTeaModel, Msg};
     /// use std::time::Duration;
     ///
     /// struct App {
-    ///     work_timer: bubbles_rs::timer::Model,
-    ///     break_timer: bubbles_rs::timer::Model,
+    ///     work_timer: bubbletea_widgets::timer::Model,
+    ///     break_timer: bubbletea_widgets::timer::Model,
     /// }
     ///
     /// impl BubbleTeaModel for App {
@@ -694,7 +694,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer = new(Duration::from_secs(30));
@@ -709,7 +709,7 @@ impl Model {
     ///
     /// Checking timer state in different scenarios:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer = new(Duration::from_secs(5));
@@ -728,7 +728,7 @@ impl Model {
     ///
     /// Integration with control commands:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let timer = new(Duration::from_secs(60));
@@ -769,7 +769,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer = new(Duration::from_secs(30));
@@ -784,7 +784,7 @@ impl Model {
     ///
     /// Checking expiration in different states:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer = new(Duration::from_millis(100));
@@ -803,7 +803,7 @@ impl Model {
     ///
     /// Using in timeout detection:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer = new(Duration::from_secs(5));
@@ -856,12 +856,12 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd};
     /// use std::time::Duration;
     ///
     /// struct App {
-    ///     timer: bubbles_rs::timer::Model,
+    ///     timer: bubbletea_widgets::timer::Model,
     /// }
     ///
     /// impl BubbleTeaModel for App {
@@ -888,7 +888,7 @@ impl Model {
     ///
     /// Manual timer control:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let timer = new(Duration::from_secs(30));
@@ -943,13 +943,13 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd, KeyMsg};
     /// use crossterm::event::{KeyCode, KeyModifiers};
     /// use std::time::Duration;
     ///
     /// struct App {
-    ///     timer: bubbles_rs::timer::Model,
+    ///     timer: bubbletea_widgets::timer::Model,
     ///     paused: bool,
     /// }
     ///
@@ -978,7 +978,7 @@ impl Model {
     ///
     /// Timer control pattern:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let timer = new(Duration::from_secs(300)); // 5 minute timer
@@ -996,7 +996,7 @@ impl Model {
     /// - **Reset**: Would require creating a new timer with original timeout
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer = new(Duration::from_secs(60));
@@ -1045,13 +1045,13 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd, KeyMsg};
     /// use crossterm::event::{KeyCode, KeyModifiers};
     /// use std::time::Duration;
     ///
     /// struct PomodoroApp {
-    ///     work_timer: bubbles_rs::timer::Model,
+    ///     work_timer: bubbletea_widgets::timer::Model,
     /// }
     ///
     /// impl BubbleTeaModel for PomodoroApp {
@@ -1084,7 +1084,7 @@ impl Model {
     ///
     /// Simple toggle pattern:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let timer = new(Duration::from_secs(120));
@@ -1108,7 +1108,7 @@ impl Model {
     ///
     /// This means the toggle respects both manual stops and timeout states:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer = new(Duration::from_secs(30));
@@ -1189,12 +1189,12 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd};
     /// use std::time::Duration;
     ///
     /// struct App {
-    ///     timer: bubbles_rs::timer::Model,
+    ///     timer: bubbletea_widgets::timer::Model,
     /// }
     ///
     /// impl BubbleTeaModel for App {
@@ -1213,13 +1213,13 @@ impl Model {
     ///
     /// Multiple timer initialization:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use bubbletea_rs::{Model as BubbleTeaModel, Cmd};
     /// use std::time::Duration;
     ///
     /// struct MultiTimerApp {
-    ///     work_timer: bubbles_rs::timer::Model,
-    ///     break_timer: bubbles_rs::timer::Model,
+    ///     work_timer: bubbletea_widgets::timer::Model,
+    ///     break_timer: bubbletea_widgets::timer::Model,
     /// }
     ///
     /// impl BubbleTeaModel for MultiTimerApp {
@@ -1295,12 +1295,12 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::{new, TickMsg, StartStopMsg, TimeoutMsg};
+    /// use bubbletea_widgets::timer::{new, TickMsg, StartStopMsg, TimeoutMsg};
     /// use bubbletea_rs::{Model as BubbleTeaModel, Msg, Cmd};
     /// use std::time::Duration;
     ///
     /// struct App {
-    ///     timer: bubbles_rs::timer::Model,
+    ///     timer: bubbletea_widgets::timer::Model,
     ///     status: String,
     /// }
     ///
@@ -1325,7 +1325,7 @@ impl Model {
     ///
     /// Manual message handling:
     /// ```rust,ignore
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer = new(Duration::from_secs(10));
@@ -1348,7 +1348,7 @@ impl Model {
     /// - **State Checks**: Ignores ticks when not running
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer1 = new(Duration::from_secs(10));
@@ -1445,7 +1445,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// // Various timer displays
@@ -1462,12 +1462,12 @@ impl Model {
     ///
     /// Integration in UI:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use bubbletea_rs::{Model as BubbleTeaModel};
     /// use std::time::Duration;
     ///
     /// struct App {
-    ///     cooking_timer: bubbles_rs::timer::Model,
+    ///     cooking_timer: bubbletea_widgets::timer::Model,
     ///     recipe: String,
     /// }
     ///
@@ -1488,7 +1488,7 @@ impl Model {
     ///
     /// Dynamic display updates:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let mut timer = new(Duration::from_secs(125)); // 2m5s
@@ -1555,7 +1555,7 @@ impl BubbleTeaModel for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::Model as TimerModel;
+    /// use bubbletea_widgets::timer::Model as TimerModel;
     /// use bubbletea_rs::{Model as BubbleTeaModel};
     ///
     /// // Use timer as a standalone Bubble Tea application
@@ -1598,7 +1598,7 @@ impl BubbleTeaModel for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::Model as TimerModel;
+    /// use bubbletea_widgets::timer::Model as TimerModel;
     /// use bubbletea_rs::{Model as BubbleTeaModel};
     ///
     /// let mut timer = TimerModel::default();
@@ -1625,7 +1625,7 @@ impl BubbleTeaModel for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::Model as TimerModel;
+    /// use bubbletea_widgets::timer::Model as TimerModel;
     /// use bubbletea_rs::Model as BubbleTeaModel;
     ///
     /// let timer = TimerModel::default();
@@ -1651,7 +1651,7 @@ impl Default for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::timer::Model;
+    /// use bubbletea_widgets::timer::Model;
     /// use std::time::Duration;
     ///
     /// // Create timer with defaults
@@ -1664,7 +1664,7 @@ impl Default for Model {
     ///
     /// Using with struct initialization:
     /// ```rust
-    /// use bubbles_rs::timer::Model as TimerModel;
+    /// use bubbletea_widgets::timer::Model as TimerModel;
     ///
     /// struct App {
     ///     timer: TimerModel,
@@ -1705,7 +1705,7 @@ impl Default for Model {
     ///
     /// This default implementation is equivalent to:
     /// ```rust
-    /// use bubbles_rs::timer::new;
+    /// use bubbletea_widgets::timer::new;
     /// use std::time::Duration;
     ///
     /// let timer = new(Duration::from_secs(60));

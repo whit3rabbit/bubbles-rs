@@ -26,7 +26,7 @@
 //! ## Example
 //!
 //! ```rust
-//! use bubbles_rs::list::style::{ListStyles, BULLET, ELLIPSIS};
+//! use bubbletea_widgets::list::style::{ListStyles, BULLET, ELLIPSIS};
 //! use lipgloss::{Style, Color};
 //!
 //! let mut styles = ListStyles::default();

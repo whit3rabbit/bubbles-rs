@@ -15,7 +15,7 @@ use crossterm::event::{KeyCode, KeyModifiers};
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::KeyPress;
+/// use bubbletea_widgets::key::KeyPress;
 /// use crossterm::event::{KeyCode, KeyModifiers};
 ///
 /// // Create a Ctrl+C key press
@@ -46,7 +46,7 @@ pub struct KeyPress {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::KeyPress;
+/// use bubbletea_widgets::key::KeyPress;
 /// use crossterm::event::{KeyCode, KeyModifiers};
 ///
 /// let save_key: KeyPress = (KeyCode::Char('s'), KeyModifiers::CONTROL).into();
@@ -66,7 +66,7 @@ impl From<(KeyCode, KeyModifiers)> for KeyPress {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::KeyPress;
+/// use bubbletea_widgets::key::KeyPress;
 /// use crossterm::event::KeyCode;
 ///
 /// let enter_key: KeyPress = KeyCode::Enter.into();
@@ -98,7 +98,7 @@ impl From<KeyCode> for KeyPress {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::KeyPress;
+/// use bubbletea_widgets::key::KeyPress;
 ///
 /// let enter: KeyPress = "enter".into();
 /// let ctrl_c: KeyPress = "ctrl+c".into();
@@ -124,7 +124,7 @@ impl From<&str> for KeyPress {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::Help;
+/// use bubbletea_widgets::key::Help;
 ///
 /// let help = Help {
 ///     key: "ctrl+s".to_string(),
@@ -169,7 +169,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///
     /// // Binding with multiple keys, some with modifiers
@@ -201,7 +201,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::{Binding, with_keys_str, with_help};
+    /// use bubbletea_widgets::key::{Binding, with_keys_str, with_help};
     ///
     /// let save_binding = Binding::new_binding(vec![
     ///     with_keys_str(&["ctrl+s", "f2"]),
@@ -230,7 +230,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let binding = Binding::new(vec![KeyCode::Enter])
@@ -255,7 +255,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let disabled_binding = Binding::new(vec![KeyCode::F(1)])
@@ -274,7 +274,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let disabled_binding = Binding::new(vec![KeyCode::F(1)])
@@ -297,7 +297,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     ///
     /// let binding = Binding::new::<&str>(vec![])
     ///     .with_keys(&["ctrl+s", "f2", "alt+s"]);
@@ -316,7 +316,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let mut binding = Binding::new::<&str>(vec![]);
@@ -331,7 +331,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let binding = Binding::new(vec![KeyCode::Enter]);
@@ -352,7 +352,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let mut binding = Binding::new(vec![KeyCode::Enter]);
@@ -370,7 +370,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let binding = Binding::new(vec![KeyCode::Enter])
@@ -391,7 +391,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let binding = Binding::new(vec![KeyCode::Enter]);
@@ -416,7 +416,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let mut binding = Binding::new(vec![KeyCode::F(1)]);
@@ -435,7 +435,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use crossterm::event::KeyCode;
     ///
     /// let mut binding = Binding::new(vec![KeyCode::Enter])
@@ -467,7 +467,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use bubbletea_rs::KeyMsg;
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///
@@ -506,7 +506,7 @@ impl Binding {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::key::Binding;
+    /// use bubbletea_widgets::key::Binding;
     /// use bubbletea_rs::KeyMsg;
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///
@@ -540,7 +540,7 @@ impl Binding {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::{KeyMap, Binding};
+/// use bubbletea_widgets::key::{KeyMap, Binding};
 /// use crossterm::event::KeyCode;
 ///
 /// struct MyComponent {
@@ -592,7 +592,7 @@ pub trait KeyMap {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::{matches, Binding};
+/// use bubbletea_widgets::key::{matches, Binding};
 /// use bubbletea_rs::KeyMsg;
 /// use crossterm::event::{KeyCode, KeyModifiers};
 ///
@@ -629,7 +629,7 @@ pub fn matches(key_msg: &KeyMsg, bindings: &[&Binding]) -> bool {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::{new_binding, with_keys_str, with_help};
+/// use bubbletea_widgets::key::{new_binding, with_keys_str, with_help};
 ///
 /// let save_binding = new_binding(vec![
 ///     with_keys_str(&["ctrl+s", "f2"]),
@@ -652,7 +652,7 @@ pub fn new_binding(opts: Vec<BindingOpt>) -> Binding {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::{new_binding, with_keys_str, with_help};
+/// use bubbletea_widgets::key::{new_binding, with_keys_str, with_help};
 ///
 /// let binding = new_binding(vec![
 ///     with_keys_str(&["ctrl+s", "alt+s", "f2"]),
@@ -684,7 +684,7 @@ pub fn with_keys_str(keys: &[&str]) -> BindingOpt {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::{matches_binding, Binding};
+/// use bubbletea_widgets::key::{matches_binding, Binding};
 /// use bubbletea_rs::KeyMsg;
 /// use crossterm::event::{KeyCode, KeyModifiers};
 ///
@@ -712,7 +712,7 @@ pub fn matches_binding(key_msg: &KeyMsg, binding: &Binding) -> bool {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::{new_binding, with_keys, with_help};
+/// use bubbletea_widgets::key::{new_binding, with_keys, with_help};
 /// use crossterm::event::{KeyCode, KeyModifiers};
 ///
 /// let binding = new_binding(vec![
@@ -742,7 +742,7 @@ pub fn with_keys<K: Into<KeyPress> + Clone + 'static>(keys: Vec<K>) -> BindingOp
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::{new_binding, with_keys_str, with_help};
+/// use bubbletea_widgets::key::{new_binding, with_keys_str, with_help};
 ///
 /// let binding = new_binding(vec![
 ///     with_keys_str(&["ctrl+s"]),
@@ -769,7 +769,7 @@ pub fn with_help(
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::{new_binding, with_keys_str, with_disabled};
+/// use bubbletea_widgets::key::{new_binding, with_keys_str, with_disabled};
 ///
 /// let binding = new_binding(vec![
 ///     with_keys_str(&["f1"]),
@@ -814,7 +814,7 @@ pub fn with_disabled() -> BindingOpt {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::key::parse_key_string;
+/// use bubbletea_widgets::key::parse_key_string;
 /// use crossterm::event::{KeyCode, KeyModifiers};
 ///
 /// let enter = parse_key_string("enter");

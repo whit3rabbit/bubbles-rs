@@ -3,7 +3,7 @@
 //! This module provides a comprehensive sanitizer that processes Unicode characters (runes)
 //! to remove control characters and replace special characters like newlines and tabs
 //! with customizable strings. It mirrors the functionality of Go's `runeutil` package
-//! for compatibility with the bubbles-rs TUI library ecosystem.
+//! for compatibility with the bubbletea-widgets TUI library ecosystem.
 //!
 //! # Features
 //!
@@ -16,7 +16,7 @@
 //! # Quick Start
 //!
 //! ```rust
-//! use bubbles_rs::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
+//! use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
 //!
 //! // Create a basic sanitizer with defaults
 //! let sanitizer = new_sanitizer(vec![]);
@@ -64,7 +64,7 @@
 /// Use the builder pattern with option functions to customize replacement behavior:
 ///
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
 ///
 /// let sanitizer = new_sanitizer(vec![
 ///     replace_tabs("\t"),        // Keep actual tabs
@@ -81,7 +81,7 @@
 ///
 /// Basic sanitization:
 /// ```rust
-/// use bubbles_rs::runeutil::new_sanitizer;
+/// use bubbletea_widgets::runeutil::new_sanitizer;
 ///
 /// let sanitizer = new_sanitizer(vec![]);
 /// let input = "Hello\x08\tworld\x1b[31m\n";
@@ -93,7 +93,7 @@
 ///
 /// Custom replacement:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
 ///
 /// let sanitizer = new_sanitizer(vec![
 ///     replace_tabs(" "),      // Single space for tabs
@@ -125,7 +125,7 @@ impl Default for Sanitizer {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::runeutil::Sanitizer;
+    /// use bubbletea_widgets::runeutil::Sanitizer;
     ///
     /// let sanitizer = Sanitizer::default();
     /// let result = sanitizer.sanitize_str("Hello\tworld\n");
@@ -160,7 +160,7 @@ impl Default for Sanitizer {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::runeutil::{SanitizerOpt, Sanitizer};
+/// use bubbletea_widgets::runeutil::{SanitizerOpt, Sanitizer};
 ///
 /// // Custom option function
 /// fn replace_semicolons(replacement: &str) -> SanitizerOpt {
@@ -175,7 +175,7 @@ impl Default for Sanitizer {
 /// # Usage with new_sanitizer
 ///
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs};
 ///
 /// let sanitizer = new_sanitizer(vec![
 ///     replace_tabs("  "),  // 2 spaces instead of 4
@@ -201,7 +201,7 @@ pub type SanitizerOpt = Box<dyn FnOnce(&mut Sanitizer)>;
 ///
 /// Create a sanitizer with default settings:
 /// ```rust
-/// use bubbles_rs::runeutil::new_sanitizer;
+/// use bubbletea_widgets::runeutil::new_sanitizer;
 ///
 /// let sanitizer = new_sanitizer(vec![]);
 /// let result = sanitizer.sanitize_str("Hello\tworld");
@@ -210,7 +210,7 @@ pub type SanitizerOpt = Box<dyn FnOnce(&mut Sanitizer)>;
 ///
 /// Create a sanitizer with custom tab and newline handling:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
 ///
 /// let sanitizer = new_sanitizer(vec![
 ///     replace_tabs(" "),       // Single space for tabs
@@ -222,7 +222,7 @@ pub type SanitizerOpt = Box<dyn FnOnce(&mut Sanitizer)>;
 ///
 /// Combine multiple options:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
 ///
 /// let options = vec![
 ///     replace_tabs("→"),        // Visible tab character
@@ -237,7 +237,7 @@ pub type SanitizerOpt = Box<dyn FnOnce(&mut Sanitizer)>;
 /// options modify the same setting, the last one takes precedence:
 ///
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs};
 ///
 /// let sanitizer = new_sanitizer(vec![
 ///     replace_tabs("FIRST"),
@@ -270,7 +270,7 @@ pub fn new_sanitizer(opts: Vec<SanitizerOpt>) -> Sanitizer {
 ///
 /// Replace tabs with 2 spaces:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs};
 ///
 /// let sanitizer = new_sanitizer(vec![replace_tabs("  ")]);
 /// let result = sanitizer.sanitize_str("Hello\tworld");
@@ -279,7 +279,7 @@ pub fn new_sanitizer(opts: Vec<SanitizerOpt>) -> Sanitizer {
 ///
 /// Replace tabs with a visible character:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs};
 ///
 /// let sanitizer = new_sanitizer(vec![replace_tabs("→")]);
 /// let result = sanitizer.sanitize_str("Column1\tColumn2");
@@ -288,7 +288,7 @@ pub fn new_sanitizer(opts: Vec<SanitizerOpt>) -> Sanitizer {
 ///
 /// Preserve tabs as-is:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs};
 ///
 /// let sanitizer = new_sanitizer(vec![replace_tabs("\t")]);
 /// let result = sanitizer.sanitize_str("Keep\ttabs");
@@ -297,7 +297,7 @@ pub fn new_sanitizer(opts: Vec<SanitizerOpt>) -> Sanitizer {
 ///
 /// Remove tabs entirely:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs};
 ///
 /// let sanitizer = new_sanitizer(vec![replace_tabs("")]);
 /// let result = sanitizer.sanitize_str("No\ttabs");
@@ -331,7 +331,7 @@ pub fn replace_tabs(tab_repl: &str) -> SanitizerOpt {
 ///
 /// Replace newlines with spaces for single-line display:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_newlines};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_newlines};
 ///
 /// let sanitizer = new_sanitizer(vec![replace_newlines(" ")]);
 /// let result = sanitizer.sanitize_str("Line 1\nLine 2\nLine 3");
@@ -340,7 +340,7 @@ pub fn replace_tabs(tab_repl: &str) -> SanitizerOpt {
 ///
 /// Replace with visible characters for debugging:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_newlines};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_newlines};
 ///
 /// let sanitizer = new_sanitizer(vec![replace_newlines("↵")]);
 /// let result = sanitizer.sanitize_str("First\nSecond");
@@ -349,7 +349,7 @@ pub fn replace_tabs(tab_repl: &str) -> SanitizerOpt {
 ///
 /// Replace with HTML line breaks:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_newlines};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_newlines};
 ///
 /// let sanitizer = new_sanitizer(vec![replace_newlines("<br>")]);
 /// let result = sanitizer.sanitize_str("Para 1\nPara 2");
@@ -358,7 +358,7 @@ pub fn replace_tabs(tab_repl: &str) -> SanitizerOpt {
 ///
 /// Remove newlines entirely:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_newlines};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_newlines};
 ///
 /// let sanitizer = new_sanitizer(vec![replace_newlines("")]);
 /// let result = sanitizer.sanitize_str("No\nbreaks");
@@ -367,7 +367,7 @@ pub fn replace_tabs(tab_repl: &str) -> SanitizerOpt {
 ///
 /// Handle both Unix and Windows line endings:
 /// ```rust
-/// use bubbles_rs::runeutil::{new_sanitizer, replace_newlines};
+/// use bubbletea_widgets::runeutil::{new_sanitizer, replace_newlines};
 ///
 /// let sanitizer = new_sanitizer(vec![replace_newlines(" | ")]);
 /// let unix_input = "Line1\nLine2";
@@ -412,7 +412,7 @@ impl Sanitizer {
     ///
     /// Basic sanitization with defaults:
     /// ```rust
-    /// use bubbles_rs::runeutil::new_sanitizer;
+    /// use bubbletea_widgets::runeutil::new_sanitizer;
     ///
     /// let sanitizer = new_sanitizer(vec![]);
     /// let input = "Hello\x08\tworld\x1b[31mRed\x1b[0m\n";
@@ -422,7 +422,7 @@ impl Sanitizer {
     ///
     /// Custom replacement configuration:
     /// ```rust
-    /// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
+    /// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
     ///
     /// let sanitizer = new_sanitizer(vec![
     ///     replace_tabs(" "),
@@ -434,7 +434,7 @@ impl Sanitizer {
     ///
     /// Handling various control characters:
     /// ```rust
-    /// use bubbles_rs::runeutil::new_sanitizer;
+    /// use bubbletea_widgets::runeutil::new_sanitizer;
     ///
     /// let sanitizer = new_sanitizer(vec![]);
     /// let input = "Text\x00\x07\x1b[2J\x7f";
@@ -500,7 +500,7 @@ impl Sanitizer {
     ///
     /// Basic character vector sanitization:
     /// ```rust
-    /// use bubbles_rs::runeutil::new_sanitizer;
+    /// use bubbletea_widgets::runeutil::new_sanitizer;
     ///
     /// let sanitizer = new_sanitizer(vec![]);
     /// let input: Vec<char> = "Hello\tworld\n".chars().collect();
@@ -511,7 +511,7 @@ impl Sanitizer {
     ///
     /// Custom replacements with character expansion:
     /// ```rust
-    /// use bubbles_rs::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
+    /// use bubbletea_widgets::runeutil::{new_sanitizer, replace_tabs, replace_newlines};
     ///
     /// let sanitizer = new_sanitizer(vec![
     ///     replace_tabs("[TAB]"),
@@ -525,7 +525,7 @@ impl Sanitizer {
     ///
     /// Removing control characters:
     /// ```rust
-    /// use bubbles_rs::runeutil::new_sanitizer;
+    /// use bubbletea_widgets::runeutil::new_sanitizer;
     ///
     /// let sanitizer = new_sanitizer(vec![]);
     /// let input = vec!['H', 'i', '\x07', '\x1b', '!'];

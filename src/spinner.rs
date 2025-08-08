@@ -6,7 +6,7 @@
 //! # Basic Usage
 //!
 //! ```rust
-//! use bubbles_rs::spinner::{new, with_spinner, with_style, DOT};
+//! use bubbletea_widgets::spinner::{new, with_spinner, with_style, DOT};
 //! use lipgloss::Style;
 //!
 //! // Create a spinner with default settings
@@ -39,10 +39,10 @@
 //!
 //! ```rust
 //! use bubbletea_rs::{Model as BubbleTeaModel, Msg, Cmd};
-//! use bubbles_rs::spinner::{new, with_spinner, DOT, TickMsg};
+//! use bubbletea_widgets::spinner::{new, with_spinner, DOT, TickMsg};
 //!
 //! struct MyApp {
-//!     spinner: bubbles_rs::spinner::Model,
+//!     spinner: bubbletea_widgets::spinner::Model,
 //! }
 //!
 //! impl BubbleTeaModel for MyApp {
@@ -97,7 +97,7 @@ fn next_id() -> i64 {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::spinner::Spinner;
+/// use bubbletea_widgets::spinner::Spinner;
 /// use std::time::Duration;
 ///
 /// // Create a custom spinner
@@ -125,7 +125,7 @@ impl Spinner {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::spinner::Spinner;
+    /// use bubbletea_widgets::spinner::Spinner;
     /// use std::time::Duration;
     ///
     /// let spinner = Spinner::new(
@@ -371,8 +371,8 @@ pub fn ellipsis() -> Spinner {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::spinner::{new, DOT};
-/// use bubbles_rs::spinner::{with_spinner};
+/// use bubbletea_widgets::spinner::{new, DOT};
+/// use bubbletea_widgets::spinner::{with_spinner};
 ///
 /// let spinner = new(&[with_spinner(DOT.clone())]);
 /// let tick_msg = spinner.tick_msg();
@@ -405,7 +405,7 @@ pub struct TickMsg {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::spinner::{new, with_spinner, DOT};
+/// use bubbletea_widgets::spinner::{new, with_spinner, DOT};
 /// use lipgloss::Style;
 ///
 /// let mut spinner = new(&[
@@ -440,7 +440,7 @@ pub struct Model {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::spinner::{new, with_spinner, with_style, DOT};
+/// use bubbletea_widgets::spinner::{new, with_spinner, with_style, DOT};
 /// use lipgloss::{Style, Color};
 ///
 /// let spinner = new(&[
@@ -476,7 +476,7 @@ impl SpinnerOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::spinner::{new, with_spinner, DOT};
+/// use bubbletea_widgets::spinner::{new, with_spinner, DOT};
 ///
 /// let spinner_model = new(&[with_spinner(DOT.clone())]);
 /// assert_eq!(spinner_model.spinner.frames.len(), 8); // DOT has 8 frames
@@ -497,7 +497,7 @@ pub fn with_spinner(spinner: Spinner) -> SpinnerOption {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::spinner::{new, with_style};
+/// use bubbletea_widgets::spinner::{new, with_style};
 /// use lipgloss::{Style, Color};
 ///
 /// let red_style = Style::new().foreground(Color::from("red"));
@@ -517,7 +517,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::spinner::Model;
+    /// use bubbletea_widgets::spinner::Model;
     ///
     /// let spinner = Model::new();
     /// assert!(spinner.id() > 0);
@@ -544,7 +544,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::spinner::{Model, with_spinner, DOT};
+    /// use bubbletea_widgets::spinner::{Model, with_spinner, DOT};
     ///
     /// let spinner = Model::new_with_options(&[with_spinner(DOT.clone())]);
     /// assert_eq!(spinner.spinner.frames.len(), 8);
@@ -574,7 +574,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::spinner::{Model, DOT};
+    /// use bubbletea_widgets::spinner::{Model, DOT};
     ///
     /// let spinner = Model::new().with_spinner(DOT.clone());
     /// assert_eq!(spinner.spinner.frames.len(), 8);
@@ -593,7 +593,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::spinner::Model;
+    /// use bubbletea_widgets::spinner::Model;
     /// use lipgloss::{Style, Color};
     ///
     /// let spinner = Model::new()
@@ -613,7 +613,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::spinner::Model;
+    /// use bubbletea_widgets::spinner::Model;
     ///
     /// let spinner1 = Model::new();
     /// let spinner2 = Model::new();
@@ -633,7 +633,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::spinner::Model;
+    /// use bubbletea_widgets::spinner::Model;
     ///
     /// let spinner = Model::new();
     /// let tick_msg = spinner.tick_msg();
@@ -695,7 +695,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::spinner::Model;
+    /// use bubbletea_widgets::spinner::Model;
     ///
     /// let mut spinner = Model::new();
     /// let tick_msg = spinner.tick_msg();
@@ -741,7 +741,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::spinner::{new, with_spinner, LINE};
+    /// use bubbletea_widgets::spinner::{new, with_spinner, LINE};
     ///
     /// let spinner = new(&[with_spinner(LINE.clone())]);
     /// let output = spinner.view();
@@ -785,7 +785,7 @@ impl BubbleTeaModel for Model {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::spinner::{new, with_spinner, with_style, DOT};
+/// use bubbletea_widgets::spinner::{new, with_spinner, with_style, DOT};
 /// use lipgloss::{Style, Color};
 ///
 /// // Create with default settings

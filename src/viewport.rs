@@ -18,7 +18,7 @@
 //! # Quick Start
 //!
 //! ```rust
-//! use bubbles_rs::viewport::{new, Model};
+//! use bubbletea_widgets::viewport::{new, Model};
 //!
 //! // Create a viewport with specific dimensions
 //! let mut viewport = new(80, 24);
@@ -39,7 +39,7 @@
 //! # Integration with Bubble Tea
 //!
 //! ```rust
-//! use bubbles_rs::viewport::{Model as ViewportModel, ViewportKeyMap};
+//! use bubbletea_widgets::viewport::{Model as ViewportModel, ViewportKeyMap};
 //! use bubbletea_rs::{Model as BubbleTeaModel, Cmd, Msg};
 //! use lipgloss::Style;
 //!
@@ -76,7 +76,7 @@
 //! # Advanced Usage
 //!
 //! ```rust
-//! use bubbles_rs::viewport::{Model, ViewportKeyMap};
+//! use bubbletea_widgets::viewport::{Model, ViewportKeyMap};
 //! use lipgloss::{Style, Color};
 //!
 //! // Create viewport with custom styling
@@ -169,8 +169,8 @@ use unicode_width::UnicodeWidthChar;
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::viewport::{ViewportKeyMap, Model};
-/// use bubbles_rs::key;
+/// use bubbletea_widgets::viewport::{ViewportKeyMap, Model};
+/// use bubbletea_widgets::key;
 /// use crossterm::event::KeyCode;
 ///
 /// // Use default key bindings
@@ -189,8 +189,8 @@ use unicode_width::UnicodeWidthChar;
 ///
 /// Integration with help system:
 /// ```rust
-/// use bubbles_rs::viewport::ViewportKeyMap;
-/// use bubbles_rs::key::KeyMap as KeyMapTrait;
+/// use bubbletea_widgets::viewport::ViewportKeyMap;
+/// use bubbletea_widgets::key::KeyMap as KeyMapTrait;
 ///
 /// let keymap = ViewportKeyMap::default();
 ///
@@ -208,8 +208,8 @@ use unicode_width::UnicodeWidthChar;
 /// Common customization scenarios:
 ///
 /// ```rust
-/// use bubbles_rs::viewport::ViewportKeyMap;
-/// use bubbles_rs::key;
+/// use bubbletea_widgets::viewport::ViewportKeyMap;
+/// use bubbletea_widgets::key;
 /// use crossterm::event::KeyCode;
 ///
 /// let mut keymap = ViewportKeyMap::default();
@@ -291,7 +291,7 @@ impl Default for ViewportKeyMap {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::ViewportKeyMap;
+    /// use bubbletea_widgets::viewport::ViewportKeyMap;
     ///
     /// // Create with default bindings
     /// let keymap = ViewportKeyMap::default();
@@ -344,8 +344,8 @@ impl KeyMapTrait for ViewportKeyMap {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::ViewportKeyMap;
-    /// use bubbles_rs::key::KeyMap as KeyMapTrait;
+    /// use bubbletea_widgets::viewport::ViewportKeyMap;
+    /// use bubbletea_widgets::key::KeyMap as KeyMapTrait;
     ///
     /// let keymap = ViewportKeyMap::default();
     /// let essential_keys = keymap.short_help();
@@ -373,8 +373,8 @@ impl KeyMapTrait for ViewportKeyMap {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::ViewportKeyMap;
-    /// use bubbles_rs::key::KeyMap as KeyMapTrait;
+    /// use bubbletea_widgets::viewport::ViewportKeyMap;
+    /// use bubbletea_widgets::key::KeyMap as KeyMapTrait;
     ///
     /// let keymap = ViewportKeyMap::default();
     /// let all_keys = keymap.full_help();
@@ -427,7 +427,7 @@ impl KeyMapTrait for ViewportKeyMap {
 ///
 /// Basic viewport setup:
 /// ```rust
-/// use bubbles_rs::viewport::Model;
+/// use bubbletea_widgets::viewport::Model;
 ///
 /// // Create a viewport with specific dimensions
 /// let mut viewport = Model::new(80, 24);
@@ -447,7 +447,7 @@ impl KeyMapTrait for ViewportKeyMap {
 ///
 /// Integration with styling:
 /// ```rust
-/// use bubbles_rs::viewport::Model;
+/// use bubbletea_widgets::viewport::Model;
 /// use lipgloss::{Style, Color};
 ///
 /// let viewport = Model::new(60, 20)
@@ -461,7 +461,7 @@ impl KeyMapTrait for ViewportKeyMap {
 ///
 /// Working with line-based content:
 /// ```rust
-/// use bubbles_rs::viewport::Model;
+/// use bubbletea_widgets::viewport::Model;
 ///
 /// let mut viewport = Model::new(50, 15);
 ///
@@ -591,7 +591,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// // Create a standard terminal-sized viewport
     /// let viewport = Model::new(80, 24);
@@ -602,7 +602,7 @@ impl Model {
     ///
     /// Different viewport sizes for various use cases:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// // Compact viewport for sidebar content
     /// let sidebar = Model::new(30, 20);
@@ -671,7 +671,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use lipgloss::Style;
     ///
     /// // Fluent construction with dimensions
@@ -685,7 +685,7 @@ impl Model {
     ///
     /// Dynamic viewport sizing:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// fn create_responsive_viewport(terminal_width: usize, terminal_height: usize) -> Model {
     ///     Model::new(20, 10) // Default size
@@ -719,7 +719,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use lipgloss::{Style, Color};
     ///
     /// // Create viewport with border and padding
@@ -734,7 +734,7 @@ impl Model {
     ///
     /// Themed viewport styling:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use lipgloss::{Style, Color};
     ///
     /// // Dark theme viewport
@@ -762,7 +762,7 @@ impl Model {
     ///
     /// Styling with borders and padding reduces the available content area:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use lipgloss::Style;
     ///
     /// // 80x24 viewport with 2-character padding
@@ -792,7 +792,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// let content = (1..=20).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n");
@@ -812,7 +812,7 @@ impl Model {
     ///
     /// UI integration example:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// fn render_scroll_indicator(viewport: &Model) -> String {
     ///     let up_arrow = if viewport.at_top() { " " } else { "↑" };
@@ -838,7 +838,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 3); // Small viewport
     /// viewport.set_content("Line 1\nLine 2\nLine 3\nLine 4\nLine 5");
@@ -853,7 +853,7 @@ impl Model {
     ///
     /// Scroll control logic:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// fn handle_scroll_down(viewport: &mut Model) -> bool {
     ///     if viewport.at_bottom() {
@@ -887,7 +887,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10);
     /// viewport.set_content("Line 1\nLine 2\nLine 3");
@@ -901,7 +901,7 @@ impl Model {
     ///
     /// Auto-correction usage:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// fn ensure_valid_scroll(viewport: &mut Model) {
     ///     if viewport.past_bottom() {
@@ -937,7 +937,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content("Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10");
@@ -957,7 +957,7 @@ impl Model {
     ///
     /// Progress bar implementation:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// fn render_progress_bar(viewport: &Model, width: usize) -> String {
     ///     let progress = viewport.scroll_percent();
@@ -1006,7 +1006,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(20, 5);
     /// viewport.set_content("Short line\nThis is a very long line that extends beyond viewport width\nAnother line");
@@ -1032,7 +1032,7 @@ impl Model {
     ///
     /// Horizontal progress indicator:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// fn render_horizontal_indicator(viewport: &Model, width: usize) -> String {
     ///     let h_progress = viewport.horizontal_scroll_percent();
@@ -1075,7 +1075,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10);
     /// viewport.set_content("Line 1\nLine 2\nVery long line that extends beyond viewport width\nLine 4");
@@ -1087,7 +1087,7 @@ impl Model {
     ///
     /// Loading file content:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use std::fs;
     ///
     /// let mut viewport = Model::new(80, 24);
@@ -1099,7 +1099,7 @@ impl Model {
     ///
     /// Dynamic content updates:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(50, 15);
     ///
@@ -1149,7 +1149,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10);
     ///
@@ -1168,7 +1168,7 @@ impl Model {
     ///
     /// Processing structured data:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// #[derive(Debug)]
     /// struct LogEntry {
@@ -1193,7 +1193,7 @@ impl Model {
     ///
     /// Reading from various sources:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(60, 15);
     ///
@@ -1246,7 +1246,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(20, 5);
     /// viewport.set_content("Line 1\nLine 2\nLine 3\nLine 4\nLine 5");
@@ -1268,7 +1268,7 @@ impl Model {
     ///
     /// Horizontal scrolling example:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(10, 4); // Narrow viewport (4 height minus 2 frame = 2 effective)
     /// viewport.set_content("Short\nThis is a very long line that gets clipped");
@@ -1288,7 +1288,7 @@ impl Model {
     ///
     /// Working with styled viewport:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use lipgloss::Style;
     ///
     /// let mut viewport = Model::new(20, 5)
@@ -1314,7 +1314,7 @@ impl Model {
     ///
     /// This method is typically used in the view/render phase:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use lipgloss::Style;
     ///
     /// fn render_viewport_content(viewport: &Model) -> String {
@@ -1366,7 +1366,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content(&(1..=20).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -1383,7 +1383,7 @@ impl Model {
     ///
     /// Direct positioning for navigation:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(80, 20);
     /// viewport.set_content("Line content...");
@@ -1424,7 +1424,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content(&(1..=20).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -1442,7 +1442,7 @@ impl Model {
     ///
     /// Handling bottom boundary:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content("Line 1\nLine 2\nLine 3"); // Only 3 lines
@@ -1478,7 +1478,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content(&(1..=20).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -1492,7 +1492,7 @@ impl Model {
     ///
     /// Handling top boundary:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content("Line 1\nLine 2\nLine 3");
@@ -1523,7 +1523,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10); // Height of 10
     /// viewport.set_content(&(1..=30).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -1560,7 +1560,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10); // Height of 10
     /// viewport.set_content(&(1..=30).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -1602,7 +1602,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content(&(1..=20).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -1616,7 +1616,7 @@ impl Model {
     ///
     /// Edge case handling:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content("Line 1\nLine 2");
@@ -1674,7 +1674,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content(&(1..=20).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -1691,7 +1691,7 @@ impl Model {
     ///
     /// Edge case handling:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content("Line 1\nLine 2");
@@ -1739,7 +1739,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content(&(1..=20).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -1775,7 +1775,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 5);
     /// viewport.set_content(&(1..=20).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -1792,7 +1792,7 @@ impl Model {
     ///
     /// Auto-correction after content changes:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10);
     ///
@@ -1829,7 +1829,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(20, 5);
     /// viewport.set_content("This is a very long line that extends far beyond the viewport width");
@@ -1846,7 +1846,7 @@ impl Model {
     ///
     /// Different step sizes for different content types:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10);
     ///
@@ -1879,7 +1879,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(10, 3);
     /// viewport.set_content("This is a very long line that needs horizontal scrolling");
@@ -1896,7 +1896,7 @@ impl Model {
     ///
     /// Boundary handling:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(20, 5);
     /// viewport.set_content("Short content");
@@ -1927,7 +1927,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(10, 3);
     /// viewport.set_content("This is a very long line that needs horizontal scrolling");
@@ -1944,7 +1944,7 @@ impl Model {
     ///
     /// Boundary handling:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(20, 5);
     /// viewport.set_content("Short"); // Line shorter than viewport
@@ -1956,7 +1956,7 @@ impl Model {
     ///
     /// Multiple step sizes:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(10, 3);
     /// viewport.set_content("Very long line for testing horizontal scrolling behavior");
@@ -2002,7 +2002,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10);
     /// viewport.set_content("Line 1\nLine 2\nLine 3");
@@ -2015,7 +2015,7 @@ impl Model {
     ///
     /// Content inspection and search:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10);
     /// viewport.set_content("Line 1\nImportant line\nLine 3");
@@ -2042,7 +2042,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10);
     /// viewport.set_content("Line 1\nLine 2\nLine 3\nLine 4\nLine 5");
@@ -2056,7 +2056,7 @@ impl Model {
     ///
     /// Navigation calculations:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let mut viewport = Model::new(40, 10);
     /// viewport.set_content(&(1..=100).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n"));
@@ -2087,7 +2087,7 @@ impl Default for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     ///
     /// let viewport = Model::default();
     /// assert_eq!(viewport.width, 80);
@@ -2124,7 +2124,7 @@ impl BubbleTeaModel for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use bubbletea_rs::Model as BubbleTeaModel;
     ///
     /// let (viewport, cmd) = Model::init();
@@ -2161,7 +2161,7 @@ impl BubbleTeaModel for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use bubbletea_rs::{Model as BubbleTeaModel, KeyMsg};
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///
@@ -2182,7 +2182,7 @@ impl BubbleTeaModel for Model {
     ///
     /// This method integrates seamlessly with Bubble Tea's message-driven architecture:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use bubbletea_rs::{Model as BubbleTeaModel, Msg};
     ///
     /// struct App {
@@ -2241,7 +2241,7 @@ impl BubbleTeaModel for Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use bubbletea_rs::Model as BubbleTeaModel;
     ///
     /// let mut viewport = Model::new(20, 5);
@@ -2256,7 +2256,7 @@ impl BubbleTeaModel for Model {
     ///
     /// With styling applied:
     /// ```rust
-    /// use bubbles_rs::viewport::Model;
+    /// use bubbletea_widgets::viewport::Model;
     /// use bubbletea_rs::Model as BubbleTeaModel;
     /// use lipgloss::{Style, Color};
     ///
@@ -2399,7 +2399,7 @@ fn cut_string(s: &str, start: usize, end: usize) -> String {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::viewport;
+/// use bubbletea_widgets::viewport;
 ///
 /// // Functional style
 /// let viewport = viewport::new(80, 24);
@@ -2411,7 +2411,7 @@ fn cut_string(s: &str, start: usize, end: usize) -> String {
 /// # Use Cases
 ///
 /// - **Functional Style**: When preferring function calls over constructors
-/// - **Import Convenience**: Shorter syntax with `use bubbles_rs::viewport::new`
+/// - **Import Convenience**: Shorter syntax with `use bubbletea_widgets::viewport::new`
 /// - **API Consistency**: Matches the pattern used by other bubbles components
 pub fn new(width: usize, height: usize) -> Model {
     Model::new(width, height)

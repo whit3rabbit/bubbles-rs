@@ -1,18 +1,18 @@
 #![warn(missing_docs)]
-#![doc(html_root_url = "https://docs.rs/bubbles-rs/")]
+#![doc(html_root_url = "https://docs.rs/bubbletea-widgets/")]
 
-//! # bubbles-rs
+//! # bubbletea-widgets
 //!
 //! A Rust port of the Go library [charmbracelet/bubbles](https://github.com/charmbracelet/bubbles),
 //! providing reusable TUI components for building terminal applications with [bubbletea-rs](https://github.com/joshka/bubbletea-rs).
 //!
-//! [![Crates.io](https://img.shields.io/crates/v/bubbles-rs.svg)](https://crates.io/crates/bubbles-rs)
-//! [![Documentation](https://docs.rs/bubbles-rs/badge.svg)](https://docs.rs/bubbles-rs)
+//! [![Crates.io](https://img.shields.io/crates/v/bubbletea-widgets.svg)](https://crates.io/crates/bubbletea-widgets)
+//! [![Documentation](https://docs.rs/bubbletea-widgets/badge.svg)](https://docs.rs/bubbletea-widgets)
 //! [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 //!
 //! ## Overview
 //!
-//! bubbles-rs offers a collection of common terminal UI components that can be easily integrated
+//! bubbletea-widgets offers a collection of common terminal UI components that can be easily integrated
 //! into bubbletea-rs applications. Each component follows the Elm Architecture pattern with
 //! `init()`, `update()`, and `view()` methods, providing a consistent and predictable API
 //! for building complex terminal user interfaces.
@@ -37,7 +37,7 @@
 //! All components implement the `Component` trait which provides standardized focus management:
 //!
 //! ```rust
-//! use bubbles_rs::prelude::*;
+//! use bubbletea_widgets::prelude::*;
 //! use bubbletea_rs::Cmd;
 //!
 //! fn handle_focus<T: Component>(component: &mut T) {
@@ -57,7 +57,7 @@
 //! Components use the type-safe key binding system from the `key` module:
 //!
 //! ```rust
-//! use bubbles_rs::key::{Binding, KeyMap};
+//! use bubbletea_widgets::key::{Binding, KeyMap};
 //! use crossterm::event::{KeyCode, KeyModifiers};
 //!
 //! // Create key bindings
@@ -92,7 +92,7 @@
 //! Components are designed to work seamlessly with bubbletea-rs models:
 //!
 //! ```rust
-//! use bubbles_rs::prelude::*;
+//! use bubbletea_widgets::prelude::*;
 //! use bubbletea_rs::{Model, Cmd, Msg};
 //!
 //! struct App {
@@ -127,11 +127,11 @@
 //!
 //! ## Quick Start
 //!
-//! Add bubbles-rs to your `Cargo.toml`:
+//! Add bubbletea-widgets to your `Cargo.toml`:
 //!
 //! ```toml
 //! [dependencies]
-//! bubbles-rs = "0.0.6"
+//! bubbletea-widgets = "0.0.6"
 //! bubbletea-rs = "0.0.6"
 //! crossterm = "0.27"
 //! ```
@@ -139,7 +139,7 @@
 //! For convenience, you can import the prelude:
 //!
 //! ```rust
-//! use bubbles_rs::prelude::*;
+//! use bubbletea_widgets::prelude::*;
 //! ```
 //!
 //! ## Component Overview
@@ -177,7 +177,7 @@ use bubbletea_rs::Cmd;
 /// Core trait for components that support focus management.
 ///
 /// This trait provides a standardized interface for managing keyboard focus
-/// across all bubbles-rs components. Components that implement this trait can
+/// across all bubbletea-widgets components. Components that implement this trait can
 /// participate in focus management systems and provide consistent behavior
 /// for keyboard navigation.
 ///
@@ -201,7 +201,7 @@ use bubbletea_rs::Cmd;
 /// ### Basic Usage
 ///
 /// ```rust
-/// use bubbles_rs::prelude::*;
+/// use bubbletea_widgets::prelude::*;
 ///
 /// let mut input = textinput_new();
 /// assert!(!input.focused());
@@ -216,7 +216,7 @@ use bubbletea_rs::Cmd;
 /// ### Focus Management in Applications
 ///
 /// ```rust
-/// use bubbles_rs::prelude::*;
+/// use bubbletea_widgets::prelude::*;
 /// use bubbletea_rs::Cmd;
 ///
 /// struct App {
@@ -260,7 +260,7 @@ pub trait Component {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::prelude::*;
+    /// use bubbletea_widgets::prelude::*;
     ///
     /// let mut input = textinput_new();
     /// let cmd = input.focus();
@@ -278,7 +278,7 @@ pub trait Component {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::prelude::*;
+    /// use bubbletea_widgets::prelude::*;
     ///
     /// let mut input = textinput_new();
     /// input.focus();
@@ -299,7 +299,7 @@ pub trait Component {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::prelude::*;
+    /// use bubbletea_widgets::prelude::*;
     ///
     /// let mut input = textinput_new();
     /// assert!(!input.focused()); // Initially unfocused
@@ -348,7 +348,7 @@ pub use viewport::Model as Viewport;
 /// Prelude module for convenient imports.
 ///
 /// This module re-exports the most commonly used types and functions from
-/// bubbles-rs, allowing users to import everything they need with a single
+/// bubbletea-widgets, allowing users to import everything they need with a single
 /// `use` statement.
 ///
 /// # Usage
@@ -356,14 +356,14 @@ pub use viewport::Model as Viewport;
 /// Instead of importing each component individually:
 ///
 /// ```rust
-/// use bubbles_rs::{TextInput, List, Spinner, Component};
-/// use bubbles_rs::key::{Binding, KeyMap};
+/// use bubbletea_widgets::{TextInput, List, Spinner, Component};
+/// use bubbletea_widgets::key::{Binding, KeyMap};
 /// ```
 ///
 /// You can use the prelude:
 ///
 /// ```rust
-/// use bubbles_rs::prelude::*;
+/// use bubbletea_widgets::prelude::*;
 /// ```
 ///
 /// # What's Included
@@ -378,7 +378,7 @@ pub use viewport::Model as Viewport;
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::prelude::*;
+/// use bubbletea_widgets::prelude::*;
 /// use bubbletea_rs::{Model, Cmd, Msg};
 ///
 /// struct App {

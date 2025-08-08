@@ -25,7 +25,7 @@ use std::time::Duration;
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::textinput::{new, EchoMode};
+/// use bubbletea_widgets::textinput::{new, EchoMode};
 /// use bubbletea_rs::Model;
 ///
 /// // Create and configure a text input
@@ -130,7 +130,7 @@ pub struct Model {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::textinput::new;
+/// use bubbletea_widgets::textinput::new;
 ///
 /// let mut input = new();
 /// input.focus();
@@ -185,7 +185,7 @@ pub fn new() -> Model {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::textinput::new_model;
+/// use bubbletea_widgets::textinput::new_model;
 ///
 /// let input = new_model();
 /// ```
@@ -215,7 +215,7 @@ impl Default for Model {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::textinput::blink;
+/// use bubbletea_widgets::textinput::blink;
 /// use bubbletea_rs::{Model, Cmd};
 ///
 /// struct App {
@@ -255,7 +255,7 @@ pub fn blink() -> Cmd {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::textinput::paste;
+/// use bubbletea_widgets::textinput::paste;
 ///
 /// // This is typically called internally when Ctrl+V is pressed
 /// // but can be used manually:

@@ -11,7 +11,7 @@
 //! assign it to the model.
 //!
 //! ```rust
-//! use bubbles_rs::textarea::{helpers::TextareaStyle, new};
+//! use bubbletea_widgets::textarea::{helpers::TextareaStyle, new};
 //! use lipgloss::Style;
 //!
 //! let mut model = new();

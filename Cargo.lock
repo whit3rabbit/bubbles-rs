@@ -77,24 +77,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
-name = "bubbles-rs"
-version = "0.0.6"
-dependencies = [
- "bubbletea-rs",
- "clipboard",
- "crossterm",
- "fuzzy-matcher",
- "lipgloss",
- "lipgloss-list",
- "lipgloss-table",
- "once_cell",
- "strip-ansi-escapes",
- "tokio",
- "unicode-segmentation",
- "unicode-width",
-]
-
-[[package]]
 name = "bubbletea-rs"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -110,6 +92,24 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-util",
+]
+
+[[package]]
+name = "bubbletea-widgets"
+version = "0.0.6"
+dependencies = [
+ "bubbletea-rs",
+ "clipboard",
+ "crossterm",
+ "fuzzy-matcher",
+ "lipgloss",
+ "lipgloss-list",
+ "lipgloss-table",
+ "once_cell",
+ "strip-ansi-escapes",
+ "tokio",
+ "unicode-segmentation",
+ "unicode-width",
 ]
 
 [[package]]

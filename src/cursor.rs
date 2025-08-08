@@ -10,7 +10,7 @@
 //!
 //! ### Example
 //! ```rust
-//! use bubbles_rs::cursor;
+//! use bubbletea_widgets::cursor;
 //! use lipgloss::Style;
 //!
 //! let mut cur = cursor::new();

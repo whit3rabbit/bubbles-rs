@@ -66,7 +66,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_suggestions(vec!["apple".to_string(), "banana".to_string()]);
@@ -96,7 +96,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_suggestions(vec![
@@ -132,7 +132,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_suggestions(vec!["apple".to_string(), "application".to_string()]);
@@ -159,7 +159,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_suggestions(vec!["apple".to_string(), "application".to_string()]);

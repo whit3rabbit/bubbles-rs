@@ -1,4 +1,4 @@
-# bubbles-rs
+# bubbletea-widgets
 
 Rust components for building TUIs with [`bubbletea-rs`](https://github.com/whit3rabbit/bubbletea-rs), ported from Charmbracelet's Go
 [`bubbles`](https://github.com/charmbracelet/bubbles). This is a Rust implementation of
@@ -11,7 +11,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-bubbles-rs = "0.0.6"
+bubbletea-widgets = "0.0.6"
 bubbletea-rs = "0.0.6"
 lipgloss = "0.0.6"
 ```
@@ -24,7 +24,7 @@ A spinner for indicating an operation is in progress. Includes multiple presets
 and option-style configuration.
 
 ```rust
-use bubbles_rs::spinner::{new, with_spinner, with_style, DOT};
+use bubbletea_widgets::spinner::{new, with_spinner, with_style, DOT};
 use lipgloss::{Style, Color};
 
 let sp = new(&[
@@ -40,7 +40,7 @@ Single-line input akin to HTML’s `<input type="text">`. Supports unicode, past
 in-place scrolling, and customizable key bindings.
 
 ```rust
-use bubbles_rs::textinput::new;
+use bubbletea_widgets::textinput::new;
 
 let mut input = new();
 input.set_placeholder("Your name…");
@@ -54,12 +54,12 @@ Multi-line text input akin to `<textarea>`. Supports unicode, soft-wrapping,
 vertical scrolling, and rich styling via Lip Gloss.
 
 ```rust
-use bubbles_rs::textarea;
+use bubbletea_widgets::textarea;
 
 let mut ta = textarea::new();
 ta.set_width(40);
 ta.set_height(6);
-ta.insert_string("Hello, world!\nThis is bubbles-rs.");
+ta.insert_string("Hello, world!\nThis is bubbletea-widgets.");
 let view = ta.view();
 ```
 
@@ -68,7 +68,7 @@ let view = ta.view();
 Scrollable, navigable tables with headers, selection, and styling.
 
 ```rust
-use bubbles_rs::table::{Model, Column, Row};
+use bubbletea_widgets::table::{Model, Column, Row};
 
 let columns = vec![
     Column::new("Name", 20),
@@ -87,7 +87,7 @@ let _out = table.view();
 Simple, customizable progress meter with optional animation and gradients.
 
 ```rust
-use bubbles_rs::progress::{new, with_width, with_solid_fill};
+use bubbletea_widgets::progress::{new, with_width, with_solid_fill};
 
 let mut p = new(&[with_width(30), with_solid_fill("#00ff88".into())]);
 let _cmd = p.set_percent(0.4);
@@ -99,7 +99,7 @@ let out = p.view();
 Pagination logic and rendering for dot-style or numeric pagination.
 
 ```rust
-use bubbles_rs::paginator::Model;
+use bubbletea_widgets::paginator::Model;
 
 let mut p = Model::new();
 p.set_per_page(10);
@@ -113,7 +113,7 @@ Vertically scrollable viewport for large content; supports key bindings and
 horizontal scrolling.
 
 ```rust
-use bubbles_rs::viewport;
+use bubbletea_widgets::viewport;
 
 let mut vp = viewport::new(80, 20);
 vp.set_content("line 1\nline 2\nline 3");
@@ -126,7 +126,7 @@ Customizable, batteries-included list with pagination, fuzzy filtering, spinner,
 status messages, and auto-generated help.
 
 ```rust
-use bubbles_rs::list::{Model, DefaultDelegate, Item};
+use bubbletea_widgets::list::{Model, DefaultDelegate, Item};
 
 #[derive(Clone)]
 struct ItemStr(&'static str);
@@ -143,7 +143,7 @@ let _out = list.view();
 Navigate directories and select files with keyboard navigation and customizable styles.
 
 ```rust
-use bubbles_rs::filepicker::Model;
+use bubbletea_widgets::filepicker::Model;
 
 let (picker, _cmd) = Model::init();
 let _out = picker.view();
@@ -154,7 +154,7 @@ let _out = picker.view();
 Countdown timer with configurable interval and start/stop/toggle commands.
 
 ```rust
-use bubbles_rs::timer::new;
+use bubbletea_widgets::timer::new;
 use std::time::Duration;
 
 let timer = new(Duration::from_secs(10));
@@ -167,7 +167,7 @@ let view = timer.view();
 Count-up timer with start/stop/toggle and reset.
 
 ```rust
-use bubbles_rs::stopwatch::new;
+use bubbletea_widgets::stopwatch::new;
 
 let sw = new();
 let start_cmd = sw.start();
@@ -188,7 +188,7 @@ single and multi-line modes and truncates gracefully.
 Non-visual key binding management with help text generation and matching utilities.
 
 ```rust
-use bubbles_rs::key::{new_binding, with_keys_str, with_help, matches};
+use bubbletea_widgets::key::{new_binding, with_keys_str, with_help, matches};
 use bubbletea_rs::KeyMsg;
 use crossterm::event::{KeyCode, KeyModifiers};
 

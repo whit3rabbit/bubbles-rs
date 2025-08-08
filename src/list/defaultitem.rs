@@ -28,7 +28,7 @@
 //! ## Example
 //!
 //! ```rust
-//! use bubbles_rs::list::{DefaultItem, DefaultDelegate};
+//! use bubbletea_widgets::list::{DefaultItem, DefaultDelegate};
 //!
 //! let item = DefaultItem::new("Task 1", "Complete the documentation");
 //! let delegate = DefaultDelegate::new();

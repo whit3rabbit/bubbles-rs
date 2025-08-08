@@ -18,7 +18,7 @@
 //! # Basic Usage
 //!
 //! ```rust
-//! use bubbles_rs::filepicker::Model;
+//! use bubbletea_widgets::filepicker::Model;
 //! use bubbletea_rs::{Model as BubbleTeaModel, Msg, Cmd};
 //!
 //! // Create a new file picker
@@ -42,7 +42,7 @@
 //! # Customization
 //!
 //! ```rust
-//! use bubbles_rs::filepicker::{Model, Styles, FilepickerKeyMap};
+//! use bubbletea_widgets::filepicker::{Model, Styles, FilepickerKeyMap};
 //! use lipgloss::{Style, Color};
 //!
 //! let mut filepicker = Model::new();
@@ -80,8 +80,8 @@ use std::path::{Path, PathBuf};
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::filepicker::FilepickerKeyMap;
-/// use bubbles_rs::key::KeyMap;
+/// use bubbletea_widgets::filepicker::FilepickerKeyMap;
+/// use bubbletea_widgets::key::KeyMap;
 ///
 /// let keymap = FilepickerKeyMap::default();
 /// let help_keys = keymap.short_help(); // Get keys for help display
@@ -159,7 +159,7 @@ impl KeyMap for FilepickerKeyMap {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::filepicker::Styles;
+/// use bubbletea_widgets::filepicker::Styles;
 /// use lipgloss::{Style, Color};
 ///
 /// let mut styles = Styles::default();
@@ -201,7 +201,7 @@ impl Default for Styles {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::filepicker::FileEntry;
+/// use bubbletea_widgets::filepicker::FileEntry;
 /// use std::path::PathBuf;
 ///
 /// let entry = FileEntry {
@@ -230,7 +230,7 @@ pub struct FileEntry {
 /// # Examples
 ///
 /// ```rust
-/// use bubbles_rs::filepicker::Model;
+/// use bubbletea_widgets::filepicker::Model;
 /// use bubbletea_rs::Model as BubbleTeaModel;
 ///
 /// // Create a new file picker
@@ -286,7 +286,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::filepicker::Model;
+    /// use bubbletea_widgets::filepicker::Model;
     ///
     /// let mut picker = Model::new();
     /// assert_eq!(picker.current_directory.as_os_str(), ".");
@@ -322,7 +322,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::filepicker::Model;
+    /// use bubbletea_widgets::filepicker::Model;
     /// use bubbletea_rs::{KeyMsg, Msg};
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///

@@ -19,7 +19,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_value("Hello, world!");
@@ -64,7 +64,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_value("test");
@@ -87,7 +87,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_value("hello");
@@ -114,7 +114,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_value("hello world");
@@ -135,7 +135,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_value("hello");
@@ -156,7 +156,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_value("hello");
@@ -181,7 +181,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// assert!(!input.focused());
@@ -208,7 +208,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// let cmd = input.focus();
@@ -234,7 +234,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.focus();
@@ -259,7 +259,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_value("some text");
@@ -288,7 +288,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_suggestions(vec![
@@ -320,7 +320,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_placeholder("Enter your name...");
@@ -342,7 +342,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_width(20); // Show up to 20 characters at once
@@ -363,7 +363,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::{new, EchoMode};
+    /// use bubbletea_widgets::textinput::{new, EchoMode};
     ///
     /// let mut input = new();
     /// input.set_echo_mode(EchoMode::EchoPassword);
@@ -383,7 +383,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_char_limit(10); // Allow up to 10 characters
@@ -406,7 +406,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     ///
     /// let mut input = new();
     /// input.set_validate(Box::new(|s: &str| {
@@ -437,7 +437,7 @@ impl Model {
     /// # Examples
     ///
     /// ```rust
-    /// use bubbles_rs::textinput::new;
+    /// use bubbletea_widgets::textinput::new;
     /// use bubbletea_rs::{KeyMsg, Model};
     /// use crossterm::event::{KeyCode, KeyModifiers};
     ///
