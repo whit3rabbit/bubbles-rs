@@ -91,7 +91,7 @@ dependencies = [
  "strip-ansi-escapes",
  "tokio",
  "unicode-segmentation",
- "unicode-width 0.1.14",
+ "unicode-width",
 ]
 
 [[package]]
@@ -364,45 +364,45 @@ checksum = "cd945864f07fe9f5371a27ad7b52a172b4b499999f1d97574c9fa68373937e12"
 
 [[package]]
 name = "lipgloss"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4712000833b35f6aded9b6f78d779b453b533f6ed8a63f08e784148138754ead"
+checksum = "3eea99cdeb360a6130f3018a4059d0973795a4f7450dd316217e09658db335bb"
 dependencies = [
  "crossterm",
  "palette",
  "strip-ansi-escapes",
- "unicode-width 0.2.1",
+ "unicode-width",
 ]
 
 [[package]]
 name = "lipgloss-list"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99d1ac64a5ad94bf5c3486ee2a9ead0224c24d8aa3708800e10c6e9bfa5018f1"
+checksum = "599144255c1ebb3e7387f70ac8a1d1d6fd1405c7b31b9443996ae62c3532b06c"
 dependencies = [
  "lipgloss",
  "lipgloss-tree",
- "unicode-width 0.2.1",
+ "unicode-width",
 ]
 
 [[package]]
 name = "lipgloss-table"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d063336ed55f152d70ef9e60e69c17149b9099598fc7cfa7ffd9106744ede437"
+checksum = "e745819daff94eae663f64bd37c34cdf9cd17581ca7407b9ddd7f158cf5158fb"
 dependencies = [
  "lipgloss",
- "unicode-width 0.2.1",
+ "unicode-width",
 ]
 
 [[package]]
 name = "lipgloss-tree"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93e4ba67bceeebdb1cbb6054c2cbe2d3ab37921f0d9961d00e934fe127e4c4c4"
+checksum = "11ffe4903c8e12ea0b2c656aa20be6e239704a720100d86529b44502d68e8a42"
 dependencies = [
  "lipgloss",
- "unicode-width 0.2.1",
+ "unicode-width",
 ]
 
 [[package]]
@@ -866,12 +866,6 @@ name = "unicode-segmentation"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
-
-[[package]]
-name = "unicode-width"
-version = "0.1.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dd6e30e90baa6f72411720665d41d89b9a3d039dc45b8faea1ddd07f617f6af"
 
 [[package]]
 name = "unicode-width"
