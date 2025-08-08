@@ -9,13 +9,13 @@ Charm team and Go community.
 
 ## Installation
 
-Add `bubbletea-widgets` to your `Cargo.toml` dependencies. You will also need `bubbletea-rs` and `lipgloss` for a complete TUI application.
+Add `bubbletea-widgets` to your `Cargo.toml` dependencies. You will also need `bubbletea-rs` and `lipgloss-extras` for a complete TUI application.
 
 ```toml
 [dependencies]
 bubbletea-rs = "0.0.6"
 bubbletea-widgets = "0.0.6"
-lipgloss = "0.0.7"
+lipgloss-extras = { version = "0.0.7", features = ["full"] }
 ```
 
 > **Note**: This repository is named `bubbles-rs` for historical reasons, but the package name on crates.io is `bubbletea-widgets`. The original `bubbles-rs` name was already taken by another TUI framework. Always use `bubbletea-widgets` when adding this crate to your dependencies.
