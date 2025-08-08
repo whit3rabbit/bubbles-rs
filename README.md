@@ -5,16 +5,18 @@ Rust components for building TUIs with [`bubbletea-rs`](https://github.com/whit3
 the original Go code. All credit for the original designs and APIs goes to the
 Charm team and Go community.
 
-## Install
+## Installation
 
-Add to your `Cargo.toml`:
+Add `bubbletea-widgets` to your `Cargo.toml` dependencies. You will also need `bubbletea-rs` and `lipgloss` for a complete TUI application.
 
 ```toml
 [dependencies]
-bubbletea-widgets = "0.0.6"
 bubbletea-rs = "0.0.6"
-lipgloss = "0.0.6"
+bubbletea-widgets = "0.0.6"
+lipgloss = "0.0.7"
 ```
+
+> **Note**: This repository is named `bubbles-rs` for historical reasons, but the package name on crates.io is `bubbletea-widgets`. The original `bubbles-rs` name was already taken by another TUI framework. Always use `bubbletea-widgets` when adding this crate to your dependencies.
 
 ## Components
 
