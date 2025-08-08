@@ -96,7 +96,7 @@ dependencies = [
 
 [[package]]
 name = "bubbletea-widgets"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "bubbletea-rs",
  "clipboard",

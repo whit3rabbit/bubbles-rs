@@ -117,8 +117,8 @@ impl Model {
             }
             v.push_str(&self.placeholder_style.render(&" ".repeat(avail_width)));
         } else if p.len() > 1 {
-            // Include the first character as well to ensure contiguous placeholder text
-            let text: String = p[0..].iter().collect();
+            // Render remaining placeholder text after the cursor character
+            let text: String = p[1..].iter().collect();
             v.push_str(&self.placeholder_style.render(&text));
         }
 

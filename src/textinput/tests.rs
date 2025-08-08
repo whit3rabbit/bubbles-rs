@@ -152,14 +152,16 @@ mod textinput_tests {
         let mut input = new();
         input.set_placeholder("Enter text...");
 
-        // With empty value, should show placeholder
+        // With empty value, should show placeholder (remainder after cursor)
         let view_empty = input.view();
-        assert!(view_empty.contains("Enter text"));
+        // The current implementation shows cursor + remainder, so we check for remainder
+        assert!(view_empty.contains("nter text"), "Should contain placeholder remainder");
 
         // With value, should not show placeholder
         input.set_value("actual text");
         let view_with_text = input.view();
         assert!(!view_with_text.contains("Enter text"));
+        assert!(!view_with_text.contains("nter text"));
         assert!(view_with_text.contains("actual"));
     }
 
@@ -358,5 +360,231 @@ mod textinput_tests {
         // Test invalid - non-numeric
         credit_card_number.set_value("450a 1234 5678 1234");
         assert!(credit_card_number.err.is_some());
+    }
+
+    /// Tests specifically for placeholder rendering bug fix and regression prevention
+    mod placeholder_rendering_tests {
+        use super::*;
+
+        #[test]
+        fn test_placeholder_no_duplication_basic() {
+            // Test core fix: placeholder should not duplicate first character
+            let mut input = new();
+            input.set_placeholder("Nickname");
+            let _ = input.focus(); // Focus to show cursor on first char
+
+            let view = input.view();
+            
+            // Should show: "> " + cursor with 'N' + remaining "ickname" 
+            // NOT: "> " + cursor with 'N' + full "Nickname"
+            assert!(view.starts_with("> "), "Should start with prompt");
+            
+            // Count occurrences of 'N' - should be exactly 1 (in cursor position)
+            let n_count = view.chars().filter(|&c| c == 'N').count();
+            assert_eq!(n_count, 1, "Should have exactly one 'N' character, found {} in: '{}'", n_count, view);
+            
+            // Should contain the remaining part of placeholder
+            assert!(view.contains("ickname"), "Should contain remaining placeholder 'ickname' in: '{}'", view);
+        }
+
+        #[test] 
+        fn test_placeholder_specific_examples() {
+            // Test the specific examples from the original bug report
+            let test_cases = [
+                ("Nickname", "ickname"),
+                ("Email", "mail"), 
+                ("Password", "assword"),
+            ];
+
+            for (placeholder, expected_remainder) in test_cases {
+                let mut input = new();
+                input.set_placeholder(placeholder);
+                let _ = input.focus();
+
+                let view = input.view();
+                
+                // Should start with prompt
+                assert!(view.starts_with("> "), "Placeholder '{}' should start with prompt", placeholder);
+                
+                // Should contain remaining part after first character
+                assert!(view.contains(expected_remainder), 
+                    "Placeholder '{}' should contain remainder '{}' but view is: '{}'", 
+                    placeholder, expected_remainder, view);
+                
+                // Should NOT contain the full placeholder string duplicated
+                let first_char = placeholder.chars().next().unwrap();
+                let full_placeholder_occurrences = view.matches(placeholder).count();
+                assert_eq!(full_placeholder_occurrences, 0, 
+                    "Placeholder '{}' should not appear in full in view: '{}'", 
+                    placeholder, view);
+                
+                // First character should appear exactly once (in cursor)
+                let first_char_count = view.chars().filter(|&c| c == first_char).count();
+                assert_eq!(first_char_count, 1, 
+                    "First character '{}' should appear exactly once, found {} in: '{}'", 
+                    first_char, first_char_count, view);
+            }
+        }
+
+        #[test]
+        fn test_placeholder_with_different_cursor_modes() {
+            use crate::cursor::Mode;
+            
+            let mut input = new();
+            input.set_placeholder("Test");
+            let _ = input.focus();
+
+            // Test with different cursor modes
+            let modes = [Mode::Blink, Mode::Static, Mode::Hide];
+            
+            for mode in modes {
+                let _ = input.cursor.set_mode(mode);
+                let view = input.view();
+                
+                // Regardless of cursor mode, should not duplicate
+                let t_count = view.chars().filter(|&c| c == 'T').count();
+                assert!(t_count <= 1, "With cursor mode {:?}, should have at most one 'T', found {} in: '{}'", 
+                    mode, t_count, view);
+                
+                // Should contain remainder
+                assert!(view.contains("est") || mode == Mode::Hide, 
+                    "With cursor mode {:?}, should contain 'est' or be hidden, view: '{}'", 
+                    mode, view);
+            }
+        }
+
+        #[test]
+        fn test_placeholder_blurred_vs_focused() {
+            let mut input = new();
+            input.set_placeholder("Example");
+            
+            // When blurred, should show placeholder content (cursor + remainder)
+            input.blur();
+            let blurred_view = input.view();
+            
+            // The placeholder_view always shows cursor + remainder regardless of focus state
+            assert!(blurred_view.contains("xample"), "Blurred view should show placeholder content: '{}'", blurred_view);
+            
+            // When focused, should show cursor + remainder only
+            let _ = input.focus();
+            let focused_view = input.view();
+            
+            // Should NOT show full "Example" duplicated 
+            let example_count = focused_view.matches("Example").count();
+            assert_eq!(example_count, 0, "Focused view should not contain full 'Example': '{}'", focused_view);
+            
+            // Should show remainder
+            assert!(focused_view.contains("xample"), "Focused view should contain 'xample': '{}'", focused_view);
+        }
+
+        #[test]
+        fn test_placeholder_edge_cases() {
+            // Single character placeholder
+            let mut input = new();
+            input.set_placeholder("A");
+            let _ = input.focus();
+            let view = input.view();
+            
+            let a_count = view.chars().filter(|&c| c == 'A').count();
+            assert_eq!(a_count, 1, "Single char placeholder should have exactly one 'A': '{}'", view);
+            
+            // Empty placeholder
+            let mut input2 = new();
+            input2.set_placeholder("");
+            let _ = input2.focus();
+            let view2 = input2.view();
+            // Should not panic and should show just prompt + cursor space
+            assert!(view2.starts_with("> "), "Empty placeholder should show prompt");
+            
+            // Unicode placeholder
+            let mut input3 = new();
+            input3.set_placeholder("测试"); // Chinese characters
+            let _ = input3.focus();
+            let view3 = input3.view();
+            
+            // Should handle Unicode correctly without duplication
+            let first_char_count = view3.chars().filter(|&c| c == '测').count();
+            assert!(first_char_count <= 1, "Unicode placeholder should not duplicate first char: '{}'", view3);
+        }
+
+        #[test] 
+        fn test_placeholder_transitions() {
+            let mut input = new();
+            input.set_placeholder("Username");
+            let _ = input.focus();
+            
+            // Focused empty input - should show cursor + remainder
+            let empty_focused = input.view();
+            assert!(empty_focused.contains("sername"), "Should show remainder when focused and empty");
+            
+            // Add some text - placeholder should disappear
+            input.set_value("user");
+            let with_text = input.view();
+            assert!(with_text.contains("user"), "Should show actual text");
+            assert!(!with_text.contains("Username"), "Should not show placeholder when text present");
+            assert!(!with_text.contains("sername"), "Should not show placeholder remainder when text present");
+            
+            // Clear text - placeholder should return
+            input.set_value("");
+            let cleared = input.view();
+            assert!(cleared.contains("sername"), "Should show remainder again when cleared");
+        }
+
+        #[test]
+        fn test_placeholder_with_width_constraints() {
+            let mut input = new();
+            input.set_placeholder("VeryLongPlaceholderText");
+            input.set_width(10);
+            let _ = input.focus();
+            
+            let view = input.view();
+            
+            // Should not duplicate first character even with width constraints
+            let v_count = view.chars().filter(|&c| c == 'V').count();
+            assert_eq!(v_count, 1, "Should have exactly one 'V' even with width constraints: '{}'", view);
+            
+            // Should handle width properly
+            assert!(view.len() >= 10, "Should respect minimum width");
+        }
+
+        #[test]
+        fn test_regression_original_bug_would_fail() {
+            // This test would fail with the original bug (p[0..] instead of p[1..])
+            let mut input = new();
+            input.set_placeholder("Bug");
+            let _ = input.focus();
+            
+            let view = input.view();
+            
+            // The original bug would produce "> B" + "Bug" = "> BBug"
+            // The fix should produce "> B" + "ug" = "> Bug"
+            assert!(!view.contains("BBug"), "Should not show duplicated 'BBug' - this indicates the original bug: '{}'", view);
+            
+            // Should show correct format
+            let b_count = view.chars().filter(|&c| c == 'B').count();
+            assert_eq!(b_count, 1, "Should have exactly one 'B': '{}'", view);
+            assert!(view.contains("ug"), "Should contain remainder 'ug': '{}'", view);
+        }
+
+        #[test]
+        fn test_placeholder_styling_preserved() {
+            use lipgloss::{Style, Color};
+            
+            let mut input = new();
+            input.set_placeholder("Styled");
+            
+            // Set custom placeholder style
+            input.placeholder_style = Style::new().foreground(Color::from("blue"));
+            let _ = input.focus();
+            
+            let view = input.view();
+            
+            // Should not duplicate regardless of styling
+            let s_count = view.chars().filter(|&c| c == 'S').count();
+            assert_eq!(s_count, 1, "Styled placeholder should not duplicate: '{}'", view);
+            
+            // Should contain remainder
+            assert!(view.contains("tyled"), "Should contain styled remainder: '{}'", view);
+        }
     }
 }

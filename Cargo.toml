@@ -1,13 +1,13 @@
 [package]
 name = "bubbletea-widgets"
-version = "0.0.6"
+version = "0.0.7"
 edition = "2021"
 description = "A collection of reusable TUI components for building terminal applications with bubbletea-rs"
 license = "MIT"
-repository = "https://github.com/whit3rabbit/bubbletea-widgets"
+repository = "https://github.com/whit3rabbit/bubbles-rs"
 keywords = ["tui", "terminal", "bubbletea", "components", "ui"]
 categories = ["command-line-utilities", "gui"]
-authors = ["Whit3rabbit <whit3rabbit@protonmail.com>"]
+authors = ["Whit3rabbit <whiterabbit@protonmail.com>"]
 
 [lib]
 name = "bubbletea_widgets"
