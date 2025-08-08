@@ -1,5 +1,7 @@
 # bubbletea-widgets
 
+[![CI](https://github.com/whit3rabbit/bubbles-rs/workflows/CI/badge.svg)](https://github.com/whit3rabbit/bubbles-rs/actions)
+
 Rust components for building TUIs with [`bubbletea-rs`](https://github.com/whit3rabbit/bubbletea-rs), ported from Charmbracelet's Go
 [`bubbles`](https://github.com/charmbracelet/bubbles). This is a Rust implementation of
 the original Go code. All credit for the original designs and APIs goes to the
