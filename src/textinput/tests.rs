@@ -374,7 +374,7 @@ mod textinput_tests {
             // Test core fix: placeholder should not duplicate first character
             let mut input = new();
             input.set_placeholder("Nickname");
-            let _ = input.focus(); // Focus to show cursor on first char
+            std::mem::drop(input.focus()); // Focus to show cursor on first char
 
             let view = input.view();
 
@@ -410,7 +410,7 @@ mod textinput_tests {
             for (placeholder, expected_remainder) in test_cases {
                 let mut input = new();
                 input.set_placeholder(placeholder);
-                let _ = input.focus();
+                std::mem::drop(input.focus());
 
                 let view = input.view();
 
@@ -455,7 +455,7 @@ mod textinput_tests {
 
             let mut input = new();
             input.set_placeholder("Test");
-            let _ = input.focus();
+            std::mem::drop(input.focus());
 
             // Test with different cursor modes
             let modes = [Mode::Blink, Mode::Static, Mode::Hide];
@@ -501,7 +501,7 @@ mod textinput_tests {
             );
 
             // When focused, should show cursor + remainder only
-            let _ = input.focus();
+            std::mem::drop(input.focus());
             let focused_view = input.view();
 
             // Should NOT show full "Example" duplicated
@@ -525,7 +525,7 @@ mod textinput_tests {
             // Single character placeholder
             let mut input = new();
             input.set_placeholder("A");
-            let _ = input.focus();
+            std::mem::drop(input.focus());
             let view = input.view();
 
             let a_count = view.chars().filter(|&c| c == 'A').count();
@@ -538,7 +538,7 @@ mod textinput_tests {
             // Empty placeholder
             let mut input2 = new();
             input2.set_placeholder("");
-            let _ = input2.focus();
+            std::mem::drop(input2.focus());
             let view2 = input2.view();
             // Should not panic and should show just prompt + cursor space
             assert!(
@@ -549,7 +549,7 @@ mod textinput_tests {
             // Unicode placeholder
             let mut input3 = new();
             input3.set_placeholder("测试"); // Chinese characters
-            let _ = input3.focus();
+            std::mem::drop(input3.focus());
             let view3 = input3.view();
 
             // Should handle Unicode correctly without duplication
@@ -565,7 +565,7 @@ mod textinput_tests {
         fn test_placeholder_transitions() {
             let mut input = new();
             input.set_placeholder("Username");
-            let _ = input.focus();
+            std::mem::drop(input.focus());
 
             // Focused empty input - should show cursor + remainder
             let empty_focused = input.view();
@@ -601,7 +601,7 @@ mod textinput_tests {
             let mut input = new();
             input.set_placeholder("VeryLongPlaceholderText");
             input.set_width(10);
-            let _ = input.focus();
+            std::mem::drop(input.focus());
 
             let view = input.view();
 
@@ -622,7 +622,7 @@ mod textinput_tests {
             // This test would fail with the original bug (p[0..] instead of p[1..])
             let mut input = new();
             input.set_placeholder("Bug");
-            let _ = input.focus();
+            std::mem::drop(input.focus());
 
             let view = input.view();
 
@@ -653,7 +653,7 @@ mod textinput_tests {
 
             // Set custom placeholder style
             input.placeholder_style = Style::new().foreground(Color::from("blue"));
-            let _ = input.focus();
+            std::mem::drop(input.focus());
 
             let view = input.view();
 
