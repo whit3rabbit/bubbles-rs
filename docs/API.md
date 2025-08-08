@@ -25,18 +25,20 @@ Each component is designed to be self-contained and easy to integrate into your 
 
 ## Installation
 
-Add `bubble-rs` to your `Cargo.toml` dependencies. You will also need `bubbletea-rs` and `lipgloss` for a complete TUI application.
+Add `bubbletea-widgets` to your `Cargo.toml` dependencies. You will also need `bubbletea-rs` and `lipgloss` for a complete TUI application.
 
 ```toml
 [dependencies]
-bubble-rs = "0.0.6"
+bubbletea-widgets = "0.0.6"
 bubbletea-rs = "0.0.6"
-lipgloss = "0.0.6"
+lipgloss = "0.0.7"
 ```
+
+> **Note**: This repository is named `bubbles-rs` for historical reasons, but the package name on crates.io is `bubbletea-widgets`. Always use `bubbletea-widgets` when adding this crate to your dependencies.
 
 ## Core Concepts
 
-Many components in `bubble-rs` implement the `Component` trait, which provides a standard interface for focus management.
+Many components in `bubbletea-widgets` implement the `Component` trait, which provides a standard interface for focus management.
 
 ```rust
 pub trait Component {
