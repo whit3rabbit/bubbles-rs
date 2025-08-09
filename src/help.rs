@@ -4,8 +4,8 @@
 //! generate its content from a set of key bindings.
 
 use crate::key;
-use lipgloss;
 use lipgloss::{style::Style, Color};
+use lipgloss_extras::lipgloss;
 
 /// A trait that defines the key bindings to be displayed in the help view.
 ///

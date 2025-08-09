@@ -54,6 +54,7 @@ use memoization::MemoizedWrap;
 
 use crate::{cursor, viewport, Component};
 use bubbletea_rs::{Cmd, Model as BubbleTeaModel};
+use lipgloss_extras::lipgloss;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 // Constants matching Go implementation

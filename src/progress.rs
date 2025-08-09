@@ -32,9 +32,9 @@
 //! ```
 
 use bubbletea_rs::{tick as bubbletea_tick, Cmd, Model as BubbleTeaModel, Msg};
-use lipgloss::blending::blend_1d;
-use lipgloss::Color as LGColor;
-use lipgloss::Style;
+use lipgloss_extras::lipgloss::blending::blend_1d;
+use lipgloss_extras::lipgloss::Color as LGColor;
+use lipgloss_extras::prelude::*;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::time::Duration;
 

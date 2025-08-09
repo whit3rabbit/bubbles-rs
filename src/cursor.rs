@@ -24,7 +24,7 @@
 //! ```
 
 use bubbletea_rs::{tick, Cmd, Model as BubbleTeaModel, Msg};
-use lipgloss::Style;
+use lipgloss_extras::prelude::*;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 

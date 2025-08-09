@@ -646,7 +646,7 @@ mod textinput_tests {
 
         #[test]
         fn test_placeholder_styling_preserved() {
-            use lipgloss::{Color, Style};
+            use lipgloss_extras::prelude::*;
 
             let mut input = new();
             input.set_placeholder("Styled");

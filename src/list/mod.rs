@@ -26,7 +26,7 @@ use crate::{help, key, paginator, spinner, textinput};
 use bubbletea_rs::{Cmd, KeyMsg, Model as BubbleTeaModel, Msg};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
-use lipgloss;
+use lipgloss_extras::lipgloss;
 use std::fmt::Display;
 
 // --- Traits (Interfaces) ---

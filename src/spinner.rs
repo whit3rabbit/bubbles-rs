@@ -64,7 +64,7 @@
 //! ```
 
 use bubbletea_rs::{tick as bubbletea_tick, Cmd, Model as BubbleTeaModel, Msg};
-use lipgloss::Style;
+use lipgloss_extras::prelude::*;
 use once_cell::sync::Lazy;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::time::Duration;

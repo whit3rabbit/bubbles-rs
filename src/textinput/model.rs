@@ -6,7 +6,7 @@ use super::types::PasteMsg;
 use super::types::{EchoMode, PasteErrMsg, ValidateFunc};
 use crate::cursor::{new as cursor_new, Model as Cursor};
 use bubbletea_rs::{Cmd, Model as BubbleTeaModel, Msg};
-use lipgloss::{Color, Style};
+use lipgloss_extras::prelude::*;
 use std::time::Duration;
 
 /// The main text input component model for Bubble Tea applications.

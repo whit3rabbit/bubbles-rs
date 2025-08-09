@@ -69,7 +69,7 @@
 
 use crate::key::{self, KeyMap};
 use bubbletea_rs::{Cmd, KeyMsg, Model as BubbleTeaModel, Msg};
-use lipgloss::{style::Style, Color};
+use lipgloss_extras::prelude::*;
 use std::path::{Path, PathBuf};
 
 /// Key bindings for filepicker navigation and interaction.

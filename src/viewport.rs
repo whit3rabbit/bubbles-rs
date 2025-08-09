@@ -145,8 +145,8 @@
 use crate::key::{self, KeyMap as KeyMapTrait};
 use bubbletea_rs::{Cmd, KeyMsg, Model as BubbleTeaModel, Msg};
 use crossterm::event::KeyCode;
-use lipgloss::width as lg_width;
-use lipgloss::Style;
+use lipgloss_extras::lipgloss::width as lg_width;
+use lipgloss_extras::prelude::*;
 use unicode_width::UnicodeWidthChar;
 
 /// Keyboard binding configuration for viewport navigation.

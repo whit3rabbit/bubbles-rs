@@ -130,8 +130,8 @@ use crate::{
 };
 use bubbletea_rs::{Cmd, KeyMsg, Model as BubbleTeaModel, Msg};
 use crossterm::event::KeyCode;
-use lipgloss::{self, Color, Style};
-use lipgloss_table::Table as LGTable;
+use lipgloss_extras::prelude::*;
+use lipgloss_extras::table::Table as LGTable;
 
 /// Represents a table column with its title and display width.
 ///
@@ -718,7 +718,7 @@ impl Model {
         let selected_row = self.selected as i32;
         let selected_style = self.styles.selected.clone();
         tbl = tbl.style_func_boxed(Box::new(move |row: i32, col: usize| {
-            let mut s = if row == lipgloss_table::HEADER_ROW {
+            let mut s = if row == lipgloss_extras::table::HEADER_ROW {
                 header_style.clone()
             } else {
                 cell_style.clone()
@@ -755,7 +755,7 @@ impl Model {
         let selected_row = self.selected as i32; // data rows are 0-based in lipgloss-table
         let selected_style = self.styles.selected.clone();
         tbl = tbl.style_func_boxed(Box::new(move |row: i32, col: usize| {
-            let mut s = if row == lipgloss_table::HEADER_ROW {
+            let mut s = if row == lipgloss_extras::table::HEADER_ROW {
                 header_style.clone()
             } else {
                 cell_style.clone()

@@ -31,7 +31,7 @@
 
 use crate::key::{self, KeyPress};
 use crossterm::event::{KeyCode, KeyModifiers};
-use lipgloss::Style;
+use lipgloss_extras::prelude::*;
 
 /// Complete KeyMap for textarea component - direct port from Go
 #[derive(Debug, Clone)]
