@@ -825,7 +825,6 @@ mod tests {
         dot, line, new, new_model, tick, with_spinner, with_style, DOT, ELLIPSIS, GLOBE, HAMBURGER,
         JUMP, LINE, METER, MINI_DOT, MONKEY, MOON, POINTS, PULSE,
     };
-    use lipgloss_extras::prelude::*;
 
     #[test]
     fn test_spinner_constants() {
