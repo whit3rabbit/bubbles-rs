@@ -38,6 +38,69 @@ use super::{Item, ItemDelegate, Model};
 use bubbletea_rs::{Cmd, Msg};
 use lipgloss::{self, style::Style, Color};
 
+/// Applies character-level highlighting to a string based on match indices.
+///
+/// This function takes a string and a vector of character indices that should be highlighted,
+/// then applies the given styles to create highlighted and non-highlighted segments.
+///
+/// # Arguments
+/// * `text` - The text to apply highlighting to
+/// * `matches` - Vector of character indices that should be highlighted
+/// * `highlight_style` - Style to apply to matched characters
+/// * `normal_style` - Style to apply to non-matched characters
+///
+/// # Returns
+/// A styled string with highlighting applied to the specified character positions
+fn apply_character_highlighting(
+    text: &str,
+    matches: &[usize],
+    highlight_style: &Style,
+    normal_style: &Style,
+) -> String {
+    if matches.is_empty() {
+        return normal_style.render(text);
+    }
+
+    let chars: Vec<char> = text.chars().collect();
+    let mut result = String::new();
+    let mut current_pos = 0;
+
+    // Sort match indices to process them in order
+    let mut sorted_matches = matches.to_vec();
+    sorted_matches.sort_unstable();
+    sorted_matches.dedup();
+
+    for &match_idx in &sorted_matches {
+        if match_idx >= chars.len() {
+            continue;
+        }
+
+        // Add any normal characters before this match
+        if current_pos < match_idx {
+            let segment: String = chars[current_pos..match_idx].iter().collect();
+            if !segment.is_empty() {
+                result.push_str(&normal_style.render(&segment));
+            }
+        }
+
+        // Add the highlighted character
+        let highlighted_char = chars[match_idx].to_string();
+        result.push_str(&highlight_style.render(&highlighted_char));
+
+        current_pos = match_idx + 1;
+    }
+
+    // Add any remaining normal characters
+    if current_pos < chars.len() {
+        let remaining: String = chars[current_pos..].iter().collect();
+        if !remaining.is_empty() {
+            result.push_str(&normal_style.render(&remaining));
+        }
+    }
+
+    result
+}
+
 /// Styling for the default list item in various states.
 #[derive(Debug, Clone)]
 pub struct DefaultItemStyles {
@@ -168,6 +231,13 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
             super::FilterState::Filtering | super::FilterState::FilterApplied
         );
 
+        // Get filter matches for this item if filtering is active
+        let matches = if is_filtered && index < m.filtered_items.len() {
+            Some(&m.filtered_items[index].matches)
+        } else {
+            None
+        };
+
         let mut title_out = title.clone();
         let mut desc_out = desc.clone();
 
@@ -175,14 +245,53 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
             title_out = s.dimmed_title.clone().render(&title_out);
             desc_out = s.dimmed_desc.clone().render(&desc_out);
         } else if is_selected && m.filter_state != super::FilterState::Filtering {
-            // Highlight matches if filtered
-            if is_filtered { /* TODO: apply rune-level match highlighting using stored matches */ }
-            title_out = s.selected_title.clone().render(&title_out);
-            desc_out = s.selected_desc.clone().render(&desc_out);
+            // Apply highlighting for selected items
+            if let Some(match_indices) = matches {
+                let highlight_style = s.selected_title.clone().inherit(s.filter_match.clone());
+                title_out = apply_character_highlighting(
+                    &title,
+                    match_indices,
+                    &highlight_style,
+                    &s.selected_title,
+                );
+                if !desc.is_empty() {
+                    let desc_highlight_style =
+                        s.selected_desc.clone().inherit(s.filter_match.clone());
+                    desc_out = apply_character_highlighting(
+                        &desc,
+                        match_indices,
+                        &desc_highlight_style,
+                        &s.selected_desc,
+                    );
+                }
+            } else {
+                title_out = s.selected_title.clone().render(&title_out);
+                desc_out = s.selected_desc.clone().render(&desc_out);
+            }
         } else {
-            if is_filtered { /* TODO: apply match highlighting */ }
-            title_out = s.normal_title.clone().render(&title_out);
-            desc_out = s.normal_desc.clone().render(&desc_out);
+            // Apply highlighting for normal (unselected) items
+            if let Some(match_indices) = matches {
+                let highlight_style = s.normal_title.clone().inherit(s.filter_match.clone());
+                title_out = apply_character_highlighting(
+                    &title,
+                    match_indices,
+                    &highlight_style,
+                    &s.normal_title,
+                );
+                if !desc.is_empty() {
+                    let desc_highlight_style =
+                        s.normal_desc.clone().inherit(s.filter_match.clone());
+                    desc_out = apply_character_highlighting(
+                        &desc,
+                        match_indices,
+                        &desc_highlight_style,
+                        &s.normal_desc,
+                    );
+                }
+            } else {
+                title_out = s.normal_title.clone().render(&title_out);
+                desc_out = s.normal_desc.clone().render(&desc_out);
+            }
         }
 
         if self.show_description && !desc_out.is_empty() {

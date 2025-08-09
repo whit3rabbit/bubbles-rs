@@ -1,5 +1,7 @@
 # `bubbletea-widgets` API Documentation
 
+https://github.com/whit3rabbit/bubbles-rs
+
 Welcome to `bubbletea-widgets`, a collection of reusable, production-ready TUI components for building terminal applications with [bubbletea-rs](https://crates.io/crates/bubbletea-rs). This library is a Rust port of the popular Go library [bubbles](https://github.com/charmbracelet/bubbles).
 
 Each component is designed to be self-contained and easy to integrate into your `bubbletea-rs` applications.
@@ -562,14 +564,27 @@ impl BubbleTeaModel for App {
 A feature-rich component for browsing a set of items, with filtering, pagination, and status messages.
 
 **Public API:**
--   **`struct Model<I: Item>`**: The list's state.
--   **`trait Item`**: A trait your list items must implement (`filter_value()`).
--   **`trait ItemDelegate`**: Defines how items are rendered and updated.
+-   **`struct Model<I: Item>`**: The list's state (items, filtering, pagination, styles, keymap, help).
+-   **`trait Item`**: Implement on your item type. Must provide `Display` and `filter_value()` for fuzzy filtering.
+-   **`trait ItemDelegate`**: Controls item rendering and behavior: `render()`, `height()`, `spacing()`, `update()`.
 -   **`fn new(items: Vec<I>, delegate: impl ItemDelegate, width, height)`**: Creates a new list.
--   **`Model::update(&mut self, msg: Msg)`**: Handles all list interactions.
--   **`Model::view(&self)`**: Renders the entire list component.
--   **`Model::selected_item(&self) -> Option<&I>`**: Gets the currently selected item.
--   **Default Implementations**: `DefaultItem`, `DefaultDelegate`, and `DefaultItemStyles` are provided for common use cases.
+-   **Core methods**:
+    - **`update(&mut self, msg: Msg)`**: Handles navigation, filtering input, and state.
+    - **`view(&self)`**: Renders header, items, and footer.
+    - **`selected_item(&self) -> Option<&I>`**: Returns the selected item.
+    - **`set_items(&mut self, items: Vec<I>)`**: Replaces items and updates pagination.
+    - **`visible_items(&self) -> Vec<I>`**: Items currently shown (respects filtering).
+    - **`set_filter_text(&mut self, s: &str)`**, **`set_filter_state(&mut self, st: FilterState)`**: Control filtering.
+    - **`status_view(&self) -> String`**: Renders status/footer (position, help, etc.).
+-   **Filtering**: Built-in fuzzy filtering (Skim matcher) stores per-item match indices for character-level highlighting.
+-   **Help Integration**: Implements `help::KeyMap` so the `help` component can render contextual help.
+-   **Default Implementations**: `DefaultItem`, `DefaultDelegate`, and `DefaultItemStyles` provide a ready-to-use list.
+
+**Key bindings (via `ListKeyMap`):**
+-   **Navigation**: `↑/k` up, `↓/j` down, `→/l/pgdn/f/d` next page, `←/h/pgup/b/u` prev page, `g/home` start, `G/end` end
+-   **Filtering**: `/` start, `enter/tab/↑/↓` apply, `esc` cancel while typing, `esc` clear when applied
+-   **Help**: `?` toggle more/close
+-   **Quit**: `q` quit, `ctrl+c` force quit
 
 **Usage Example:**
 ```rust
@@ -593,6 +608,56 @@ impl BubbleTeaModel for App {
     }
 
     fn update(&mut self, msg: Msg) -> Option<bubbletea_rs::Cmd> {
+        // Slash (/) enters filtering mode; Enter applies the filter
+        self.list.update(msg)
+    }
+
+    fn view(&self) -> String {
+        self.list.view()
+    }
+}
+```
+
+> Note: The default delegate applies character-level highlighting of fuzzy matches using `DefaultItemStyles::filter_match`.
+
+#### Filtering and match highlighting example
+
+Customize the highlight style and use interactive filtering (press `/`, type to filter, `enter` to apply). Matched characters in the title/description will be styled.
+
+```rust
+use bubbletea_widgets::list::{self, DefaultItem, DefaultDelegate};
+use bubbletea_rs::{Model as BubbleTeaModel, Msg};
+use lipgloss::{Style, Color};
+
+struct App {
+    list: list::Model<DefaultItem>,
+}
+
+impl BubbleTeaModel for App {
+    fn init() -> (Self, Option<bubbletea_rs::Cmd>) {
+        let items = vec![
+            DefaultItem::new("Apple Pie", "Dessert"),
+            DefaultItem::new("Banana Bread", "Bakery"),
+            DefaultItem::new("Carrot Cake", "Dessert"),
+        ];
+
+        // Customize filter match highlight (underline + magenta foreground)
+        let mut delegate = DefaultDelegate::new();
+        delegate.styles.filter_match = Style::new()
+            .underline(true)
+            .foreground(Color::from("#EE6FF8"));
+
+        let list_model = list::Model::new(items, delegate, 40, 10)
+            .with_title("Bakery");
+
+        (Self { list: list_model }, None)
+    }
+
+    fn update(&mut self, msg: Msg) -> Option<bubbletea_rs::Cmd> {
+        // Key handling is built into the list model:
+        //   - '/' enters filtering mode
+        //   - type characters to update the filter
+        //   - enter/tab/up/down applies the filter
         self.list.update(msg)
     }
 

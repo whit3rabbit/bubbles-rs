@@ -1,4 +1,22 @@
-//! List component (refactored): default item, keys, and styles split into submodules.
+//! List component with filtering, pagination, contextual help, and customizable rendering.
+//!
+//! This module exposes a generic `Model<I: Item>` plus supporting traits and submodules:
+//! - `Item`: Implement for your item type; must be `Display + Clone` and return a `filter_value()`
+//! - `ItemDelegate`: Controls item `render`, `height`, `spacing`, and `update`
+//! - Submodules: `defaultitem`, `keys`, and `style`
+//!
+//! ### Filtering States
+//! The list supports fuzzy filtering with three states:
+//! - `Unfiltered`: No filter active
+//! - `Filtering`: User is typing a filter; input is shown in the header
+//! - `FilterApplied`: Filter accepted; only matching items are displayed
+//!
+//! When filtering is active, fuzzy match indices are stored per item and delegates can use
+//! them to apply character-level highlighting (see `defaultitem`).
+//!
+//! ### Help Integration
+//! The list implements `help::KeyMap`, so you can embed `help::Model` and get contextual
+//! help automatically based on the current filtering state.
 
 pub mod defaultitem;
 pub mod keys;
@@ -9,8 +27,6 @@ use bubbletea_rs::{Cmd, KeyMsg, Model as BubbleTeaModel, Msg};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
 use lipgloss;
-use lipgloss::style::Style;
-use lipgloss_list as lg_list;
 use std::fmt::Display;
 
 // --- Traits (Interfaces) ---
@@ -268,22 +284,30 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         };
 
         let (start, end) = self.paginator.get_slice_bounds(items_to_render.len());
+        let mut result = String::new();
 
-        let mut list = lg_list::List::new();
-        let title_style_normal = Style::new().padding_left(2);
-
-        list = list.enumerator_style(Style::new());
-        // lipgloss-list expects a non-capturing fn pointer; fall back to uniform style here.
-        list = list.item_style(title_style_normal.clone());
-
-        for (_idx, item) in items_to_render
+        // Render each item individually using the delegate
+        for (list_idx, (_orig_idx, item)) in items_to_render
             .iter()
+            .enumerate()
             .take(end.min(items_to_render.len()))
             .skip(start)
         {
-            list = list.item(&item.to_string());
+            // The item index in the current visible list (for selection highlighting)
+            let visible_index = start + list_idx;
+            let item_output = self.delegate.render(self, visible_index, item);
+
+            if !result.is_empty() {
+                // Add spacing between items
+                for _ in 0..self.delegate.spacing() {
+                    result.push('\n');
+                }
+            }
+
+            result.push_str(&item_output);
         }
-        list.to_string()
+
+        result
     }
 
     fn view_footer(&self) -> String {
@@ -507,5 +531,59 @@ mod tests {
         list.set_filter_state(FilterState::FilterApplied);
         let vis2 = list.visible_items();
         assert_eq!(vis2.len(), 2);
+    }
+
+    #[test]
+    fn test_selection_highlighting_works() {
+        let items = vec![S("first item"), S("second item"), S("third item")];
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
+
+        // Test that view renders without crashing and includes styling
+        let view_output = list.view();
+        assert!(!view_output.is_empty(), "View should not be empty");
+
+        // Test selection highlighting by checking that cursor position affects rendering
+        let first_view = list.view();
+        list.cursor = 1; // Move cursor to second item
+        let second_view = list.view();
+
+        // The views should be different because of selection highlighting
+        assert_ne!(
+            first_view, second_view,
+            "Selection highlighting should change the view"
+        );
+    }
+
+    #[test]
+    fn test_filter_highlighting_works() {
+        let items = vec![S("apple pie"), S("banana bread"), S("carrot cake")];
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
+
+        // Apply filter that should match only some items
+        list.set_filter_text("ap");
+        list.apply_filter(); // Actually apply the filter to process matches
+
+        let filtered_view = list.view();
+        assert!(
+            !filtered_view.is_empty(),
+            "Filtered view should not be empty"
+        );
+
+        // Check that filtering worked ("ap" should only match "apple pie")
+        assert_eq!(list.len(), 1, "Should have 1 item matching 'ap'");
+
+        // Test that matches are stored correctly
+        assert!(
+            !list.filtered_items.is_empty(),
+            "Filtered items should have match data"
+        );
+        if !list.filtered_items.is_empty() {
+            assert!(
+                !list.filtered_items[0].matches.is_empty(),
+                "First filtered item should have matches"
+            );
+            // Check that the matched item is indeed "apple pie"
+            assert_eq!(list.filtered_items[0].item.0, "apple pie");
+        }
     }
 }
