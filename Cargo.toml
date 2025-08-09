@@ -1,6 +1,6 @@
 [package]
 name = "bubbletea-widgets"
-version = "0.0.7"
+version = "0.0.8"
 edition = "2021"
 description = "A collection of reusable TUI components for building terminal applications with bubbletea-rs"
 license = "MIT"
@@ -12,6 +12,11 @@ authors = ["Whit3rabbit <whiterabbit@protonmail.com>"]
 [lib]
 name = "bubbletea_widgets"
 path = "src/lib.rs"
+
+[package.metadata.docs.rs]
+# Disable clipboard feature for docs.rs builds to avoid xcb dependency issues
+features = []
+no-default-features = true
 
 [dependencies]
 bubbletea-rs = "0.0.6"

@@ -201,7 +201,12 @@ impl BubbleTeaModel for App {
 
 ### Timer
 
-A component for counting down from a specified duration.
+A component for counting down from a specified duration with high-precision timing.
+
+**Key Features:**
+-   **Accurate Timing**: Uses real elapsed time tracking instead of fixed intervals, ensuring the timer stays synchronized with wall-clock time
+-   **Precise Display**: Supports millisecond-level precision for smooth countdown animations
+-   **State Management**: Start, stop, pause, and resume with proper timing state preservation
 
 **Public API:**
 -   **`struct Model`**: The timer's state.

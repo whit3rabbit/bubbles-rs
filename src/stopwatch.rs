@@ -93,7 +93,7 @@
 
 use bubbletea_rs::{tick as bubbletea_tick, Cmd, Model as BubbleTeaModel, Msg};
 use std::sync::atomic::{AtomicI64, Ordering};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 // Internal ID management for stopwatch instances
 static LAST_ID: AtomicI64 = AtomicI64::new(0);
@@ -383,6 +383,16 @@ pub struct Model {
     /// - `Duration::from_secs(1)`: Good balance for UI display
     /// - `Duration::from_secs(5)`: Low precision, minimal CPU usage
     pub interval: Duration,
+    /// The time when this stopwatch was started.
+    ///
+    /// Used for accurate timing calculations. Set when the stopwatch first
+    /// starts running and updated when resumed after pausing.
+    start_instant: Option<Instant>,
+    /// The time when the last tick was processed.
+    ///
+    /// Used to calculate actual elapsed time between ticks, providing
+    /// more accurate elapsed time tracking than interval-based calculations.
+    last_tick: Option<Instant>,
 }
 
 /// Creates a new stopwatch with a custom tick interval.
@@ -446,6 +456,8 @@ pub fn new_with_interval(interval: Duration) -> Model {
         tag: 0,
         running: false,
         interval,
+        start_instant: None,
+        last_tick: None,
     }
 }
 
@@ -966,7 +978,16 @@ impl Model {
             if start_stop.id != self.id {
                 return None;
             }
+
+            let was_running = self.running;
             self.running = start_stop.running;
+
+            // Reset timing when starting from stopped state
+            if !was_running && self.running {
+                self.start_instant = None;
+                self.last_tick = None;
+            }
+
             // When starting or stopping, schedule the next tick so we keep updating
             return Some(self.tick());
         }
@@ -976,6 +997,9 @@ impl Model {
                 return None;
             }
             self.d = Duration::ZERO;
+            // Reset timing state as well
+            self.start_instant = None;
+            self.last_tick = None;
             return None;
         }
 
@@ -988,7 +1012,22 @@ impl Model {
                 return None;
             }
 
-            self.d = self.d.saturating_add(self.interval);
+            // Use high-precision elapsed time tracking for accurate measurement
+            let now = Instant::now();
+
+            // Initialize timing on first tick
+            if self.last_tick.is_none() {
+                self.start_instant = Some(now);
+                self.last_tick = Some(now);
+                // On first tick, just use the interval as fallback
+                self.d = self.d.saturating_add(self.interval);
+            } else {
+                // Calculate actual elapsed time since last tick
+                let actual_elapsed = now.duration_since(self.last_tick.unwrap());
+                self.d = self.d.saturating_add(actual_elapsed);
+                self.last_tick = Some(now);
+            }
+
             self.tag += 1;
             return Some(self.tick());
         }

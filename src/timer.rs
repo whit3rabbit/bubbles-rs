@@ -68,7 +68,7 @@
 
 use bubbletea_rs::{tick as bubbletea_tick, Cmd, Model as BubbleTeaModel, Msg};
 use std::sync::atomic::{AtomicI64, Ordering};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 // Internal ID management for timer instances
 static LAST_ID: AtomicI64 = AtomicI64::new(0);
@@ -431,6 +431,16 @@ pub struct Model {
     /// When `false`, the timer ignores tick messages and remains paused.
     /// Can be controlled via `start()`, `stop()`, and `toggle()` methods.
     running: bool,
+    /// The time when this timer was started.
+    ///
+    /// Used for accurate timing calculations. Set when the timer first
+    /// starts running and updated when resumed after pausing.
+    start_instant: Option<Instant>,
+    /// The time when the last tick was processed.
+    ///
+    /// Used to calculate actual elapsed time between ticks, providing
+    /// more accurate countdown timing than interval-based calculations.
+    last_tick: Option<Instant>,
 }
 
 /// Creates a new timer with custom timeout and tick interval.
@@ -513,6 +523,8 @@ pub fn new_with_interval(timeout: Duration, interval: Duration) -> Model {
         running: true,
         id: next_id(),
         tag: 0,
+        start_instant: None,
+        last_tick: None,
     }
 }
 
@@ -1396,7 +1408,16 @@ impl Model {
             if start_stop_msg.id != 0 && start_stop_msg.id != self.id {
                 return std::option::Option::None;
             }
+
+            let was_running = self.running;
             self.running = start_stop_msg.running;
+
+            // Reset timing when starting from stopped state
+            if !was_running && self.running {
+                self.start_instant = None;
+                self.last_tick = None;
+            }
+
             return std::option::Option::Some(self.tick());
         }
 
@@ -1412,7 +1433,21 @@ impl Model {
                 return std::option::Option::None;
             }
 
-            self.timeout = self.timeout.saturating_sub(self.interval);
+            // Use high-precision elapsed time tracking for accurate countdown
+            let now = Instant::now();
+
+            // Initialize timing on first tick
+            if self.last_tick.is_none() {
+                self.start_instant = Some(now);
+                self.last_tick = Some(now);
+                // On first tick, just use the interval as fallback
+                self.timeout = self.timeout.saturating_sub(self.interval);
+            } else {
+                // Calculate actual elapsed time since last tick
+                let actual_elapsed = now.duration_since(self.last_tick.unwrap());
+                self.timeout = self.timeout.saturating_sub(actual_elapsed);
+                self.last_tick = Some(now);
+            }
 
             // In Go this uses tea.Batch to return multiple commands.
             // For simplicity in Rust, we'll return just the tick command.
@@ -1990,5 +2025,98 @@ mod tests {
         // Test TimeoutMsg structure
         let timeout_msg = TimeoutMsg { id: 123 };
         assert_eq!(timeout_msg.id, 123);
+    }
+
+    #[test]
+    fn test_timing_fields_initialization() {
+        // Test that timing fields are properly initialized
+        let timer = new(Duration::from_secs(10));
+        assert!(timer.start_instant.is_none());
+        assert!(timer.last_tick.is_none());
+
+        let timer_with_interval =
+            new_with_interval(Duration::from_secs(30), Duration::from_millis(100));
+        assert!(timer_with_interval.start_instant.is_none());
+        assert!(timer_with_interval.last_tick.is_none());
+    }
+
+    #[test]
+    fn test_timing_initialization_on_first_tick() {
+        // Test that timing is initialized on first tick message
+        let mut timer = new(Duration::from_secs(5));
+        assert!(timer.start_instant.is_none());
+        assert!(timer.last_tick.is_none());
+
+        let tick_msg = TickMsg {
+            id: timer.id(),
+            timeout: false,
+            tag: 0,
+        };
+
+        // First tick should initialize timing
+        let start_time = std::time::Instant::now();
+        let result = timer.update(Box::new(tick_msg));
+        let end_time = std::time::Instant::now();
+
+        assert!(result.is_some());
+        assert!(timer.start_instant.is_some());
+        assert!(timer.last_tick.is_some());
+
+        // Check that the timing was set to approximately the current time
+        let tick_time = timer.last_tick.unwrap();
+        assert!(tick_time >= start_time);
+        assert!(tick_time <= end_time);
+    }
+
+    #[test]
+    fn test_timing_reset_on_restart() {
+        // Test that timing is reset when starting from stopped state
+        let mut timer = new(Duration::from_secs(10));
+
+        // Stop the timer
+        timer.running = false;
+        timer.start_instant = Some(std::time::Instant::now());
+        timer.last_tick = Some(std::time::Instant::now());
+
+        // Start the timer (should reset timing)
+        let start_msg = StartStopMsg {
+            id: timer.id(),
+            running: true,
+        };
+
+        let result = timer.update(Box::new(start_msg));
+        assert!(result.is_some());
+        assert!(timer.running);
+        assert!(timer.start_instant.is_none()); // Should be reset
+        assert!(timer.last_tick.is_none()); // Should be reset
+    }
+
+    #[test]
+    fn test_timing_preserved_on_stop() {
+        // Test that timing is preserved when stopping (not reset)
+        let mut timer = new(Duration::from_secs(10));
+
+        // Initialize timing with a tick
+        let tick_msg = TickMsg {
+            id: timer.id(),
+            timeout: false,
+            tag: 0,
+        };
+        timer.update(Box::new(tick_msg));
+
+        let preserved_start = timer.start_instant;
+        let preserved_tick = timer.last_tick;
+
+        // Stop the timer (should preserve timing)
+        let stop_msg = StartStopMsg {
+            id: timer.id(),
+            running: false,
+        };
+
+        let result = timer.update(Box::new(stop_msg));
+        assert!(result.is_some());
+        assert!(!timer.running);
+        assert_eq!(timer.start_instant, preserved_start); // Should be preserved
+        assert_eq!(timer.last_tick, preserved_tick); // Should be preserved
     }
 }
