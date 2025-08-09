@@ -284,7 +284,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         };
 
         let (start, end) = self.paginator.get_slice_bounds(items_to_render.len());
-        let mut result = String::new();
+        let mut items = Vec::new();
 
         // Render each item individually using the delegate
         for (list_idx, (_orig_idx, item)) in items_to_render
@@ -296,18 +296,12 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             // The item index in the current visible list (for selection highlighting)
             let visible_index = start + list_idx;
             let item_output = self.delegate.render(self, visible_index, item);
-
-            if !result.is_empty() {
-                // Add spacing between items
-                for _ in 0..self.delegate.spacing() {
-                    result.push('\n');
-                }
-            }
-
-            result.push_str(&item_output);
+            items.push(item_output);
         }
 
-        result
+        // Join items with newlines, respecting spacing
+        let separator = "\n".repeat(self.delegate.spacing().max(1));
+        items.join(&separator)
     }
 
     fn view_footer(&self) -> String {

@@ -131,7 +131,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! bubbletea-widgets = "0.0.7"
+//! bubbletea-widgets = "0.1.0"
 //! bubbletea-rs = "0.0.6"
 //! crossterm = "0.27"
 //! ```

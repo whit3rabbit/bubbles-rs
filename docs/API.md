@@ -31,7 +31,7 @@ Add `bubbletea-widgets` to your `Cargo.toml` dependencies. You will also need `b
 
 ```toml
 [dependencies]
-bubbletea-widgets = "0.0.7"
+bubbletea-widgets = "0.1.0"
 bubbletea-rs = "0.0.6"
 lipgloss = "0.0.7"
 ```
