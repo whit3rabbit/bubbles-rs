@@ -43,7 +43,7 @@
 //!
 //! ```rust
 //! use bubbletea_widgets::filepicker::{Model, Styles, FilepickerKeyMap};
-//! use lipgloss::{Style, Color};
+//! use lipgloss_extras::prelude::*;
 //!
 //! let mut filepicker = Model::new();
 //!
@@ -160,7 +160,7 @@ impl KeyMap for FilepickerKeyMap {
 ///
 /// ```rust
 /// use bubbletea_widgets::filepicker::Styles;
-/// use lipgloss::{Style, Color};
+/// use lipgloss_extras::prelude::*;
 ///
 /// let mut styles = Styles::default();
 /// styles.cursor = Style::new().foreground(Color::from("cyan"));

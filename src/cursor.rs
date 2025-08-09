@@ -11,7 +11,7 @@
 //! ### Example
 //! ```rust
 //! use bubbletea_widgets::cursor;
-//! use lipgloss::Style;
+//! use lipgloss_extras::prelude::*;
 //!
 //! let mut cur = cursor::new();
 //! cur.style = Style::new().reverse(true); // style when the cursor block is shown

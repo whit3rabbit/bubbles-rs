@@ -4,7 +4,7 @@
 //! generate its content from a set of key bindings.
 
 use crate::key;
-use lipgloss::{style::Style, Color};
+use lipgloss_extras::prelude::*;
 use lipgloss_extras::lipgloss;
 
 /// A trait that defines the key bindings to be displayed in the help view.
@@ -28,7 +28,7 @@ pub trait KeyMap {
 ///
 /// ```rust
 /// use bubbletea_widgets::help::Styles;
-/// use lipgloss::{style::Style, Color};
+/// use lipgloss_extras::prelude::*;
 ///
 /// let custom_styles = Styles {
 ///     short_key: Style::new().foreground(Color::from("#FF6B6B")),

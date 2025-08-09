@@ -96,7 +96,7 @@
 //!
 //! ```rust
 //! use bubbletea_widgets::table::{Model, Column, Row, Styles};
-//! use lipgloss::{Style, Color};
+//! use lipgloss_extras::prelude::*;
 //!
 //! let mut table = Model::new(vec![Column::new("Data", 20)]);
 //!
@@ -365,7 +365,7 @@ impl Row {
 ///
 /// ```rust
 /// use bubbletea_widgets::table::Styles;
-/// use lipgloss::{Style, Color};
+/// use lipgloss_extras::prelude::*;
 ///
 /// // Create custom styling
 /// let styles = Styles {
@@ -387,7 +387,7 @@ impl Row {
 /// Using styles with a table:
 /// ```rust
 /// use bubbletea_widgets::table::{Model, Column, Styles};
-/// use lipgloss::{Style, Color};
+/// use lipgloss_extras::prelude::*;
 ///
 /// let mut table = Model::new(vec![Column::new("Name", 20)]);
 /// table.styles = Styles {

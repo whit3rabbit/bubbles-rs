@@ -41,7 +41,7 @@
 //! ```rust
 //! use bubbletea_widgets::viewport::{Model as ViewportModel, ViewportKeyMap};
 //! use bubbletea_rs::{Model as BubbleTeaModel, Cmd, Msg};
-//! use lipgloss::Style;
+//! use lipgloss_extras::prelude::*;
 //!
 //! struct DocumentViewer {
 //!     viewport: ViewportModel,
@@ -77,7 +77,7 @@
 //!
 //! ```rust
 //! use bubbletea_widgets::viewport::{Model, ViewportKeyMap};
-//! use lipgloss::{Style, Color};
+//! use lipgloss_extras::prelude::*;
 //!
 //! // Create viewport with custom styling
 //! let mut viewport = Model::new(60, 15)
@@ -448,7 +448,7 @@ impl KeyMapTrait for ViewportKeyMap {
 /// Integration with styling:
 /// ```rust
 /// use bubbletea_widgets::viewport::Model;
-/// use lipgloss::{Style, Color};
+/// use lipgloss_extras::prelude::*;
 ///
 /// let viewport = Model::new(60, 20)
 ///     .with_style(
@@ -672,7 +672,7 @@ impl Model {
     ///
     /// ```rust
     /// use bubbletea_widgets::viewport::Model;
-    /// use lipgloss::Style;
+    /// use lipgloss_extras::prelude::*;
     ///
     /// // Fluent construction with dimensions
     /// let viewport = Model::new(40, 10)
@@ -720,7 +720,7 @@ impl Model {
     ///
     /// ```rust
     /// use bubbletea_widgets::viewport::Model;
-    /// use lipgloss::{Style, Color};
+    /// use lipgloss_extras::prelude::*;
     ///
     /// // Create viewport with border and padding
     /// let viewport = Model::new(60, 20)
@@ -735,7 +735,7 @@ impl Model {
     /// Themed viewport styling:
     /// ```rust
     /// use bubbletea_widgets::viewport::Model;
-    /// use lipgloss::{Style, Color};
+    /// use lipgloss_extras::prelude::*;
     ///
     /// // Dark theme viewport
     /// let dark_viewport = Model::new(80, 24)
@@ -763,7 +763,7 @@ impl Model {
     /// Styling with borders and padding reduces the available content area:
     /// ```rust
     /// use bubbletea_widgets::viewport::Model;
-    /// use lipgloss::Style;
+    /// use lipgloss_extras::prelude::*;
     ///
     /// // 80x24 viewport with 2-character padding
     /// let viewport = Model::new(80, 24)
@@ -1289,7 +1289,7 @@ impl Model {
     /// Working with styled viewport:
     /// ```rust
     /// use bubbletea_widgets::viewport::Model;
-    /// use lipgloss::Style;
+    /// use lipgloss_extras::prelude::*;
     ///
     /// let mut viewport = Model::new(20, 5)
     ///     .with_style(
@@ -1315,7 +1315,7 @@ impl Model {
     /// This method is typically used in the view/render phase:
     /// ```rust
     /// use bubbletea_widgets::viewport::Model;
-    /// use lipgloss::Style;
+    /// use lipgloss_extras::prelude::*;
     ///
     /// fn render_viewport_content(viewport: &Model) -> String {
     ///     let visible_lines = viewport.visible_lines();
@@ -2258,7 +2258,7 @@ impl BubbleTeaModel for Model {
     /// ```rust
     /// use bubbletea_widgets::viewport::Model;
     /// use bubbletea_rs::Model as BubbleTeaModel;
-    /// use lipgloss::{Style, Color};
+    /// use lipgloss_extras::prelude::*;
     ///
     /// let mut viewport = Model::new(20, 3)
     ///     .with_style(

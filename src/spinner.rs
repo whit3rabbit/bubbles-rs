@@ -7,7 +7,7 @@
 //!
 //! ```rust
 //! use bubbletea_widgets::spinner::{new, with_spinner, with_style, DOT};
-//! use lipgloss::Style;
+//! use lipgloss_extras::prelude::*;
 //!
 //! // Create a spinner with default settings
 //! let spinner = new(&[]);
@@ -406,7 +406,7 @@ pub struct TickMsg {
 ///
 /// ```rust
 /// use bubbletea_widgets::spinner::{new, with_spinner, DOT};
-/// use lipgloss::Style;
+/// use lipgloss_extras::prelude::*;
 ///
 /// let mut spinner = new(&[
 ///     with_spinner(DOT.clone())
@@ -441,7 +441,7 @@ pub struct Model {
 ///
 /// ```rust
 /// use bubbletea_widgets::spinner::{new, with_spinner, with_style, DOT};
-/// use lipgloss::{Style, Color};
+/// use lipgloss_extras::prelude::*;
 ///
 /// let spinner = new(&[
 ///     with_spinner(DOT.clone()),
@@ -498,7 +498,7 @@ pub fn with_spinner(spinner: Spinner) -> SpinnerOption {
 ///
 /// ```rust
 /// use bubbletea_widgets::spinner::{new, with_style};
-/// use lipgloss::{Style, Color};
+/// use lipgloss_extras::prelude::*;
 ///
 /// let red_style = Style::new().foreground(Color::from("red"));
 /// let spinner = new(&[with_style(red_style)]);
@@ -594,7 +594,7 @@ impl Model {
     ///
     /// ```rust
     /// use bubbletea_widgets::spinner::Model;
-    /// use lipgloss::{Style, Color};
+    /// use lipgloss_extras::prelude::*;
     ///
     /// let spinner = Model::new()
     ///     .with_style(Style::new().foreground(Color::from("blue")));
@@ -786,7 +786,7 @@ impl BubbleTeaModel for Model {
 ///
 /// ```rust
 /// use bubbletea_widgets::spinner::{new, with_spinner, with_style, DOT};
-/// use lipgloss::{Style, Color};
+/// use lipgloss_extras::prelude::*;
 ///
 /// // Create with default settings
 /// let basic_spinner = new(&[]);
@@ -825,7 +825,7 @@ mod tests {
         dot, line, new, new_model, tick, with_spinner, with_style, DOT, ELLIPSIS, GLOBE, HAMBURGER,
         JUMP, LINE, METER, MINI_DOT, MONKEY, MOON, POINTS, PULSE,
     };
-    use lipgloss::Style;
+    use lipgloss_extras::prelude::*;
 
     #[test]
     fn test_spinner_constants() {

@@ -12,7 +12,7 @@
 //!
 //! ```rust
 //! use bubbletea_widgets::textarea::{helpers::TextareaStyle, new};
-//! use lipgloss::Style;
+//! use lipgloss_extras::prelude::*;
 //!
 //! let mut model = new();
 //! let custom = TextareaStyle {
