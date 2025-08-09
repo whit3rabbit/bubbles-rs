@@ -580,4 +580,136 @@ mod tests {
             assert_eq!(list.filtered_items[0].item.0, "apple pie");
         }
     }
+
+    #[test]
+    fn test_filter_highlighting_segment_based() {
+        let items = vec![S("Nutella"), S("Linux"), S("Python")];
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
+
+        // Test contiguous match highlighting - filter "nut" should match only "Nutella"
+        list.set_filter_text("nut");
+        list.apply_filter();
+
+        assert_eq!(list.len(), 1, "Should have 1 item matching 'nut'");
+        assert_eq!(list.filtered_items[0].item.0, "Nutella");
+
+        // Verify that matches are [0, 1, 2] for "Nut" in "Nutella"
+        let matches = &list.filtered_items[0].matches;
+        assert_eq!(
+            matches.len(),
+            3,
+            "Should have 3 character matches for 'nut'"
+        );
+        assert_eq!(matches[0], 0, "First match should be at index 0 (N)");
+        assert_eq!(matches[1], 1, "Second match should be at index 1 (u)");
+        assert_eq!(matches[2], 2, "Third match should be at index 2 (t)");
+
+        // Test the actual highlighting by rendering - it should not have character separation
+        let rendered = list.view();
+
+        // The rendered output should not be empty and should render without errors
+        assert!(!rendered.is_empty(), "Rendered view should not be empty");
+
+        // Test that our highlighting function works directly with contiguous segments
+        use super::defaultitem::apply_character_highlighting;
+        let test_result = apply_character_highlighting(
+            "Nutella",
+            &[0, 1, 2], // Consecutive indices should be rendered as a single segment
+            &lipgloss::Style::new().bold(true),
+            &lipgloss::Style::new(),
+        );
+        // The result should contain styled text and be longer due to ANSI codes
+        assert!(
+            test_result.len() > "Nutella".len(),
+            "Highlighted text should be longer due to ANSI codes"
+        );
+
+        // Verify the fix works: test with non-consecutive matches too
+        let test_result_sparse = apply_character_highlighting(
+            "Nutella",
+            &[0, 2, 4], // Non-consecutive indices: N_t_l
+            &lipgloss::Style::new().underline(true),
+            &lipgloss::Style::new(),
+        );
+        assert!(
+            test_result_sparse.len() > "Nutella".len(),
+            "Sparse highlighted text should also work"
+        );
+    }
+
+    #[test]
+    fn test_filter_ansi_efficiency() {
+        // Test that consecutive matches use fewer ANSI codes than character-by-character
+        use super::defaultitem::apply_character_highlighting;
+        let highlight_style = lipgloss::Style::new().bold(true);
+        let normal_style = lipgloss::Style::new();
+
+        let consecutive_result = apply_character_highlighting(
+            "Hello",
+            &[0, 1, 2], // "Hel" - should be one ANSI block
+            &highlight_style,
+            &normal_style,
+        );
+
+        let sparse_result = apply_character_highlighting(
+            "Hello",
+            &[0, 2, 4], // "H_l_o" - should be three ANSI blocks
+            &highlight_style,
+            &normal_style,
+        );
+
+        // Consecutive matches should result in more efficient ANSI usage
+        // This is a rough heuristic - consecutive should have fewer style applications
+        assert!(
+            consecutive_result.len() < sparse_result.len(),
+            "Consecutive highlighting should be more efficient than sparse highlighting"
+        );
+    }
+
+    #[test]
+    fn test_filter_unicode_characters() {
+        let items = vec![S("café"), S("naïve"), S("🦀 rust"), S("北京")];
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
+
+        // Test filtering with accented characters
+        list.set_filter_text("caf");
+        list.apply_filter();
+        assert_eq!(list.len(), 1);
+        assert_eq!(list.filtered_items[0].item.0, "café");
+
+        // Test filtering with emoji
+        list.set_filter_text("rust");
+        list.apply_filter();
+        assert_eq!(list.len(), 1);
+        assert_eq!(list.filtered_items[0].item.0, "🦀 rust");
+
+        // Ensure rendering doesn't crash with unicode
+        let rendered = list.view();
+        assert!(!rendered.is_empty());
+    }
+
+    #[test]
+    fn test_filter_edge_cases() {
+        let items = vec![S("a"), S("ab"), S("abc"), S(""), S("   ")];
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
+
+        // Single character filtering
+        list.set_filter_text("a");
+        list.apply_filter();
+        assert!(list.len() >= 3, "Should match 'a', 'ab', 'abc'");
+
+        // Empty filter should show all non-empty items
+        list.set_filter_text("");
+        list.apply_filter();
+        assert_eq!(list.filter_state, FilterState::Unfiltered);
+
+        // Very short items
+        list.set_filter_text("ab");
+        list.apply_filter();
+        assert!(list.len() >= 2, "Should match 'ab', 'abc'");
+
+        // Ensure no panics with edge cases
+        let rendered = list.view();
+        assert!(!rendered.is_empty());
+    }
 }

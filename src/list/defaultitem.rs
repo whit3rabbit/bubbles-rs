@@ -38,20 +38,22 @@ use super::{Item, ItemDelegate, Model};
 use bubbletea_rs::{Cmd, Msg};
 use lipgloss_extras::prelude::*;
 
-/// Applies character-level highlighting to a string based on match indices.
+/// Applies segment-based highlighting to a string based on match indices.
 ///
 /// This function takes a string and a vector of character indices that should be highlighted,
 /// then applies the given styles to create highlighted and non-highlighted segments.
+/// Unlike character-level highlighting, this groups consecutive match indices into contiguous
+/// segments to avoid ANSI escape sequence insertion between individual characters.
 ///
 /// # Arguments
 /// * `text` - The text to apply highlighting to
 /// * `matches` - Vector of character indices that should be highlighted
-/// * `highlight_style` - Style to apply to matched characters
-/// * `normal_style` - Style to apply to non-matched characters
+/// * `highlight_style` - Style to apply to matched segments
+/// * `normal_style` - Style to apply to non-matched segments
 ///
 /// # Returns
-/// A styled string with highlighting applied to the specified character positions
-fn apply_character_highlighting(
+/// A styled string with highlighting applied to contiguous segments
+pub(super) fn apply_character_highlighting(
     text: &str,
     matches: &[usize],
     highlight_style: &Style,
@@ -63,38 +65,62 @@ fn apply_character_highlighting(
 
     let chars: Vec<char> = text.chars().collect();
     let mut result = String::new();
-    let mut current_pos = 0;
 
-    // Sort match indices to process them in order
+    // Sort match indices and remove duplicates
     let mut sorted_matches = matches.to_vec();
     sorted_matches.sort_unstable();
     sorted_matches.dedup();
 
-    for &match_idx in &sorted_matches {
-        if match_idx >= chars.len() {
-            continue;
-        }
+    // Filter out invalid indices
+    let valid_matches: Vec<usize> = sorted_matches
+        .into_iter()
+        .filter(|&idx| idx < chars.len())
+        .collect();
 
-        // Add any normal characters before this match
-        if current_pos < match_idx {
-            let segment: String = chars[current_pos..match_idx].iter().collect();
-            if !segment.is_empty() {
-                result.push_str(&normal_style.render(&segment));
-            }
-        }
-
-        // Add the highlighted character
-        let highlighted_char = chars[match_idx].to_string();
-        result.push_str(&highlight_style.render(&highlighted_char));
-
-        current_pos = match_idx + 1;
+    if valid_matches.is_empty() {
+        return normal_style.render(text);
     }
 
-    // Add any remaining normal characters
+    // Group consecutive indices into segments
+    let mut segments: Vec<(usize, usize, bool)> = Vec::new(); // (start, end, is_highlighted)
+    let mut current_pos = 0;
+    let mut i = 0;
+
+    while i < valid_matches.len() {
+        let match_start = valid_matches[i];
+
+        // Add normal segment before this match if needed
+        if current_pos < match_start {
+            segments.push((current_pos, match_start, false));
+        }
+
+        // Find the end of consecutive matches
+        let mut match_end = match_start + 1;
+        while i + 1 < valid_matches.len() && valid_matches[i + 1] == valid_matches[i] + 1 {
+            i += 1;
+            match_end = valid_matches[i] + 1;
+        }
+
+        // Add highlighted segment
+        segments.push((match_start, match_end, true));
+        current_pos = match_end;
+        i += 1;
+    }
+
+    // Add final normal segment if needed
     if current_pos < chars.len() {
-        let remaining: String = chars[current_pos..].iter().collect();
-        if !remaining.is_empty() {
-            result.push_str(&normal_style.render(&remaining));
+        segments.push((current_pos, chars.len(), false));
+    }
+
+    // Render each segment with appropriate styling
+    for (start, end, is_highlighted) in segments {
+        let segment: String = chars[start..end].iter().collect();
+        if !segment.is_empty() {
+            if is_highlighted {
+                result.push_str(&highlight_style.render(&segment));
+            } else {
+                result.push_str(&normal_style.render(&segment));
+            }
         }
     }
 
