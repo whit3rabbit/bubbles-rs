@@ -1,7 +1,3 @@
-Of course. Here is a comprehensive API reference for `bubbletea-widgets`, structured similarly to the `lipgloss-rs` documentation, based on the provided repository contents.
-
-***
-
 # `bubbletea-widgets` API Reference
 
 Repo: https://github.com/whit3rabbit/bubbles-rs
