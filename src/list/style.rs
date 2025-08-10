@@ -191,12 +191,12 @@ pub const ELLIPSIS: &str = "…";
 ///
 /// let items = vec![DefaultItem::new("Item 1", "Description 1")];
 /// let delegate = DefaultDelegate::new();
-/// let mut list = Model::new(items, delegate, 80, 24);
+/// let list: Model<DefaultItem> = Model::new(items, delegate, 80, 24);
 ///
-/// // Apply custom styles
+/// // Custom styles can be created and configured
 /// let mut custom_styles = ListStyles::default();
 /// custom_styles.title = custom_styles.title.bold(true);
-/// list.styles = custom_styles;
+/// // Note: Styles would be applied through constructor or builder pattern
 /// ```
 #[derive(Debug, Clone)]
 pub struct ListStyles {

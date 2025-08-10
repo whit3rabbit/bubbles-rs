@@ -221,7 +221,7 @@ use bubbletea_rs::Cmd;
 ///
 /// struct App {
 ///     input: TextInput,
-///     list: List<ListDefaultItem>,
+///     textarea: TextArea,
 ///     focused_component: usize,
 /// }
 ///
@@ -230,7 +230,7 @@ use bubbletea_rs::Cmd;
 ///         // Blur current component
 ///         match self.focused_component {
 ///             0 => self.input.blur(),
-///             1 => { self.list.filter_input.blur(); },
+///             1 => self.textarea.blur(),
 ///             _ => {}
 ///         }
 ///
@@ -238,7 +238,7 @@ use bubbletea_rs::Cmd;
 ///         self.focused_component = (self.focused_component + 1) % 2;
 ///         match self.focused_component {
 ///             0 => Some(self.input.focus()),
-///             1 => Some(self.list.filter_input.focus()),
+///             1 => self.textarea.focus(),
 ///             _ => None,
 ///         }
 ///     }

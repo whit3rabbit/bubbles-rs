@@ -124,7 +124,7 @@ pub trait ItemDelegate<I: Item> {
     /// # use bubbletea_rs::{Cmd, Msg};
     /// struct CustomDelegate;
     ///
-    /// impl<I: Item> ItemDelegate<I> for CustomDelegate {
+    /// impl<I: Item + Send + Sync + 'static> ItemDelegate<I> for CustomDelegate {
     ///     fn render(&self, m: &Model<I>, index: usize, item: &I) -> String {
     ///         if index == m.cursor() {
     ///             format!("> {}", item)  // Highlight selected item

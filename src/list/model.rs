@@ -287,7 +287,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     ///
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
-    /// let mut list = Model::new(vec![], DefaultDelegate::new(), 80, 24);
+    /// let mut list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
     /// list.set_filter_text("search term");
     /// // Filter text is set but not applied until filtering is activated
     /// ```
@@ -309,7 +309,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     ///
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem, FilterState};
-    /// let mut list = Model::new(vec![], DefaultDelegate::new(), 80, 24);
+    /// let mut list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
     /// list.set_filter_state(FilterState::Filtering);
     /// // List is now in filtering mode
     /// ```
@@ -331,7 +331,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     ///
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
-    /// let mut list = Model::new(vec![], DefaultDelegate::new(), 80, 24);
+    /// let mut list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
     /// list.set_status_bar_item_name("task", "tasks");
     /// // Status bar will now show "1 task" or "5 tasks"
     /// ```
@@ -437,7 +437,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     ///
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
-    /// let list = Model::new(vec![], DefaultDelegate::new(), 80, 24)
+    /// let list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24)
     ///     .with_title("My Tasks");
     /// ```
     ///
@@ -445,7 +445,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     ///
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
-    /// let mut list = Model::new(vec![], DefaultDelegate::new(), 80, 24);
+    /// let mut list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
     /// list = list.with_title("My Tasks");
     /// ```
     pub fn with_title(mut self, title: &str) -> Self {
