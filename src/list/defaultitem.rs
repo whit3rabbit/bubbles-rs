@@ -569,22 +569,61 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
         } else if is_selected && m.filter_state != super::FilterState::Filtering {
             // Apply highlighting for selected items
             if let Some(match_indices) = matches {
-                let highlight_style = s.selected_title.clone().inherit(s.filter_match.clone());
+                // Create border-free versions of selected styles for character highlighting
+                // to prevent pipe character insertion between segments
+                let selected_title_no_border = s
+                    .selected_title
+                    .clone()
+                    .border_top(false)
+                    .border_right(false)
+                    .border_bottom(false)
+                    .border_left(false);
+                let selected_desc_no_border = s
+                    .selected_desc
+                    .clone()
+                    .border_top(false)
+                    .border_right(false)
+                    .border_bottom(false)
+                    .border_left(false);
+
+                let highlight_style = selected_title_no_border
+                    .clone()
+                    .inherit(s.filter_match.clone());
                 title_out = apply_character_highlighting(
                     &title,
                     match_indices,
                     &highlight_style,
-                    &s.selected_title,
+                    &selected_title_no_border,
                 );
                 if !desc.is_empty() {
-                    let desc_highlight_style =
-                        s.selected_desc.clone().inherit(s.filter_match.clone());
+                    let desc_highlight_style = selected_desc_no_border
+                        .clone()
+                        .inherit(s.filter_match.clone());
                     desc_out = apply_character_highlighting(
                         &desc,
                         match_indices,
                         &desc_highlight_style,
-                        &s.selected_desc,
+                        &selected_desc_no_border,
                     );
+                }
+
+                // For highlighted items, we need to apply the border separately
+                // since the highlighting already applied the appropriate colors
+                let border_only_style = Style::new()
+                    .border_style(normal_border())
+                    .border_top(false)
+                    .border_right(false)
+                    .border_bottom(false)
+                    .border_left(true)
+                    .border_left_foreground(AdaptiveColor {
+                        Light: "#F793FF",
+                        Dark: "#AD58B4",
+                    })
+                    .padding(0, 0, 0, 1);
+
+                title_out = border_only_style.render(&title_out);
+                if !desc.is_empty() {
+                    desc_out = border_only_style.render(&desc_out);
                 }
             } else {
                 title_out = s.selected_title.clone().render(&title_out);

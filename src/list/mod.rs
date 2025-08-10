@@ -689,6 +689,192 @@ mod tests {
     }
 
     #[test]
+    fn test_filter_highlighting_no_pipe_characters() {
+        // Regression test for issue where pipe characters (│) were inserted
+        // between highlighted and non-highlighted text segments
+        let items = vec![S("Nutella"), S("Linux"), S("Python")];
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
+
+        // Test case from debug output: filter "nut" should only match "Nutella"
+        list.set_filter_text("nut");
+        list.apply_filter();
+
+        assert_eq!(
+            list.len(),
+            1,
+            "Filter 'nut' should match exactly 1 item (Nutella)"
+        );
+        assert_eq!(list.filtered_items[0].item.0, "Nutella");
+
+        // First test non-selected state (cursor on different item)
+        // This should not have any borders/pipes
+        if !list.is_empty() {
+            list.cursor = list.len(); // Set cursor beyond items to deselect
+        }
+        let unselected_rendered = list.view();
+
+        // For unselected items, there should be no pipe characters between highlighted segments
+        // This is the specific issue from the debug output: "N│utella"
+        assert!(
+            !unselected_rendered.contains("N│u") && !unselected_rendered.contains("ut│e"),
+            "Unselected item rendering should not have pipe characters between highlighted segments. Output: {:?}",
+            unselected_rendered
+        );
+
+        // Selected items can have a left border pipe, but not between text segments
+        list.cursor = 0; // Select the first item
+        let selected_rendered = list.view();
+
+        // Check that the pipe is only at the beginning (left border) not between text
+        assert!(
+            !selected_rendered.contains("N│u") && !selected_rendered.contains("ut│e"),
+            "Selected item should not have pipe characters between highlighted text segments. Output: {:?}",
+            selected_rendered
+        );
+
+        // Test another case: filter "li" on "Linux" - test unselected first
+        list.set_filter_text("li");
+        list.apply_filter();
+
+        assert_eq!(list.len(), 1);
+        assert_eq!(list.filtered_items[0].item.0, "Linux");
+
+        // Test unselected Linux (no borders)
+        list.cursor = list.len(); // Deselect
+        let linux_unselected = list.view();
+        assert!(
+            !linux_unselected.contains("Li│n") && !linux_unselected.contains("i│n"),
+            "Unselected Linux should not have pipes between highlighted segments. Output: {:?}",
+            linux_unselected
+        );
+    }
+
+    #[test]
+    fn test_filter_highlighting_visual_correctness() {
+        // This test focuses on the visual correctness of the rendered output
+        // to catch issues like unwanted characters, malformed ANSI, etc.
+        let items = vec![S("Testing"), S("Visual"), S("Correctness")];
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
+
+        // Test 1: Single character filter
+        list.set_filter_text("t");
+        list.apply_filter();
+
+        let rendered = list.view();
+        // Should not contain any malformed character sequences
+        assert!(
+            !rendered.contains("│T")
+                && !rendered.contains("T│")
+                && !rendered.contains("│t")
+                && !rendered.contains("t│"),
+            "Single character highlighting should not have pipe artifacts. Output: {:?}",
+            rendered
+        );
+
+        // Test 2: Multi-character contiguous filter
+        list.set_filter_text("test");
+        list.apply_filter();
+
+        let rendered = list.view();
+        // Should not have pipes between consecutive highlighted characters
+        assert!(
+            !rendered.contains("T│e") && !rendered.contains("e│s") && !rendered.contains("s│t"),
+            "Contiguous highlighting should not have character separation. Output: {:?}",
+            rendered
+        );
+
+        // Test 3: Check that highlighting preserves text integrity
+        // The word "Testing" should appear as a complete word, just with some characters styled
+        assert!(
+            rendered.contains("Testing") || rendered.matches("Test").count() > 0,
+            "Original text should be preserved in some form. Output: {:?}",
+            rendered
+        );
+    }
+
+    #[test]
+    fn test_filter_highlighting_ansi_efficiency() {
+        // Test that we don't generate excessive ANSI escape sequences
+        let items = vec![S("AbCdEfGh")];
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
+
+        // Filter that matches every other character: A_C_E_G
+        list.set_filter_text("aceg");
+        list.apply_filter();
+
+        // Test unselected state to avoid border artifacts
+        list.cursor = list.len(); // Deselect
+        let rendered = list.view();
+
+        // Count ANSI reset sequences - there should not be excessive resets
+        let reset_count = rendered.matches("\x1b[0m").count();
+        let total_length = rendered.len();
+
+        // Heuristic: if resets are more than 20% of total output length, something's wrong
+        assert!(
+            reset_count < total_length / 5,
+            "Too many ANSI reset sequences detected ({} resets in {} chars). This suggests inefficient styling. Output: {:?}",
+            reset_count, total_length, rendered
+        );
+
+        // Should not have malformed escape sequences
+        assert!(
+            !rendered.contains("\x1b[0m│") && !rendered.contains("│\x1b["),
+            "ANSI sequences should not be mixed with pipe characters. Output: {:?}",
+            rendered
+        );
+    }
+
+    #[test]
+    fn test_filter_highlighting_state_consistency() {
+        // Test that highlighting works consistently across different states
+        let items = vec![S("StateTest"), S("Another"), S("ThirdItem")];
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
+
+        list.set_filter_text("st");
+        list.apply_filter();
+
+        // Test unselected state
+        list.cursor = list.len(); // Deselect all
+        let unselected = list.view();
+
+        // Test selected state
+        list.cursor = 0; // Select first item
+        let selected = list.view();
+
+        // Both should be free of character separation artifacts
+        assert!(
+            !unselected.contains("S│t") && !unselected.contains("t│a"),
+            "Unselected state should not have character separation. Output: {:?}",
+            unselected
+        );
+
+        assert!(
+            !selected.contains("S│t") && !selected.contains("t│a"),
+            "Selected state should not have character separation. Output: {:?}",
+            selected
+        );
+
+        // Selected state can have left border, but it should be at the beginning
+        if selected.contains("│") {
+            let lines: Vec<&str> = selected.lines().collect();
+            for line in lines {
+                if line.contains("StateTest") || line.contains("st") {
+                    // If there's a pipe, it should be at the start of content, not between characters
+                    if let Some(pipe_pos) = line.find("│") {
+                        let after_pipe = &line[pipe_pos + "│".len()..];
+                        assert!(
+                            !after_pipe.contains("│"),
+                            "Only one pipe should appear per line (left border). Line: {:?}",
+                            line
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn test_filter_edge_cases() {
         let items = vec![S("a"), S("ab"), S("abc"), S(""), S("   ")];
         let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
