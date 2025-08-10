@@ -4,6 +4,7 @@
 //! generate its content from a set of key bindings.
 
 use crate::key;
+use bubbletea_rs::{Cmd, Msg};
 use lipgloss_extras::lipgloss;
 use lipgloss_extras::prelude::*;
 
@@ -55,12 +56,12 @@ pub struct Styles {
 }
 
 impl Default for Styles {
-    /// Creates default styles with a subtle color scheme.
+    /// Creates default styles with a subtle color scheme that adapts to light and dark themes.
     ///
-    /// The default styling uses muted colors that work well in most terminal environments:
-    /// - Keys are styled in a medium gray (#909090)
-    /// - Descriptions use a lighter gray (#B2B2B2)  
-    /// - Separators use an even lighter gray (#DDDADA)
+    /// The default styling uses adaptive colors that work well in both light and dark terminal environments:
+    /// - Keys are styled in medium gray (light: #909090, dark: #626262)
+    /// - Descriptions use lighter gray (light: #B2B2B2, dark: #4A4A4A)  
+    /// - Separators use even lighter gray (light: #DDDADA, dark: #3C3C3C)
     ///
     /// # Examples
     ///
@@ -70,9 +71,20 @@ impl Default for Styles {
     /// let styles = Styles::default();
     /// ```
     fn default() -> Self {
-        let key_style = Style::new().foreground(Color::from("#909090"));
-        let desc_style = Style::new().foreground(Color::from("#B2B2B2"));
-        let sep_style = Style::new().foreground(Color::from("#DDDADA"));
+        use lipgloss::AdaptiveColor;
+
+        let key_style = Style::new().foreground(AdaptiveColor {
+            Light: "#909090",
+            Dark: "#626262",
+        });
+        let desc_style = Style::new().foreground(AdaptiveColor {
+            Light: "#B2B2B2",
+            Dark: "#4A4A4A",
+        });
+        let sep_style = Style::new().foreground(AdaptiveColor {
+            Light: "#DDDADA",
+            Dark: "#3C3C3C",
+        });
 
         Self {
             ellipsis: sep_style.clone(),
@@ -208,6 +220,39 @@ impl Model {
     pub fn with_width(mut self, width: usize) -> Self {
         self.width = width;
         self
+    }
+
+    /// Updates the help model in response to a message.
+    ///
+    /// This method provides compatibility with the bubbletea-rs architecture,
+    /// matching the Go implementation's Update method. Since the help component
+    /// is primarily a view component that doesn't handle user input directly,
+    /// this is a no-op method that simply returns the model unchanged.
+    ///
+    /// # Arguments
+    ///
+    /// * `_msg` - The message to handle (unused for help component)
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing:
+    /// - The unchanged model
+    /// - `None` for the command (no side effects needed)
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::help::Model;
+    /// use bubbletea_rs::Msg;
+    ///
+    /// let help = Model::new();
+    /// // Any message can be passed, the help component ignores all messages
+    /// let msg = Box::new(42); // Example message
+    /// let (updated_help, cmd) = help.update(msg);
+    /// assert!(cmd.is_none()); // Help component doesn't generate commands
+    /// ```
+    pub fn update(self, _msg: Msg) -> (Self, Option<Cmd>) {
+        (self, None)
     }
 
     /// Renders the help view based on the current model state.
@@ -365,7 +410,7 @@ impl Model {
             .render(&self.full_separator);
 
         for (i, group) in groups.iter().enumerate() {
-            if group.is_empty() {
+            if group.is_empty() || !should_render_column(group) {
                 continue;
             }
 
@@ -381,10 +426,6 @@ impl Model {
                 .filter(|b| b.enabled())
                 .map(|b| b.help().desc.clone())
                 .collect();
-
-            if keys.is_empty() {
-                continue;
-            }
 
             let key_column = self
                 .styles
@@ -457,4 +498,65 @@ impl Model {
         }
         None // Item can be added
     }
+
+    /// Creates a new help model with default settings.
+    ///
+    /// **Deprecated**: Use [`Model::new`] instead.
+    ///
+    /// This function provides backwards compatibility with earlier versions
+    /// of the library and matches the Go implementation's deprecated `NewModel`
+    /// variable.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # #[allow(deprecated)]
+    /// use bubbletea_widgets::help::Model;
+    ///
+    /// let help = Model::new_model(); // Deprecated
+    /// let help = Model::new();       // Preferred
+    /// ```
+    #[deprecated(since = "0.1.7", note = "Use Model::new() instead")]
+    pub fn new_model() -> Self {
+        Self::new()
+    }
+}
+
+/// Determines if a column of key bindings should be rendered.
+///
+/// A column should be rendered if it contains at least one enabled binding.
+/// This helper function matches the behavior of the Go implementation's
+/// `shouldRenderColumn` function.
+///
+/// # Arguments
+///
+/// * `bindings` - A slice of key binding references to check
+///
+/// # Returns
+///
+/// `true` if any binding in the group is enabled, `false` otherwise.
+///
+/// # Examples
+///
+/// ```rust
+/// use bubbletea_widgets::help::should_render_column;
+/// use bubbletea_widgets::key::Binding;
+/// use crossterm::event::KeyCode;
+///
+/// let enabled_binding = Binding::new(vec![KeyCode::Enter]);
+/// let disabled_binding = Binding::new(vec![KeyCode::F(1)]).with_disabled();
+///
+/// let column = vec![&enabled_binding, &disabled_binding];
+/// assert!(should_render_column(&column));
+///
+/// let empty_column = vec![&disabled_binding];
+/// assert!(!should_render_column(&empty_column));
+/// ```
+pub fn should_render_column(bindings: &[&key::Binding]) -> bool {
+    for binding in bindings {
+        if binding.enabled() {
+            return true;
+        }
+    }
+    false
 }

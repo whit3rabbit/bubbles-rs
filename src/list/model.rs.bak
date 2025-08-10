@@ -1,7 +1,7 @@
-//! Core Model struct and fundamental functionality.
+//! Main Model struct and core functionality for list components.
 //!
-//! This module contains the primary Model struct definition and its core methods
-//! including construction, basic state management, and essential accessors.
+//! This module contains the primary Model struct that represents a list component,
+//! along with its basic construction, state management, and accessor methods.
 
 use super::keys::ListKeyMap;
 use super::style::ListStyles;
@@ -350,133 +350,46 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         self.status_item_plural = Some(plural.to_string());
     }
 
-    /// Updates pagination settings based on current item count and page size.
+    /// Renders the status bar as a formatted string.
     ///
-    /// This method recalculates pagination after changes to item count or
-    /// page size. It's called automatically after operations that affect
-    /// the visible item count.
-    pub(super) fn update_pagination(&mut self) {
-        let total = self.len();
-        self.paginator.set_total_items(total);
-
-        // Calculate how many items can fit in the available height
-        if self.height > 0 {
-            let item_height = self.delegate.height() + self.delegate.spacing();
-            let header_height = 1; // Title or filter input
-            let footer_height = if self.show_status_bar { 2 } else { 0 }; // Status + help
-
-            let available_height = self.height.saturating_sub(header_height + footer_height);
-            let items_per_page = if item_height > 0 {
-                (available_height / item_height).max(1)
-            } else {
-                10 // Fallback to default value
-            };
-
-            self.per_page = items_per_page;
-            self.paginator.set_per_page(items_per_page);
-        }
-    }
-
-    /// Returns the number of currently visible items.
-    ///
-    /// This count reflects the items actually visible to the user:
-    /// - When unfiltered: returns the total number of items
-    /// - When filtering is active: returns only the count of matching items
+    /// The status bar shows the current selection position and total item count,
+    /// using the custom item names if set. The format is "X/Y items" where X is
+    /// the current cursor position + 1, and Y is the total item count.
     ///
     /// # Returns
     ///
-    /// The number of items currently visible in the list.
+    /// A formatted status string, or empty string if status bar is disabled.
     ///
     /// # Examples
     ///
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
     /// let items = vec![
-    ///     DefaultItem::new("Apple", "Red"),
-    ///     DefaultItem::new("Banana", "Yellow"),
+    ///     DefaultItem::new("First", ""),
+    ///     DefaultItem::new("Second", ""),
     /// ];
     /// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
-    /// assert_eq!(list.len(), 2);
+    /// let status = list.status_view();
+    /// assert!(status.contains("1/2"));
     /// ```
-    pub fn len(&self) -> usize {
-        if self.filter_state == FilterState::Unfiltered {
-            self.items.len()
-        } else {
-            self.filtered_items.len()
+    pub fn status_view(&self) -> String {
+        if !self.show_status_bar {
+            return String::new();
         }
-    }
 
-    /// Returns whether the list has no visible items.
-    ///
-    /// # Returns
-    ///
-    /// `true` if there are no currently visible items, `false` otherwise.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
-    /// let list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
-    /// assert!(list.is_empty());
-    /// ```
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Returns a reference to the currently selected item.
-    ///
-    /// The selected item is the one at the current cursor position. If the list
-    /// is empty or the cursor is out of bounds, returns `None`.
-    ///
-    /// # Returns
-    ///
-    /// A reference to the selected item, or `None` if no valid selection exists.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
-    /// let items = vec![
-    ///     DefaultItem::new("First", "Description 1"),
-    ///     DefaultItem::new("Second", "Description 2"),
-    /// ];
-    /// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
-    ///
-    /// if let Some(selected) = list.selected_item() {
-    ///     println!("Selected: {}", selected);
-    /// }
-    /// ```
-    pub fn selected_item(&self) -> Option<&I> {
-        if self.filter_state == FilterState::Unfiltered {
-            self.items.get(self.cursor)
-        } else {
-            self.filtered_items.get(self.cursor).map(|fi| &fi.item)
+        let mut footer = String::new();
+        if !self.is_empty() {
+            let singular = self.status_item_singular.as_deref().unwrap_or("item");
+            let plural = self.status_item_plural.as_deref().unwrap_or("items");
+            let noun = if self.len() == 1 { singular } else { plural };
+            footer.push_str(&format!("{}/{} {}", self.cursor + 1, self.len(), noun));
         }
-    }
-
-    /// Returns the current cursor position.
-    ///
-    /// The cursor represents the currently selected item index within the
-    /// visible (possibly filtered) list. This is always relative to the
-    /// currently visible items, not the original full list.
-    ///
-    /// # Returns
-    ///
-    /// The zero-based index of the currently selected item.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
-    /// let items = vec![
-    ///     DefaultItem::new("First", "Description"),
-    ///     DefaultItem::new("Second", "Description"),
-    /// ];
-    /// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
-    /// assert_eq!(list.cursor(), 0); // Initially at first item
-    /// ```
-    pub fn cursor(&self) -> usize {
-        self.cursor
+        let help_view = self.help.view(self);
+        if !help_view.is_empty() {
+            footer.push('\n');
+            footer.push_str(&help_view);
+        }
+        footer
     }
 
     /// Returns fuzzy match character indices for a given original item index.
@@ -517,9 +430,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             .map(|fi| &fi.matches)
     }
 
-    // === Builder Pattern Methods ===
-
-    /// Sets the list title (builder pattern).
+    /// Sets the list title.
     ///
     /// The title is displayed at the top of the list when not filtering.
     /// During filtering, the title is replaced with the filter input interface.
@@ -538,6 +449,14 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
     /// let list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24)
     ///     .with_title("My Tasks");
+    /// ```
+    ///
+    /// Or using the mutable method:
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
+    /// let mut list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
+    /// list = list.with_title("My Tasks");
     /// ```
     pub fn with_title(mut self, title: &str) -> Self {
         self.title = title.to_string();
@@ -683,33 +602,134 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         self
     }
 
-    /// Sets the list's styling configuration (builder pattern).
+    /// Returns a reference to the currently selected item.
     ///
-    /// This replaces all current styles with the provided configuration.
-    ///
-    /// # Arguments
-    ///
-    /// * `styles` - The styling configuration to apply
+    /// The selected item is the one at the current cursor position. If the list
+    /// is empty or the cursor is out of bounds, returns `None`.
     ///
     /// # Returns
     ///
-    /// Self, for method chaining.
+    /// A reference to the selected item, or `None` if no valid selection exists.
     ///
     /// # Examples
     ///
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
-    /// # use bubbletea_widgets::list::style::ListStyles;
-    /// let custom_styles = ListStyles::default();
-    /// let list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24)
-    ///     .with_styles(custom_styles);
+    /// let items = vec![
+    ///     DefaultItem::new("First", "Description 1"),
+    ///     DefaultItem::new("Second", "Description 2"),
+    /// ];
+    /// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
+    ///
+    /// if let Some(selected) = list.selected_item() {
+    ///     println!("Selected: {}", selected);
+    /// }
     /// ```
-    pub fn with_styles(mut self, styles: ListStyles) -> Self {
-        self.styles = styles;
-        self
+    pub fn selected_item(&self) -> Option<&I> {
+        if self.filter_state == FilterState::Unfiltered {
+            self.items.get(self.cursor)
+        } else {
+            self.filtered_items.get(self.cursor).map(|fi| &fi.item)
+        }
     }
 
-    // === UI Component Toggles and Access ===
+    /// Returns the current cursor position.
+    ///
+    /// The cursor represents the currently selected item index within the
+    /// visible (possibly filtered) list. This is always relative to the
+    /// currently visible items, not the original full list.
+    ///
+    /// # Returns
+    ///
+    /// The zero-based index of the currently selected item.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
+    /// let items = vec![
+    ///     DefaultItem::new("First", "Description"),
+    ///     DefaultItem::new("Second", "Description"),
+    /// ];
+    /// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
+    /// assert_eq!(list.cursor(), 0); // Initially at first item
+    /// ```
+    pub fn cursor(&self) -> usize {
+        self.cursor
+    }
+
+    /// Returns the number of currently visible items.
+    ///
+    /// This count reflects the items actually visible to the user:
+    /// - When unfiltered: returns the total number of items
+    /// - When filtering is active: returns only the count of matching items
+    ///
+    /// # Returns
+    ///
+    /// The number of items currently visible in the list.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
+    /// let items = vec![
+    ///     DefaultItem::new("Apple", "Red"),
+    ///     DefaultItem::new("Banana", "Yellow"),
+    /// ];
+    /// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
+    /// assert_eq!(list.len(), 2);
+    /// ```
+    pub fn len(&self) -> usize {
+        if self.filter_state == FilterState::Unfiltered {
+            self.items.len()
+        } else {
+            self.filtered_items.len()
+        }
+    }
+
+    /// Returns whether the list has no visible items.
+    ///
+    /// # Returns
+    ///
+    /// `true` if there are no currently visible items, `false` otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
+    /// let list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
+    /// assert!(list.is_empty());
+    /// ```
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Updates pagination settings based on current item count and page size.
+    ///
+    /// This method recalculates pagination after changes to item count or
+    /// page size. It's called automatically after operations that affect
+    /// the visible item count.
+    pub(super) fn update_pagination(&mut self) {
+        let total = self.len();
+        self.paginator.set_total_items(total);
+
+        // Calculate how many items can fit in the available height
+        if self.height > 0 {
+            let item_height = self.delegate.height() + self.delegate.spacing();
+            let header_height = 1; // Title or filter input
+            let footer_height = if self.show_status_bar { 2 } else { 0 }; // Status + help
+
+            let available_height = self.height.saturating_sub(header_height + footer_height);
+            let items_per_page = if item_height > 0 {
+                (available_height / item_height).max(1)
+            } else {
+                10 // Fallback to default value
+            };
+
+            self.per_page = items_per_page;
+            self.paginator.set_per_page(items_per_page);
+        }
+    }
 
     /// Returns whether pagination is currently shown.
     ///
@@ -810,8 +830,6 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     pub fn set_pagination_type(&mut self, pagination_type: paginator::Type) {
         self.paginator.paginator_type = pagination_type;
     }
-
-    // === Item Manipulation Methods ===
 
     /// Inserts an item at the specified index.
     ///
@@ -1132,8 +1150,6 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     pub fn items_empty(&self) -> bool {
         self.items.is_empty()
     }
-
-    // === UI Component Access and Styling ===
 
     /// Returns whether the title is currently shown.
     ///
@@ -1466,7 +1482,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// let styles = list.styles();
     /// // Access specific styles, e.g., styles.title, styles.pagination_style
     /// ```
-    pub fn styles(&self) -> &ListStyles {
+    pub fn styles(&self) -> &super::style::ListStyles {
         &self.styles
     }
 
@@ -1488,7 +1504,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// let styles = list.styles_mut();
     /// styles.title = Style::new().foreground("#FF0000"); // Red title
     /// ```
-    pub fn styles_mut(&mut self) -> &mut ListStyles {
+    pub fn styles_mut(&mut self) -> &mut super::style::ListStyles {
         &mut self.styles
     }
 
@@ -1510,51 +1526,33 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// let custom_styles = ListStyles::default();
     /// list.set_styles(custom_styles);
     /// ```
-    pub fn set_styles(&mut self, styles: ListStyles) {
+    pub fn set_styles(&mut self, styles: super::style::ListStyles) {
         self.styles = styles;
     }
 
-    /// Renders the status bar as a formatted string.
+    /// Sets the list's styling configuration (builder pattern).
     ///
-    /// The status bar shows the current selection position and total item count,
-    /// using the custom item names if set. The format is "X/Y items" where X is
-    /// the current cursor position + 1, and Y is the total item count.
+    /// This replaces all current styles with the provided configuration.
+    ///
+    /// # Arguments
+    ///
+    /// * `styles` - The styling configuration to apply
     ///
     /// # Returns
     ///
-    /// A formatted status string, or empty string if status bar is disabled.
+    /// Self, for method chaining.
     ///
     /// # Examples
     ///
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
-    /// let items = vec![
-    ///     DefaultItem::new("First", ""),
-    ///     DefaultItem::new("Second", ""),
-    /// ];
-    /// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
-    /// let status = list.status_view();
-    /// assert!(status.contains("1/2"));
+    /// # use bubbletea_widgets::list::style::ListStyles;
+    /// let custom_styles = ListStyles::default();
+    /// let list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24)
+    ///     .with_styles(custom_styles);
     /// ```
-    pub fn status_view(&self) -> String {
-        if !self.show_status_bar {
-            return String::new();
-        }
-
-        let mut footer = String::new();
-        if !self.is_empty() {
-            let singular = self.status_item_singular.as_deref().unwrap_or("item");
-            let plural = self.status_item_plural.as_deref().unwrap_or("items");
-            let noun = if self.len() == 1 { singular } else { plural };
-            footer.push_str(&format!("{}/{} {}", self.cursor + 1, self.len(), noun));
-        }
-        let help_view = self.help.view(self);
-        if !help_view.is_empty() {
-            footer.push('\n');
-            footer.push_str(&help_view);
-        }
-        footer
+    pub fn with_styles(mut self, styles: super::style::ListStyles) -> Self {
+        self.styles = styles;
+        self
     }
-
-    // === Advanced Filtering API ===
 }

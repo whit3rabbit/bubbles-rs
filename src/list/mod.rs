@@ -426,6 +426,23 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                 self.filtered_items.clear();
                 self.cursor = 0;
                 self.update_pagination();
+            } else if key_msg.key == crossterm::event::KeyCode::Enter {
+                // Handle item selection
+                if let Some(selected_item) = self.selected_item() {
+                    // Get the original index for the delegate callback
+                    let original_index = if self.filter_state == FilterState::Unfiltered {
+                        self.cursor
+                    } else if let Some(filtered_item) = self.filtered_items.get(self.cursor) {
+                        filtered_item.index
+                    } else {
+                        return None;
+                    };
+
+                    // Call the delegate's on_select callback
+                    if let Some(cmd) = self.delegate.on_select(original_index, selected_item) {
+                        return Some(cmd);
+                    }
+                }
             }
         }
         None
@@ -490,6 +507,27 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
         let items = self.view_items();
         if !items.is_empty() {
             sections.push(items);
+        }
+
+        // Spinner: Loading indicator
+        if self.show_spinner {
+            let spinner_view = self.spinner.view();
+            if !spinner_view.is_empty() {
+                sections.push(spinner_view);
+            }
+        }
+
+        // Pagination: Page indicators
+        if self.show_pagination && !self.is_empty() && self.paginator.total_pages > 1 {
+            let pagination_view = self.paginator.view();
+            if !pagination_view.is_empty() {
+                let styled_pagination = self
+                    .styles
+                    .pagination_style
+                    .clone()
+                    .render(&pagination_view);
+                sections.push(styled_pagination);
+            }
         }
 
         // Footer: Status and help

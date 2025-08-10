@@ -338,31 +338,62 @@ impl TextareaStyle {
     }
 }
 
-/// Create default focused style - matching Go DefaultStyles
+/// Create default focused style - matching Go DefaultStyles with adaptive colors
 pub fn default_focused_style() -> TextareaStyle {
+    use lipgloss::AdaptiveColor;
+
     TextareaStyle {
         base: Style::new(),
-        cursor_line: Style::new().background("#2a2a2a"),
-        cursor_line_number: Style::new().foreground("#666666"),
-        end_of_buffer: Style::new().foreground("#3c3c3c"),
-        line_number: Style::new().foreground("#666666"),
-        placeholder: Style::new().foreground("#666666"),
-        prompt: Style::new().foreground("#04b575"),
+        cursor_line: Style::new().background(AdaptiveColor {
+            Light: "255",
+            Dark: "0",
+        }),
+        cursor_line_number: Style::new().foreground(AdaptiveColor {
+            Light: "240",
+            Dark: "",
+        }),
+        end_of_buffer: Style::new().foreground(AdaptiveColor {
+            Light: "254",
+            Dark: "0",
+        }),
+        line_number: Style::new().foreground(AdaptiveColor {
+            Light: "249",
+            Dark: "7",
+        }),
+        placeholder: Style::new().foreground(Color::from("240")),
+        prompt: Style::new().foreground(Color::from("7")),
         text: Style::new(),
     }
 }
 
-/// Create default blurred style - matching Go DefaultStyles
+/// Create default blurred style - matching Go DefaultStyles with adaptive colors
 pub fn default_blurred_style() -> TextareaStyle {
+    use lipgloss::AdaptiveColor;
+
     TextareaStyle {
         base: Style::new(),
-        cursor_line: Style::new(),
-        cursor_line_number: Style::new().foreground("#3c3c3c"),
-        end_of_buffer: Style::new().foreground("#3c3c3c"),
-        line_number: Style::new().foreground("#3c3c3c"),
-        placeholder: Style::new().foreground("#666666"),
-        prompt: Style::new().foreground("#666666"),
-        text: Style::new(),
+        cursor_line: Style::new().foreground(AdaptiveColor {
+            Light: "245",
+            Dark: "7",
+        }),
+        cursor_line_number: Style::new().foreground(AdaptiveColor {
+            Light: "249",
+            Dark: "7",
+        }),
+        end_of_buffer: Style::new().foreground(AdaptiveColor {
+            Light: "254",
+            Dark: "0",
+        }),
+        line_number: Style::new().foreground(AdaptiveColor {
+            Light: "249",
+            Dark: "7",
+        }),
+        placeholder: Style::new().foreground(Color::from("240")),
+        prompt: Style::new().foreground(Color::from("7")),
+        text: Style::new().foreground(AdaptiveColor {
+            Light: "245",
+            Dark: "7",
+        }),
     }
 }
 

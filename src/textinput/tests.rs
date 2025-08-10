@@ -365,6 +365,64 @@ mod textinput_tests {
         assert!(credit_card_number.err.is_some());
     }
 
+    #[test]
+    fn test_component_trait_implementation() {
+        // Test Component trait implementation
+        use crate::Component;
+
+        let mut input = new();
+
+        // Test initial state
+        assert!(
+            !Component::focused(&input),
+            "Input should not be focused initially"
+        );
+
+        // Test focus method returns Some(Cmd)
+        let focus_cmd = Component::focus(&mut input);
+        assert!(
+            focus_cmd.is_some(),
+            "Component::focus should return Some(Cmd)"
+        );
+        assert!(
+            Component::focused(&input),
+            "Input should be focused after Component::focus() call"
+        );
+
+        // Test blur method
+        Component::blur(&mut input);
+        assert!(
+            !Component::focused(&input),
+            "Input should not be focused after Component::blur() call"
+        );
+
+        // Test focus/blur cycle using Component trait methods
+        for _ in 0..3 {
+            let _ = Component::focus(&mut input);
+            assert!(
+                Component::focused(&input),
+                "Input should be focused after Component::focus()"
+            );
+            Component::blur(&mut input);
+            assert!(
+                !Component::focused(&input),
+                "Input should not be focused after Component::blur()"
+            );
+        }
+
+        // Test that Component trait methods work alongside regular methods
+        std::mem::drop(input.focus()); // Regular focus method
+        assert!(
+            Component::focused(&input),
+            "Component::focused should work with regular focus"
+        );
+        Component::blur(&mut input); // Component blur method
+        assert!(
+            !input.focused(),
+            "Regular focused() should work with Component::blur"
+        );
+    }
+
     /// Tests specifically for placeholder rendering bug fix and regression prevention
     mod placeholder_rendering_tests {
         use super::*;

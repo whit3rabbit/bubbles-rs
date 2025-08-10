@@ -557,7 +557,7 @@ impl Model {
     }
 
     /// LineInfo returns line information for the current cursor position
-    /// Port of Go's LineInfo()
+    /// Port of Go's LineInfo() - enhanced with better wrapped line handling
     pub fn line_info(&mut self) -> LineInfo {
         if self.row >= self.value.len() {
             return LineInfo::default();
@@ -571,32 +571,36 @@ impl Model {
         // Find out which visual wrap line we are currently on
         let mut counter = 0;
         for (i, line) in grid.iter().enumerate() {
-            // We've found the line that we are on
+            // Check if cursor is exactly at the end of this wrapped line and should wrap to next
             if counter + line.len() == self.col && i + 1 < grid.len() {
-                // Wrap around to the next line
+                // We wrap around to the next visual line
+                let next_line = &grid[i + 1];
                 return LineInfo {
                     char_offset: 0,
                     column_offset: 0,
                     height: grid.len(),
                     row_offset: i + 1,
                     start_column: self.col,
-                    width: grid.get(i + 1).map_or(0, |l| l.len()),
-                    char_width: line
+                    width: next_line.len(),
+                    char_width: next_line
                         .iter()
                         .map(|&ch| UnicodeWidthChar::width(ch).unwrap_or(0))
                         .sum(),
                 };
             }
 
+            // Check if cursor falls within this wrapped line
             if counter + line.len() >= self.col {
                 let col_in_line = self.col.saturating_sub(counter);
-                let char_off: usize = line[..col_in_line.min(line.len())]
+                let char_off: usize = line
                     .iter()
+                    .take(col_in_line.min(line.len()))
                     .map(|&ch| UnicodeWidthChar::width(ch).unwrap_or(0))
                     .sum();
+
                 return LineInfo {
                     char_offset: char_off,
-                    column_offset: col_in_line, // column within current wrap line
+                    column_offset: col_in_line,
                     height: grid.len(),
                     row_offset: i,
                     start_column: counter,
@@ -609,6 +613,26 @@ impl Model {
             }
 
             counter += line.len();
+        }
+
+        // Cursor is past the end of all content - place at end of last line
+        if let Some(last_line) = grid.last() {
+            let last_counter = counter - last_line.len();
+            return LineInfo {
+                char_offset: last_line
+                    .iter()
+                    .map(|&ch| UnicodeWidthChar::width(ch).unwrap_or(0))
+                    .sum(),
+                column_offset: last_line.len(),
+                height: grid.len(),
+                row_offset: grid.len().saturating_sub(1),
+                start_column: last_counter,
+                width: last_line.len(),
+                char_width: last_line
+                    .iter()
+                    .map(|&ch| UnicodeWidthChar::width(ch).unwrap_or(0))
+                    .sum(),
+            };
         }
 
         LineInfo::default()
@@ -1026,182 +1050,214 @@ impl Model {
     }
 
     /// View renders the text area - port of Go's View()
-    pub fn view(&self) -> String {
+    pub fn view(&mut self) -> String {
         // Early return for empty placeholder case
         if self.value.is_empty() || (self.value.len() == 1 && self.value[0].is_empty()) {
             return self.placeholder_view();
         }
 
-        let mut lines = Vec::new();
+        // Set cursor text style for rendering
+        self.cursor.text_style = self.current_style.computed_cursor_line();
+
+        let mut s = String::new();
+        let line_info = self.line_info();
         let style = &self.current_style;
 
-        // Calculate visible lines based on viewport
-        let start_line = self.viewport.y_offset;
-        let end_line = (start_line + self.height).min(self.value.len());
+        // Track display lines and widest line number for padding
+        let mut display_line = 0;
+        let mut widest_line_number = 0;
 
-        for (line_idx, line) in self
-            .value
-            .iter()
-            .enumerate()
-            .skip(start_line)
-            .take(end_line - start_line)
-        {
-            let mut line_str = String::new();
-
-            // Add prompt
-            if let Some(prompt_func) = self.prompt_func {
-                line_str.push_str(&style.computed_prompt().render(&prompt_func(line_idx + 1)));
-            } else {
-                line_str.push_str(&style.computed_prompt().render(&self.prompt));
-            }
-
-            // Add line number
-            if self.show_line_numbers {
-                let line_num = format!("{:>3} ", line_idx + 1);
-                line_str.push_str(&style.computed_line_number().render(&line_num));
-            }
-
-            // Add line content with soft wrapping
-            let mut cache = self.cache.clone();
-            let wrapped_lines = cache.wrap(line, self.width);
+        // Process each document line
+        for (doc_line_idx, line) in self.value.iter().enumerate() {
+            let wrapped_lines = self.cache.wrap(line, self.width);
+            let is_current_doc_line = doc_line_idx == self.row;
 
             for (wrap_idx, wrapped_line) in wrapped_lines.iter().enumerate() {
-                let mut display_line = line_str.clone();
+                let prompt = self.get_prompt_string(display_line);
+                s.push_str(&style.computed_prompt().render(&prompt));
+                display_line += 1;
 
-                if wrap_idx > 0 {
-                    // Continuation line - adjust prompt/line number spacing
-                    if self.show_line_numbers {
-                        display_line =
-                            format!("{}    ", style.computed_prompt().render(&self.prompt));
+                // Line numbers
+                let mut ln = String::new();
+                if self.show_line_numbers {
+                    if wrap_idx == 0 {
+                        if is_current_doc_line {
+                            ln = style
+                                .computed_cursor_line_number()
+                                .render(&self.format_line_number(doc_line_idx + 1));
+                        } else {
+                            ln = style
+                                .computed_line_number()
+                                .render(&self.format_line_number(doc_line_idx + 1));
+                        }
+                    } else if is_current_doc_line {
+                        ln = style
+                            .computed_cursor_line_number()
+                            .render(&self.format_line_number(""));
                     } else {
-                        display_line = style.computed_prompt().render(&self.prompt);
+                        ln = style
+                            .computed_line_number()
+                            .render(&self.format_line_number(""));
                     }
+                    s.push_str(&ln);
                 }
 
-                let wrapped_content: String = wrapped_line.iter().collect();
+                // Track widest line number for padding
+                let lnw = lipgloss::width(&ln);
+                if lnw > widest_line_number {
+                    widest_line_number = lnw;
+                }
 
-                // Apply cursor line highlighting if this is the current line
-                if line_idx == self.row {
-                    display_line.push_str(&style.computed_cursor_line().render(&wrapped_content));
+                let strwidth = wrapped_line
+                    .iter()
+                    .map(|&ch| unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0))
+                    .sum::<usize>();
+                let mut padding = self.width.saturating_sub(strwidth);
+
+                // Handle width overflow from trailing spaces
+                if strwidth > self.width {
+                    // Remove trailing space if it causes overflow
+                    let content: String = wrapped_line
+                        .iter()
+                        .collect::<String>()
+                        .trim_end()
+                        .to_string();
+                    let new_wrapped_line: Vec<char> = content.chars().collect();
+                    let new_strwidth = new_wrapped_line
+                        .iter()
+                        .map(|&ch| unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0))
+                        .sum::<usize>();
+                    padding = self.width.saturating_sub(new_strwidth);
+                }
+
+                // Render cursor if on current line and wrap
+                if is_current_doc_line && line_info.row_offset == wrap_idx {
+                    let col_offset = line_info.column_offset;
+
+                    // Before cursor
+                    let before: String = wrapped_line.iter().take(col_offset).collect();
+                    s.push_str(&style.computed_cursor_line().render(&before));
+
+                    // Cursor
+                    if self.col >= line.len() && line_info.char_offset >= self.width {
+                        self.cursor.set_char(" ");
+                        s.push_str(&self.cursor.view());
+                    } else {
+                        let cursor_char = wrapped_line.get(col_offset).unwrap_or(&' ');
+                        self.cursor.set_char(&cursor_char.to_string());
+                        s.push_str(&self.cursor.view());
+
+                        // After cursor
+                        let after: String = wrapped_line.iter().skip(col_offset + 1).collect();
+                        s.push_str(&style.computed_cursor_line().render(&after));
+                    }
                 } else {
-                    display_line.push_str(&style.computed_text().render(&wrapped_content));
+                    // Regular line content
+                    let content: String = wrapped_line.iter().collect();
+                    let line_style = if is_current_doc_line {
+                        style.computed_cursor_line()
+                    } else {
+                        style.computed_text()
+                    };
+                    s.push_str(&line_style.render(&content));
                 }
 
-                lines.push(display_line);
+                // Add padding
+                s.push_str(&style.computed_text().render(&" ".repeat(padding.max(0))));
+                s.push('\n');
             }
         }
 
-        // Fill remaining height with empty lines or end-of-buffer characters
-        while lines.len() < self.height {
-            let mut empty_line = String::new();
+        // Fill remaining height
+        for _ in 0..(self.height.saturating_sub(display_line)) {
+            let prompt = self.get_prompt_string(display_line);
+            s.push_str(&style.computed_prompt().render(&prompt));
+            display_line += 1;
 
-            // Add prompt
-            empty_line.push_str(&style.computed_prompt().render(&self.prompt));
-
-            // Add end-of-buffer character or space
-            if self.end_of_buffer_character != ' ' {
-                empty_line.push_str(
-                    &style
-                        .computed_end_of_buffer()
-                        .render(&self.end_of_buffer_character.to_string()),
-                );
-            }
-
-            lines.push(empty_line);
+            let left_gutter = self.end_of_buffer_character.to_string();
+            let right_gap_width =
+                self.width().saturating_sub(lipgloss::width(&left_gutter)) + widest_line_number;
+            let right_gap = " ".repeat(right_gap_width.max(0));
+            s.push_str(
+                &style
+                    .computed_end_of_buffer()
+                    .render(&(left_gutter + &right_gap)),
+            );
+            s.push('\n');
         }
 
-        // Apply base style to entire view, but strip ANSI for tests
-        let content = lines.join("\n");
-        let styled = style.base.render(&content);
-        lipgloss::strip_ansi(&styled)
+        // Strip ANSI codes for consistent test output
+        lipgloss::strip_ansi(&s)
+    }
+
+    /// Get prompt string for a given display line - port of Go's getPromptString()
+    fn get_prompt_string(&self, display_line: usize) -> String {
+        if let Some(prompt_func) = self.prompt_func {
+            let prompt = prompt_func(display_line);
+            let pl = prompt.len();
+            if pl < self.prompt_width {
+                format!("{}{}", " ".repeat(self.prompt_width - pl), prompt)
+            } else {
+                prompt
+            }
+        } else {
+            self.prompt.clone()
+        }
+    }
+
+    /// Format line number for display - port of Go's formatLineNumber()
+    fn format_line_number(&self, x: impl std::fmt::Display) -> String {
+        // Calculate digits based on max height to ensure consistent formatting
+        let digits = if self.max_height > 0 {
+            self.max_height.to_string().len()
+        } else {
+            3 // Default to 3 digits as in Go implementation
+        };
+        format!(" {:width$} ", x, width = digits)
     }
 
     /// Render placeholder text - port of Go's placeholder view logic
-    fn placeholder_view(&self) -> String {
+    fn placeholder_view(&mut self) -> String {
         if self.placeholder.is_empty() {
             return String::new();
         }
 
-        let mut lines = Vec::new();
-        let style = &self.current_style;
+        let mut s = String::new();
 
         // Split placeholder into lines
         let placeholder_lines: Vec<&str> = self.placeholder.lines().collect();
 
-        for (line_idx, &placeholder_line) in placeholder_lines.iter().enumerate() {
-            let mut line_str = String::new();
+        for i in 0..self.height {
+            // Render prompt
+            let prompt = self.get_prompt_string(i);
+            s.push_str(&prompt);
 
-            // Add prompt
-            if let Some(prompt_func) = self.prompt_func {
-                line_str.push_str(&style.computed_prompt().render(&prompt_func(line_idx + 1)));
-            } else {
-                line_str.push_str(&style.computed_prompt().render(&self.prompt));
-            }
-
-            // Add line number for first line only
+            // Render line numbers
             if self.show_line_numbers {
-                if line_idx == 0 {
-                    line_str.push_str(&style.computed_line_number().render("  1 "));
+                let ln = if i == 0 {
+                    self.format_line_number(1)
                 } else {
-                    line_str.push_str(&style.computed_line_number().render("    "));
+                    self.format_line_number("")
+                };
+                s.push_str(&ln);
+            }
+
+            // Render line content
+            if i < placeholder_lines.len() {
+                // Render placeholder line (format_line_number already includes spacing)
+                s.push_str(placeholder_lines[i]);
+            } else {
+                // End of buffer character for empty lines
+                if self.end_of_buffer_character != ' ' {
+                    s.push(self.end_of_buffer_character);
                 }
             }
 
-            // Add placeholder content with wrapping
-            let mut cache = self.cache.clone();
-            let wrapped = cache.wrap(&placeholder_line.chars().collect::<Vec<_>>(), self.width);
-
-            for (wrap_idx, wrapped_line) in wrapped.iter().enumerate() {
-                let mut display_line = line_str.clone();
-
-                if wrap_idx > 0 {
-                    // Continuation line
-                    if self.show_line_numbers {
-                        display_line =
-                            format!("{}    ", style.computed_prompt().render(&self.prompt));
-                    } else {
-                        display_line = style.computed_prompt().render(&self.prompt);
-                    }
-                }
-
-                let wrapped_content: String = wrapped_line.iter().collect();
-                display_line.push_str(&style.computed_placeholder().render(&wrapped_content));
-
-                lines.push(display_line);
-
-                if lines.len() >= self.height {
-                    break;
-                }
-            }
-
-            if lines.len() >= self.height {
-                break;
-            }
+            s.push('\n');
         }
 
-        // Fill remaining height with empty lines
-        while lines.len() < self.height {
-            let mut empty_line = String::new();
-
-            // Add prompt
-            empty_line.push_str(&style.computed_prompt().render(&self.prompt));
-
-            // Add end-of-buffer character or space
-            if self.end_of_buffer_character != ' ' {
-                empty_line.push_str(
-                    &style
-                        .computed_end_of_buffer()
-                        .render(&self.end_of_buffer_character.to_string()),
-                );
-            }
-
-            lines.push(empty_line);
-        }
-
-        // Apply base style to entire view, but strip ANSI for tests
-        let content = lines.join("\n");
-        let styled = style.base.render(&content);
-        lipgloss::strip_ansi(&styled)
+        // Remove trailing newline to match expected format
+        s.trim_end_matches('\n').to_string()
     }
 
     /// Scroll viewport down by n lines - for testing viewport functionality
@@ -1233,6 +1289,22 @@ impl Model {
         // Add the row offset within the current document line
         line_count += self.line_info().row_offset;
         line_count
+    }
+
+    /// Reposition the viewport to keep the cursor in view - port of Go's repositionView()
+    fn reposition_view(&mut self) {
+        let cursor_line = self.cursor_line_number();
+        let minimum = self.viewport.y_offset;
+        let maximum = minimum + self.viewport.height.saturating_sub(1);
+
+        if cursor_line < minimum {
+            // Cursor is above the visible area, scroll up
+            self.viewport.set_y_offset(cursor_line);
+        } else if cursor_line > maximum {
+            // Cursor is below the visible area, scroll down
+            let new_offset = cursor_line.saturating_sub(self.viewport.height.saturating_sub(1));
+            self.viewport.set_y_offset(new_offset);
+        }
     }
 
     /// Update handles incoming messages and updates the textarea state - port of Go's Update()
@@ -1272,6 +1344,10 @@ impl Model {
     /// Handle key messages - port of Go's key handling logic
     fn handle_key_msg(&mut self, key_msg: &bubbletea_rs::KeyMsg) -> Option<bubbletea_rs::Cmd> {
         use crate::key::matches_binding;
+
+        // Store old cursor position to determine if cursor moved
+        let old_row = self.row;
+        let old_col = self.col;
 
         // Character movement
         if matches_binding(key_msg, &self.key_map.character_forward) {
@@ -1343,21 +1419,45 @@ impl Model {
             }
         }
 
+        // Reposition viewport if cursor moved or content changed
+        if self.row != old_row || self.col != old_col {
+            self.reposition_view();
+        }
+
         None
     }
 
     /// Extract character from key message for regular text input
-    fn extract_character_from_key_msg(&self, _key_msg: &bubbletea_rs::KeyMsg) -> Option<char> {
-        // This would depend on the actual KeyMsg structure in bubbletea_rs
-        // For now, we'll return None as a placeholder
-        // In a real implementation, this would extract the character from the key event
-        None
+    fn extract_character_from_key_msg(&self, key_msg: &bubbletea_rs::KeyMsg) -> Option<char> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+
+        // Only extract printable characters without control modifiers
+        // Skip if Control or Alt modifiers are pressed (these are for shortcuts)
+        if key_msg.modifiers.contains(KeyModifiers::CONTROL)
+            || key_msg.modifiers.contains(KeyModifiers::ALT)
+        {
+            return None;
+        }
+
+        match key_msg.key {
+            KeyCode::Char(c) => {
+                // Accept all printable characters
+                if c.is_control() {
+                    None
+                } else {
+                    Some(c)
+                }
+            }
+            KeyCode::Tab => Some('\t'),
+            _ => None,
+        }
     }
 
-    /// Create paste command for clipboard integration
+    /// Create paste command for clipboard integration - port of Go's Paste()
     fn paste_command(&self) -> bubbletea_rs::Cmd {
+        // Use tick with minimal duration to trigger clipboard read
         bubbletea_rs::tick(
-            std::time::Duration::from_nanos(1),
+            std::time::Duration::from_millis(1),
             |_| match Self::read_clipboard() {
                 Ok(content) => Box::new(PasteMsg(content)) as bubbletea_rs::Msg,
                 Err(err) => Box::new(PasteErrMsg(err)) as bubbletea_rs::Msg,
@@ -1365,21 +1465,24 @@ impl Model {
         )
     }
 
-    /// Read from system clipboard
+    /// Read from system clipboard - matches textinput implementation
     fn read_clipboard() -> Result<String, String> {
         #[cfg(feature = "clipboard-support")]
         {
             use clipboard::{ClipboardContext, ClipboardProvider};
 
-            let mut ctx: ClipboardContext = ClipboardProvider::new()
-                .map_err(|e| format!("Failed to create clipboard context: {}", e))?;
-
-            ctx.get_contents()
-                .map_err(|e| format!("Failed to read clipboard: {}", e))
+            let res: Result<String, String> = (|| {
+                let mut ctx: ClipboardContext = ClipboardProvider::new()
+                    .map_err(|e| format!("Failed to create clipboard context: {}", e))?;
+                ctx.get_contents()
+                    .map_err(|e| format!("Failed to read clipboard: {}", e))
+            })();
+            res
         }
         #[cfg(not(feature = "clipboard-support"))]
         {
-            Err("Clipboard support not enabled".to_string())
+            // Return empty string instead of error to avoid disrupting workflow
+            Ok(String::new())
         }
     }
 

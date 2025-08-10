@@ -149,6 +149,8 @@ use lipgloss_extras::lipgloss::width as lg_width;
 use lipgloss_extras::prelude::*;
 use unicode_width::UnicodeWidthChar;
 
+const SPACEBAR: char = ' ';
+
 /// Keyboard binding configuration for viewport navigation.
 ///
 /// This struct defines all key combinations that control viewport scrolling,
@@ -311,15 +313,15 @@ impl Default for ViewportKeyMap {
         Self {
             page_down: key::Binding::new(vec![
                 KeyCode::PageDown,
-                KeyCode::Char(' '),
+                KeyCode::Char(SPACEBAR),
                 KeyCode::Char('f'),
             ])
             .with_help("f/pgdn", "page down"),
             page_up: key::Binding::new(vec![KeyCode::PageUp, KeyCode::Char('b')])
                 .with_help("b/pgup", "page up"),
-            half_page_up: key::Binding::new(vec![KeyCode::Char('u')]).with_help("u", "½ page up"),
-            half_page_down: key::Binding::new(vec![KeyCode::Char('d')])
-                .with_help("d", "½ page down"),
+            half_page_up: key::Binding::new(vec!["u", "ctrl+u"]).with_help("u/ctrl+u", "½ page up"),
+            half_page_down: key::Binding::new(vec!["d", "ctrl+d"])
+                .with_help("d/ctrl+d", "½ page down"),
             up: key::Binding::new(vec![KeyCode::Up, KeyCode::Char('k')]).with_help("↑/k", "up"),
             down: key::Binding::new(vec![KeyCode::Down, KeyCode::Char('j')])
                 .with_help("↓/j", "down"),

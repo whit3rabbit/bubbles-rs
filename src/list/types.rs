@@ -218,6 +218,198 @@ pub trait ItemDelegate<I: Item> {
     /// }
     /// ```
     fn update(&self, msg: &Msg, m: &mut super::Model<I>) -> Option<Cmd>;
+
+    /// Returns key bindings for the short help view.
+    ///
+    /// This method provides a compact set of key bindings that will be
+    /// displayed in short help views. The bindings should represent the
+    /// most important or commonly used actions for this delegate.
+    ///
+    /// # Returns
+    ///
+    /// A vector of key bindings for compact help display.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Item, ItemDelegate, Model};
+    /// # use bubbletea_widgets::key::{self, Binding};
+    /// # use bubbletea_rs::{Cmd, Msg};
+    /// struct HelpfulDelegate {
+    ///     select_key: key::Binding,
+    /// }
+    ///
+    /// impl<I: Item> ItemDelegate<I> for HelpfulDelegate {
+    ///     fn short_help(&self) -> Vec<key::Binding> {
+    ///         vec![self.select_key.clone()]
+    ///     }
+    ///     
+    /// # fn render(&self, _m: &Model<I>, _index: usize, item: &I) -> String { item.to_string() }
+    /// # fn height(&self) -> usize { 1 }
+    /// # fn spacing(&self) -> usize { 0 }
+    /// # fn update(&self, _msg: &Msg, _m: &mut Model<I>) -> Option<Cmd> { None }
+    /// }
+    /// ```
+    fn short_help(&self) -> Vec<crate::key::Binding> {
+        vec![]
+    }
+
+    /// Returns key bindings for the full help view.
+    ///
+    /// This method organizes all key bindings into columns for display in
+    /// expanded help views. Each inner vector represents a column of related
+    /// key bindings.
+    ///
+    /// # Returns
+    ///
+    /// A vector of vectors, where each inner vector represents a column
+    /// of related key bindings.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Item, ItemDelegate, Model};
+    /// # use bubbletea_widgets::key::{self, Binding};
+    /// # use bubbletea_rs::{Cmd, Msg};
+    /// struct OrganizedDelegate {
+    ///     navigation_keys: Vec<key::Binding>,
+    ///     action_keys: Vec<key::Binding>,
+    /// }
+    ///
+    /// impl<I: Item> ItemDelegate<I> for OrganizedDelegate {
+    ///     fn full_help(&self) -> Vec<Vec<key::Binding>> {
+    ///         vec![
+    ///             self.navigation_keys.clone(),
+    ///             self.action_keys.clone(),
+    ///         ]
+    ///     }
+    ///     
+    /// # fn render(&self, _m: &Model<I>, _index: usize, item: &I) -> String { item.to_string() }
+    /// # fn height(&self) -> usize { 1 }
+    /// # fn spacing(&self) -> usize { 0 }
+    /// # fn update(&self, _msg: &Msg, _m: &mut Model<I>) -> Option<Cmd> { None }
+    /// }
+    /// ```
+    fn full_help(&self) -> Vec<Vec<crate::key::Binding>> {
+        vec![]
+    }
+
+    /// Called when an item is selected (e.g., Enter key pressed).
+    ///
+    /// This method is invoked when the user selects an item, typically by
+    /// pressing Enter. It allows the delegate to perform custom actions
+    /// or return commands in response to item selection.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - The index of the selected item in the original items list
+    /// * `item` - A reference to the selected item
+    ///
+    /// # Returns
+    ///
+    /// An optional command to execute in response to the selection.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Item, ItemDelegate, Model};
+    /// # use bubbletea_rs::{Cmd, Msg};
+    /// struct SelectableDelegate;
+    ///
+    /// impl<I: Item> ItemDelegate<I> for SelectableDelegate {
+    ///     fn on_select(&self, index: usize, item: &I) -> Option<Cmd> {
+    ///         // Log the selection and return a custom command
+    ///         println!("Selected item {} at index {}", item, index);
+    ///         None // Or return Some(your_command)
+    ///     }
+    ///     
+    /// # fn render(&self, _m: &Model<I>, _index: usize, item: &I) -> String { item.to_string() }
+    /// # fn height(&self) -> usize { 1 }
+    /// # fn spacing(&self) -> usize { 0 }
+    /// # fn update(&self, _msg: &Msg, _m: &mut Model<I>) -> Option<Cmd> { None }
+    /// }
+    /// ```
+    fn on_select(&self, _index: usize, _item: &I) -> Option<Cmd> {
+        None
+    }
+
+    /// Called when an item is about to be removed.
+    ///
+    /// This method is invoked before an item is removed from the list,
+    /// allowing the delegate to perform cleanup actions or return commands.
+    /// Note that this is called by the list's removal methods, not automatically
+    /// by user actions.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - The index of the item being removed
+    /// * `item` - A reference to the item being removed
+    ///
+    /// # Returns
+    ///
+    /// An optional command to execute in response to the removal.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Item, ItemDelegate, Model};
+    /// # use bubbletea_rs::{Cmd, Msg};
+    /// struct TrackingDelegate;
+    ///
+    /// impl<I: Item> ItemDelegate<I> for TrackingDelegate {
+    ///     fn on_remove(&self, index: usize, item: &I) -> Option<Cmd> {
+    ///         // Log the removal
+    ///         println!("Removing item {} at index {}", item, index);
+    ///         None
+    ///     }
+    ///     
+    /// # fn render(&self, _m: &Model<I>, _index: usize, item: &I) -> String { item.to_string() }
+    /// # fn height(&self) -> usize { 1 }
+    /// # fn spacing(&self) -> usize { 0 }
+    /// # fn update(&self, _msg: &Msg, _m: &mut Model<I>) -> Option<Cmd> { None }
+    /// }
+    /// ```
+    fn on_remove(&self, _index: usize, _item: &I) -> Option<Cmd> {
+        None
+    }
+
+    /// Determines whether an item can be removed.
+    ///
+    /// This method is called by the list to determine if an item at a given
+    /// index is allowed to be removed. This can be used to implement
+    /// protection for certain items or conditional removal logic.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - The index of the item being checked for removal
+    /// * `item` - A reference to the item being checked
+    ///
+    /// # Returns
+    ///
+    /// `true` if the item can be removed, `false` otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Item, ItemDelegate, Model};
+    /// # use bubbletea_rs::{Cmd, Msg};
+    /// struct ProtectedDelegate;
+    ///
+    /// impl<I: Item> ItemDelegate<I> for ProtectedDelegate {
+    ///     fn can_remove(&self, index: usize, item: &I) -> bool {
+    ///         // Don't allow removal of the first item
+    ///         index != 0
+    ///     }
+    ///     
+    /// # fn render(&self, _m: &Model<I>, _index: usize, item: &I) -> String { item.to_string() }
+    /// # fn height(&self) -> usize { 1 }
+    /// # fn spacing(&self) -> usize { 0 }
+    /// # fn update(&self, _msg: &Msg, _m: &mut Model<I>) -> Option<Cmd> { None }
+    /// }
+    /// ```
+    fn can_remove(&self, _index: usize, _item: &I) -> bool {
+        true
+    }
 }
 
 /// Internal representation of a filtered item with fuzzy match indices.

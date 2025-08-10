@@ -2,7 +2,8 @@
 
 use super::model::{paste, Model};
 use super::types::{EchoMode, PasteErrMsg, PasteMsg, ValidateFunc};
-use crate::key::matches;
+use crate::key::matches_binding;
+use crate::Component;
 use bubbletea_rs::{Cmd, KeyMsg, Msg};
 use crossterm::event::{KeyCode, KeyModifiers};
 
@@ -460,7 +461,7 @@ impl Model {
         // Handle key messages
         if let Some(key_msg) = msg.downcast_ref::<KeyMsg>() {
             // Check for suggestion acceptance first
-            if matches(key_msg, &[&self.key_map.accept_suggestion]) {
+            if matches_binding(key_msg, &self.key_map.accept_suggestion) {
                 if self.can_accept_suggestion() {
                     let suggestion = &self.matched_suggestions[self.current_suggestion_index];
                     let remaining: Vec<char> = suggestion[self.value.len()..].to_vec();
@@ -471,47 +472,47 @@ impl Model {
             }
 
             // Handle other key bindings
-            if matches(key_msg, &[&self.key_map.delete_word_backward]) {
+            if matches_binding(key_msg, &self.key_map.delete_word_backward) {
                 self.delete_word_backward();
-            } else if matches(key_msg, &[&self.key_map.delete_character_backward]) {
+            } else if matches_binding(key_msg, &self.key_map.delete_character_backward) {
                 self.err = None;
                 if !self.value.is_empty() && self.pos > 0 {
                     self.value.remove(self.pos - 1);
                     self.pos -= 1;
                     self.err = self.validate_runes(&self.value);
                 }
-            } else if matches(key_msg, &[&self.key_map.word_backward]) {
+            } else if matches_binding(key_msg, &self.key_map.word_backward) {
                 self.word_backward();
-            } else if matches(key_msg, &[&self.key_map.character_backward]) {
+            } else if matches_binding(key_msg, &self.key_map.character_backward) {
                 if self.pos > 0 {
                     self.set_cursor(self.pos - 1);
                 }
-            } else if matches(key_msg, &[&self.key_map.word_forward]) {
+            } else if matches_binding(key_msg, &self.key_map.word_forward) {
                 self.word_forward();
-            } else if matches(key_msg, &[&self.key_map.character_forward]) {
+            } else if matches_binding(key_msg, &self.key_map.character_forward) {
                 if self.pos < self.value.len() {
                     self.set_cursor(self.pos + 1);
                 }
-            } else if matches(key_msg, &[&self.key_map.line_start]) {
+            } else if matches_binding(key_msg, &self.key_map.line_start) {
                 self.cursor_start();
-            } else if matches(key_msg, &[&self.key_map.delete_character_forward]) {
+            } else if matches_binding(key_msg, &self.key_map.delete_character_forward) {
                 if !self.value.is_empty() && self.pos < self.value.len() {
                     self.value.remove(self.pos);
                     self.err = self.validate_runes(&self.value);
                 }
-            } else if matches(key_msg, &[&self.key_map.line_end]) {
+            } else if matches_binding(key_msg, &self.key_map.line_end) {
                 self.cursor_end();
-            } else if matches(key_msg, &[&self.key_map.delete_after_cursor]) {
+            } else if matches_binding(key_msg, &self.key_map.delete_after_cursor) {
                 self.delete_after_cursor();
-            } else if matches(key_msg, &[&self.key_map.delete_before_cursor]) {
+            } else if matches_binding(key_msg, &self.key_map.delete_before_cursor) {
                 self.delete_before_cursor();
-            } else if matches(key_msg, &[&self.key_map.paste]) {
+            } else if matches_binding(key_msg, &self.key_map.paste) {
                 return std::option::Option::Some(paste());
-            } else if matches(key_msg, &[&self.key_map.delete_word_forward]) {
+            } else if matches_binding(key_msg, &self.key_map.delete_word_forward) {
                 self.delete_word_forward();
-            } else if matches(key_msg, &[&self.key_map.next_suggestion]) {
+            } else if matches_binding(key_msg, &self.key_map.next_suggestion) {
                 self.next_suggestion();
-            } else if matches(key_msg, &[&self.key_map.prev_suggestion]) {
+            } else if matches_binding(key_msg, &self.key_map.prev_suggestion) {
                 self.previous_suggestion();
             } else {
                 // Regular character input (no Ctrl/Alt modifiers)
@@ -634,5 +635,35 @@ impl Model {
             }
             self.offset = i;
         }
+    }
+}
+
+impl Component for Model {
+    /// Sets the component to focused state.
+    ///
+    /// This implementation wraps the existing focus() method to match the Component trait's
+    /// expected signature of returning Option<Cmd> instead of Cmd.
+    ///
+    /// # Returns
+    ///
+    /// Some(Cmd) containing a cursor blink command, or None if no command is needed.
+    fn focus(&mut self) -> Option<Cmd> {
+        Some(self.focus())
+    }
+
+    /// Sets the component to blurred (unfocused) state.
+    ///
+    /// This directly delegates to the existing blur() method which already matches
+    /// the Component trait signature.
+    fn blur(&mut self) {
+        self.blur()
+    }
+
+    /// Returns the current focus state of the component.
+    ///
+    /// This directly delegates to the existing focused() method which already matches
+    /// the Component trait signature.
+    fn focused(&self) -> bool {
+        self.focused()
     }
 }

@@ -24,13 +24,16 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         if self.filter_state == FilterState::Filtering {
             // Show filter input interface when actively filtering
             format!("Filter: {}", self.filter_input.view())
-        } else {
+        } else if self.show_title {
             // Show title, optionally with filter status
             let mut header = self.title.clone();
             if self.filter_state == FilterState::FilterApplied {
                 header.push_str(&format!(" (filtered: {})", self.len()));
             }
             self.styles.title.clone().render(&header)
+        } else {
+            // Title is hidden
+            String::new()
         }
     }
 
@@ -151,10 +154,12 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             let noun = if self.len() == 1 { singular } else { plural };
             footer.push_str(&format!("{}/{} {}", self.cursor + 1, self.len(), noun));
         }
-        let help_view = self.help.view(self);
-        if !help_view.is_empty() {
-            footer.push('\n');
-            footer.push_str(&help_view);
+        if self.show_help {
+            let help_view = self.help.view(self);
+            if !help_view.is_empty() {
+                footer.push('\n');
+                footer.push_str(&help_view);
+            }
         }
         footer
     }
