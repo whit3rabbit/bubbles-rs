@@ -593,6 +593,33 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
     /// - **Selected**: Highlighted with left border and accent colors  
     /// - **Dimmed**: Faded appearance when filter input is empty
     /// - **Filtered**: Normal or selected appearance with character-level match highlighting
+    ///
+    /// ## CRITICAL DEVELOPER NOTES - List Component Bug Fixes
+    ///
+    /// This render method is part of comprehensive fixes for list component issues.
+    /// **READ THIS** before modifying anything related to index handling!
+    ///
+    /// ### Index Parameter Semantics (VERY IMPORTANT!)
+    /// The `index` parameter represents the **original item index** in the full items list,
+    /// NOT a viewport-relative or filtered-relative position. This design is crucial for:
+    ///
+    /// 1. **Cursor Highlighting**: `index == m.cursor` comparison works correctly
+    /// 2. **Filter Highlighting**: We can find matches by searching filtered_items
+    /// 3. **Viewport Scrolling**: Highlighting persists across viewport changes
+    ///
+    /// ### Fixed Bug Context
+    /// Previous issues that were resolved:
+    /// - **Cursor highlighting loss**: Caused by passing viewport-relative indices
+    /// - **Filter input accumulation**: Fixed by proper textinput event forwarding  
+    /// - **Viewport page jumping**: Fixed by smooth scrolling implementation
+    ///
+    /// ### System Integration
+    /// This method works with other fixes in `mod.rs`:
+    /// - `sync_viewport_with_cursor()`: Provides smooth viewport scrolling
+    /// - `view_items()`: Passes original indices instead of viewport-relative ones
+    /// - Filter input handlers: Ensure proper character accumulation
+    ///
+    /// ⚠️  **WARNING**: If you modify index handling here, ensure consistency with `view_items()`!
     fn render(&self, m: &Model<I>, index: usize, item: &I) -> String {
         let title = item.to_string();
         let desc = if let Some(di) = (item as &dyn std::any::Any).downcast_ref::<DefaultItem>() {
@@ -619,11 +646,27 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
             super::FilterState::Filtering | super::FilterState::FilterApplied
         );
 
-        // Extract character match indices from the fuzzy search results
+        // FILTER HIGHLIGHTING FIX: Extract character match indices from the fuzzy search results
         // These indices tell us which characters in the text should be highlighted
-        // Note: matches are only available for items that passed the filter
-        let matches = if is_filtered && index < m.filtered_items.len() {
-            Some(&m.filtered_items[index].matches)
+        //
+        // CRITICAL CHANGE: Find matches for this item by searching the filtered_items by original index
+        //
+        // Previous approach: Used `index < m.filtered_items.len()` and accessed `m.filtered_items[index]`
+        // Problem: This assumed `index` was the filtered item position, but after viewport scrolling fixes,
+        // the `index` parameter now represents the original item index (for cursor highlighting).
+        //
+        // New approach: Search filtered_items to find the FilteredItem whose `index` field matches
+        // the original item index, then extract the matches from that FilteredItem.
+        //
+        // This ensures filter highlighting works correctly even when:
+        // 1. Items are scrolled in/out of viewport
+        // 2. Cursor highlighting uses original indices
+        // 3. Filter matches need to be found by original item position
+        let matches = if is_filtered {
+            m.filtered_items
+                .iter()
+                .find(|fi| fi.index == index) // Find FilteredItem with matching original index
+                .map(|fi| &fi.matches) // Extract the character match indices
         } else {
             None
         };

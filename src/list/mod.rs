@@ -5,6 +5,28 @@
 //! - `ItemDelegate`: Controls item `render`, `height`, `spacing`, and `update`
 //! - Submodules: `defaultitem`, `keys`, and `style`
 //!
+//! ## MAJOR BUG FIXES - Viewport Scrolling & Filter Input (v0.1.4+)
+//!
+//! This implementation includes comprehensive fixes for critical list component issues:
+//!
+//! ### 🔧 Fixed Issues
+//! 1. **Filter Input Accumulation**: Characters now accumulate correctly during typing
+//! 2. **Cursor Highlighting Loss**: Selection indicator persists during viewport scrolling  
+//! 3. **Viewport Page Jumping**: Smooth one-item-at-a-time scrolling instead of jarring page jumps
+//! 4. **Upward Scrolling Problems**: Proper viewport adjustment when scrolling up
+//!
+//! ### 🏗️ Architecture Changes
+//! - **Smooth Viewport Scrolling**: `viewport_start` field + `sync_viewport_with_cursor()` method
+//! - **Proper Index Handling**: Original item indices for cursor highlighting, viewport-relative for display
+//! - **Enhanced Filter Input**: Direct textinput component integration instead of manual string manipulation
+//! - **State Management**: Improved filtering state transitions to prevent input blocking
+//!
+//! ### 📋 Key Design Decisions
+//! - **Index Semantics**: Render delegates receive original item indices for consistent cursor highlighting
+//! - **Viewport Strategy**: Only scroll when cursor moves outside visible bounds (context preservation)
+//! - **Filter Integration**: Maintain `Filtering` state during typing, only change to `FilterApplied` on Enter
+//! - **Event Forwarding**: Proper KeyMsg creation and forwarding to textinput component
+//!
 //! ### Filtering States
 //! The list supports fuzzy filtering with three states:
 //! - `Unfiltered`: No filter active
@@ -24,6 +46,7 @@ pub mod style;
 
 use crate::{help, key, paginator, spinner, textinput};
 use bubbletea_rs::{Cmd, KeyMsg, Model as BubbleTeaModel, Msg};
+use crossterm::event::KeyCode;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
 use lipgloss_extras::lipgloss;
@@ -94,6 +117,23 @@ pub struct Model<I: Item> {
     filter_state: FilterState,
     filtered_items: Vec<FilteredItem<I>>,
     cursor: usize,
+    /// First visible item index for smooth scrolling.
+    ///
+    /// This field enables smooth viewport scrolling instead of jarring page jumps.
+    /// Unlike paginator-based scrolling which jumps entire pages at once, this approach
+    /// tracks the exact starting position of the visible window, allowing the viewport
+    /// to slide smoothly as the cursor moves.
+    ///
+    /// Key behaviors:
+    /// - Only scrolls when cursor moves outside visible bounds
+    /// - Preserves context by keeping previously visible items in view when possible
+    /// - Provides one-item-at-a-time scrolling for better user experience
+    ///
+    /// This was added to fix the issue where page-based scrolling caused:
+    /// 1. Loss of cursor highlighting during viewport changes
+    /// 2. Jarring jumps that lost visual context
+    /// 3. Poor upward scrolling behavior
+    viewport_start: usize,
     width: usize,
     height: usize,
 
@@ -131,6 +171,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             filter_state: FilterState::Unfiltered,
             filtered_items: vec![],
             cursor: 0,
+            viewport_start: 0,
             width,
             height,
             styles: style::ListStyles::default(),
@@ -170,6 +211,20 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// Renders the status bar string, including position and help.
     pub fn status_view(&self) -> String {
         self.view_footer()
+    }
+
+    /// Get matches for an item by its original index in the full items list.
+    /// Returns None if the item doesn't have matches (unfiltered or didn't match filter).
+    pub fn matches_for_original_item(&self, original_index: usize) -> Option<&Vec<usize>> {
+        if self.filter_state == FilterState::Unfiltered {
+            return None;
+        }
+
+        // Find the FilteredItem that corresponds to this original index
+        self.filtered_items
+            .iter()
+            .find(|fi| fi.index == original_index)
+            .map(|fi| &fi.matches)
     }
 
     /// Sets the list title and returns `self` for chaining.
@@ -220,6 +275,62 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         }
     }
 
+    /// Synchronize the viewport with the cursor position using smooth scrolling.
+    ///
+    /// This method implements smooth, context-preserving viewport scrolling that only adjusts
+    /// the view when necessary. It replaces the previous page-jumping behavior that caused
+    /// cursor highlighting issues and poor user experience.
+    ///
+    /// ## Algorithm
+    /// 1. If all items fit in the viewport, no scrolling is needed
+    /// 2. Calculate current viewport bounds (start to start + size)
+    /// 3. Only scroll if cursor moves outside visible bounds:
+    ///    - Cursor above viewport: Scroll up to show cursor at top
+    ///    - Cursor below viewport: Scroll down just enough to show cursor at bottom
+    ///    - Cursor within viewport: Don't scroll (preserves context)
+    /// 4. Clamp viewport to valid range to prevent overscrolling
+    ///
+    /// ## Benefits over page-based scrolling
+    /// - **Smooth movement**: One-item-at-a-time instead of page jumps
+    /// - **Context preservation**: Keeps previously visible items when possible
+    /// - **Cursor highlighting**: Index tracking remains consistent
+    /// - **Better UX**: Natural scrolling that follows cursor movement
+    ///
+    /// ## Bug fixes addressed
+    /// - Fixed cursor highlighting loss during viewport transitions
+    /// - Fixed upward scrolling display issues
+    /// - Fixed jarring page jumps that disoriented users
+    ///
+    /// This ensures the cursor remains visible while preserving context and avoiding page jumps.
+    fn sync_viewport_with_cursor(&mut self) {
+        let viewport_size = self.paginator.per_page;
+        let total_items = self.len();
+
+        if viewport_size == 0 || total_items <= viewport_size {
+            // All items fit in viewport, no scrolling needed
+            self.viewport_start = 0;
+            return;
+        }
+
+        // Calculate current viewport bounds
+        let viewport_end = self.viewport_start + viewport_size;
+
+        // Only adjust viewport if cursor is outside visible bounds
+        if self.cursor < self.viewport_start {
+            // Cursor moved up beyond viewport, scroll up to show cursor
+            self.viewport_start = self.cursor;
+        } else if self.cursor >= viewport_end {
+            // Cursor moved down beyond viewport, scroll down just enough to show cursor
+            self.viewport_start = self.cursor - viewport_size + 1;
+        }
+        // If cursor is within viewport bounds, don't change anything (preserves context)
+
+        // Clamp viewport_start to valid range
+        self.viewport_start = self
+            .viewport_start
+            .min(total_items.saturating_sub(viewport_size));
+    }
+
     #[allow(dead_code)]
     fn matches_for_item(&self, index: usize) -> Option<&Vec<usize>> {
         if index < self.filtered_items.len() {
@@ -250,7 +361,12 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
                         })
                 })
                 .collect();
-            self.filter_state = FilterState::FilterApplied;
+            // CRITICAL FIX: Set state to Filtering (not FilterApplied) here so the user can
+            // continue typing. State changes to FilterApplied only happen on Enter/Esc.
+            //
+            // This prevents the filter input bug where typing subsequent characters
+            // after the first one was ignored, while still allowing len() to work correctly.
+            self.filter_state = FilterState::Filtering;
         }
         self.cursor = 0;
         self.update_pagination();
@@ -283,19 +399,42 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
                 .collect()
         };
 
-        let (start, end) = self.paginator.get_slice_bounds(items_to_render.len());
+        // VIEWPORT SCROLLING FIX: Use viewport-based bounds for smooth scrolling instead of paginator page jumps
+        //
+        // This replaces the previous paginator.get_slice_bounds() approach which caused jarring page jumps.
+        // Instead of jumping entire pages, we now use a sliding window (viewport_start + viewport_size)
+        // that moves smoothly as the cursor navigates. This provides:
+        // 1. Smooth one-item-at-a-time scrolling
+        // 2. Context preservation (previous items remain visible when possible)
+        // 3. Consistent cursor highlighting (no index confusion)
+        let start = self.viewport_start;
+        let viewport_size = self.paginator.per_page;
+        let end = (start + viewport_size).min(items_to_render.len());
         let mut items = Vec::new();
 
-        // Render each item individually using the delegate
-        for (list_idx, (_orig_idx, item)) in items_to_render
+        // CURSOR HIGHLIGHTING FIX: Render each item individually using the delegate
+        //
+        // The key fix here is passing *orig_idx instead of a viewport-relative index.
+        // This ensures that cursor highlighting works correctly across viewport scrolling.
+        for (_filtered_idx, (orig_idx, item)) in items_to_render
             .iter()
             .enumerate()
             .take(end.min(items_to_render.len()))
             .skip(start)
         {
-            // The item index in the current visible list (for selection highlighting)
-            let visible_index = start + list_idx;
-            let item_output = self.delegate.render(self, visible_index, item);
+            // CRITICAL: Use the original item index for cursor highlighting comparison
+            //
+            // The cursor position (self.cursor) is always tracked in terms of the original item indices,
+            // not viewport-relative positions. By passing *orig_idx to the delegate's render method,
+            // we ensure that the delegate can correctly compare (index == m.cursor) for highlighting.
+            //
+            // Previous bug: Passing viewport-relative indices caused highlighting to break because
+            // the comparison (viewport_index == cursor_position) would fail when scrolling.
+            //
+            // Example: If cursor is at position 7 and viewport shows items 5-9:
+            // - Wrong: Pass viewport index 2 (for item 7 in viewport) -> highlighting breaks
+            // - Right: Pass original index 7 -> highlighting works correctly
+            let item_output = self.delegate.render(self, *orig_idx, item);
             items.push(item_output);
         }
 
@@ -376,19 +515,34 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                     }
                     crossterm::event::KeyCode::Enter => {
                         self.apply_filter();
+                        self.filter_state = FilterState::FilterApplied;
                         self.filter_input.blur();
                         return None;
                     }
                     crossterm::event::KeyCode::Char(c) => {
-                        let mut s = self.filter_input.value();
-                        s.push(c);
-                        self.filter_input.set_value(&s);
+                        // FILTER INPUT FIX: Create a new KeyMsg specifically for the textinput component
+                        //
+                        // This replaces the previous manual string manipulation approach which was
+                        // error-prone and didn't handle all textinput features correctly.
+                        // By forwarding the key event directly to the textinput component, we ensure
+                        // proper character accumulation and input handling.
+                        let textinput_msg = Box::new(KeyMsg {
+                            key: KeyCode::Char(c),
+                            modifiers: key_msg.modifiers,
+                        }) as Msg;
+                        self.filter_input.update(textinput_msg);
                         self.apply_filter();
                     }
                     crossterm::event::KeyCode::Backspace => {
-                        let mut s = self.filter_input.value();
-                        s.pop();
-                        self.filter_input.set_value(&s);
+                        // FILTER INPUT FIX: Forward backspace to textinput for proper handling
+                        //
+                        // Previous approach used manual string.pop() which didn't handle cursor
+                        // positioning or other textinput features. This ensures consistent behavior.
+                        let textinput_msg = Box::new(KeyMsg {
+                            key: KeyCode::Backspace,
+                            modifiers: key_msg.modifiers,
+                        }) as Msg;
+                        self.filter_input.update(textinput_msg);
                         self.apply_filter();
                     }
                     crossterm::event::KeyCode::Delete => { /* ignore delete for now */ }
@@ -418,15 +572,25 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
             if self.keymap.cursor_up.matches(key_msg) {
                 if self.cursor > 0 {
                     self.cursor -= 1;
+                    // SMOOTH SCROLLING FIX: Sync viewport after every cursor movement
+                    // This ensures the cursor remains visible and the viewport scrolls smoothly
+                    self.sync_viewport_with_cursor();
                 }
             } else if self.keymap.cursor_down.matches(key_msg) {
                 if self.cursor < self.len().saturating_sub(1) {
                     self.cursor += 1;
+                    // SMOOTH SCROLLING FIX: Sync viewport after every cursor movement
+                    // This replaces the previous page-jumping behavior with smooth scrolling
+                    self.sync_viewport_with_cursor();
                 }
             } else if self.keymap.go_to_start.matches(key_msg) {
                 self.cursor = 0;
+                // SMOOTH SCROLLING FIX: Ensure viewport shows the beginning of the list
+                self.sync_viewport_with_cursor();
             } else if self.keymap.go_to_end.matches(key_msg) {
                 self.cursor = self.len().saturating_sub(1);
+                // SMOOTH SCROLLING FIX: Ensure viewport shows the end of the list
+                self.sync_viewport_with_cursor();
             } else if self.keymap.filter.matches(key_msg) {
                 self.filter_state = FilterState::Filtering;
                 // propagate the blink command so it is polled by runtime
