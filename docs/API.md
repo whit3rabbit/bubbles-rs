@@ -32,7 +32,7 @@ Add `bubbletea-widgets` to your `Cargo.toml`. You will also need `bubbletea-rs` 
 
 ```toml
 [dependencies]
-bubbletea-widgets = "0.1.5"
+bubbletea-widgets = "0.1.6"
 bubbletea-rs = "0.0.6"
 lipgloss-extras = { version = "0.0.8", features = ["full"] }
 ```
@@ -600,6 +600,10 @@ Creates a new list. Requires items that implement the `Item` trait and a delegat
 | `update(&mut self, msg: Msg) -> Option<Cmd>` | Handles navigation and filtering.                        |
 | `view(&self) -> String`                     | Renders the entire list component.                       |
 | `selected_item(&self) -> Option<&I>`        | Returns the currently selected item.                     |
+| **Filter State Management**                 |                                                          |
+| `is_filtering(&self) -> bool`               | Returns true if filtering is active (Filtering or FilterApplied states). |
+| `clear_filter(&mut self) -> Option<Cmd>`   | Forces complete filter clearing in a single operation.  |
+| `filter_state_info(&self) -> FilterStateInfo` | Returns detailed information about current filter state. |
 
 #### Usage Example
 
@@ -632,6 +636,83 @@ impl BubbleTeaModel for App {
     }
 }
 ```
+
+#### Enhanced Filter Management
+
+The List component now provides enhanced API methods for programmatic filter state management.
+
+**FilterStateInfo Structure**
+
+```rust
+pub struct FilterStateInfo {
+    pub state: FilterState,       // Current filter state enum
+    pub query: String,           // Current filter query text  
+    pub match_count: usize,      // Number of matching items
+    pub is_filtering: bool,      // Whether filtering is active
+    pub is_clearing: bool,       // Whether in clearing state (future use)
+}
+```
+
+**Enhanced Usage Example**
+
+```rust
+use bubbletea_widgets::prelude::*;
+use bubbletea_rs::{KeyMsg, Model as BubbleTeaModel, Msg};
+use crossterm::event::KeyCode;
+
+struct App {
+    list: List<ListDefaultItem>,
+}
+
+impl BubbleTeaModel for App {
+    fn init() -> (Self, Option<bubbletea_rs::Cmd>) {
+        let items = vec![
+            ListDefaultItem::new("Tasks", "View your todo items"),
+            ListDefaultItem::new("Settings", "Configure the application"),
+            ListDefaultItem::new("Help", "Get assistance"),
+        ];
+        let list_model = List::new(items, ListDefaultDelegate::new(), 40, 10);
+        (Self { list: list_model }, None)
+    }
+
+    fn update(&mut self, msg: Msg) -> Option<bubbletea_rs::Cmd> {
+        // Example: Clear filter with Ctrl+C
+        if let Some(key_msg) = msg.downcast_ref::<KeyMsg>() {
+            if key_msg.key == KeyCode::Char('c') 
+               && key_msg.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) {
+                if self.list.is_filtering() {
+                    return self.list.clear_filter();
+                }
+            }
+        }
+        
+        self.list.update(msg)
+    }
+
+    fn view(&self) -> String {
+        let mut output = self.list.view();
+        
+        // Show filter status in footer using the new API
+        if self.list.is_filtering() {
+            let filter_info = self.list.filter_state_info();
+            output.push_str(&format!(
+                "\nFilter: '{}' ({} matches) | Ctrl+C to clear", 
+                filter_info.query, 
+                filter_info.match_count
+            ));
+        }
+        
+        output
+    }
+}
+```
+
+**Benefits of New API:**
+
+- **`is_filtering()`**: Simple boolean check for conditional UI logic
+- **`clear_filter()`**: Programmatic filter clearing without key simulation  
+- **`filter_state_info()`**: Rich state information for advanced applications
+- **Eliminates workarounds**: No need for double-escape patterns or state parsing
 
 ### Table
 

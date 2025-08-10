@@ -5,27 +5,27 @@
 //! - `ItemDelegate`: Controls item `render`, `height`, `spacing`, and `update`
 //! - Submodules: `defaultitem`, `keys`, and `style`
 //!
-//! ## MAJOR BUG FIXES - Viewport Scrolling & Filter Input (v0.1.4+)
+//! ## Architecture Overview
 //!
-//! This implementation includes comprehensive fixes for critical list component issues:
+//! This list component uses several key architectural patterns for smooth interaction:
 //!
-//! ### 🔧 Fixed Issues
-//! 1. **Filter Input Accumulation**: Characters now accumulate correctly during typing
-//! 2. **Cursor Highlighting Loss**: Selection indicator persists during viewport scrolling  
-//! 3. **Viewport Page Jumping**: Smooth one-item-at-a-time scrolling instead of jarring page jumps
-//! 4. **Upward Scrolling Problems**: Proper viewport adjustment when scrolling up
+//! ### 🎯 Core Design Principles
+//! 1. **Viewport-Based Scrolling**: Maintains smooth, context-preserving navigation
+//! 2. **Index Consistency**: Uses original item indices for cursor tracking across all states
+//! 3. **Real-Time Filtering**: Integrates textinput component for responsive filter interaction
+//! 4. **State-Driven UI**: Clear separation between filtering, navigation, and display states
 //!
-//! ### 🏗️ Architecture Changes
-//! - **Smooth Viewport Scrolling**: `viewport_start` field + `sync_viewport_with_cursor()` method
-//! - **Proper Index Handling**: Original item indices for cursor highlighting, viewport-relative for display
-//! - **Enhanced Filter Input**: Direct textinput component integration instead of manual string manipulation
-//! - **State Management**: Improved filtering state transitions to prevent input blocking
+//! ### 🏗️ Key Components
+//! - **Viewport Management**: `viewport_start` field tracks visible window position
+//! - **Index Strategy**: Delegates receive original indices for consistent highlighting
+//! - **Filter Integration**: Direct textinput forwarding preserves all input features
+//! - **State Coordination**: Filtering states control UI behavior and key handling
 //!
-//! ### 📋 Key Design Decisions
-//! - **Index Semantics**: Render delegates receive original item indices for consistent cursor highlighting
-//! - **Viewport Strategy**: Only scroll when cursor moves outside visible bounds (context preservation)
-//! - **Filter Integration**: Maintain `Filtering` state during typing, only change to `FilterApplied` on Enter
-//! - **Event Forwarding**: Proper KeyMsg creation and forwarding to textinput component
+//! ### 📋 Implementation Strategy
+//! - **Viewport Scrolling**: Only adjusts view when cursor moves outside visible bounds
+//! - **Index Semantics**: Render delegates use original positions for cursor comparison
+//! - **Filter States**: `Filtering` during typing, `FilterApplied` after acceptance
+//! - **Event Handling**: KeyMsg forwarding maintains textinput component consistency
 //!
 //! ### Filtering States
 //! The list supports fuzzy filtering with three states:
@@ -40,428 +40,207 @@
 //! The list implements `help::KeyMap`, so you can embed `help::Model` and get contextual
 //! help automatically based on the current filtering state.
 
+// Module declarations
+
+/// Default item implementation and delegate for basic list functionality.
+///
+/// This module provides ready-to-use implementations for common list use cases:
+/// - `DefaultItem`: A simple string-based item with title and description
+/// - `DefaultDelegate`: A delegate that renders items with proper highlighting
+/// - `DefaultItemStyles`: Customizable styling for default item rendering
+///
+/// These components handle fuzzy match highlighting, cursor styling, and basic
+/// item representation without requiring custom implementations.
+///
+/// # Examples
+///
+/// ```
+/// use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
+///
+/// let items = vec![
+///     DefaultItem::new("Task 1", "Complete documentation"),
+///     DefaultItem::new("Task 2", "Review pull requests"),
+/// ];
+///
+/// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
+/// ```
 pub mod defaultitem;
+
+/// Key bindings and keyboard input handling for list navigation.
+///
+/// This module defines the key mapping system that controls how users interact
+/// with the list component. It includes:
+/// - `ListKeyMap`: Configurable key bindings for all list operations
+/// - Default key mappings following common terminal UI conventions
+/// - Support for custom key binding overrides
+///
+/// The key system integrates with the help system to provide contextual
+/// keyboard shortcuts based on the current list state.
+///
+/// # Examples
+///
+/// ```
+/// use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem, ListKeyMap};
+///
+/// let items = vec![DefaultItem::new("Item", "Description")];
+/// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
+///
+/// // The key mappings are used internally by the list component
+/// // They can be customized when creating custom list implementations
+/// ```
 pub mod keys;
+
+/// Visual styling and theming for list components.
+///
+/// This module provides comprehensive styling options for customizing the
+/// appearance of list components:
+/// - `ListStyles`: Complete styling configuration for all visual elements
+/// - Color schemes that adapt to light/dark terminal themes
+/// - Typography and border styling options
+/// - Default styles following terminal UI conventions
+///
+/// The styling system supports both built-in themes and complete customization
+/// for applications with specific branding requirements.
+///
+/// # Examples
+///
+/// ```
+/// use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem, ListStyles};
+///
+/// let items = vec![DefaultItem::new("Item", "Description")];
+/// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
+///
+/// // Get the default styling - customization is done by modifying the struct fields
+/// let default_styles = ListStyles::default();
+/// // Styling can be customized by creating a new ListStyles instance
+/// ```
 pub mod style;
 
-use crate::{help, key, paginator, spinner, textinput};
+// Internal modules
+mod api;
+mod filtering;
+mod model;
+mod rendering;
+mod types;
+
+// Re-export public types from submodules
+
+/// The main list component model.
+///
+/// `Model<I>` is a generic list component that can display any items implementing
+/// the `Item` trait. It provides filtering, navigation, pagination, and customizable
+/// rendering through the delegate pattern.
+///
+/// # Type Parameters
+///
+/// * `I` - The item type that must implement `Item + Send + Sync + 'static`
+///
+/// # Examples
+///
+/// ```
+/// use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
+///
+/// let items = vec![
+///     DefaultItem::new("Apple", "Red fruit"),
+///     DefaultItem::new("Banana", "Yellow fruit"),
+/// ];
+/// let list = Model::new(items, DefaultDelegate::new(), 80, 24);
+/// ```
+pub use model::Model;
+
+/// Key binding configuration for list navigation and interaction.
+///
+/// `ListKeyMap` defines all the keyboard shortcuts used for list operations
+/// including navigation, filtering, and help. It can be customized to match
+/// application-specific key binding preferences.
+pub use keys::ListKeyMap;
+
+/// Visual styling configuration for list appearance.
+///
+/// `ListStyles` contains all styling options for customizing the visual
+/// appearance of list components including colors, typography, and borders.
+/// It supports both light and dark terminal themes automatically.
+pub use style::ListStyles;
+
+/// Core traits and types for list functionality.
+///
+/// These are the fundamental building blocks for creating custom list items
+/// and delegates:
+///
+/// - `Item`: Trait for displayable and filterable list items
+/// - `ItemDelegate`: Trait for customizing item rendering and behavior  
+/// - `FilterState`: Enum representing the current filtering state
+/// - `FilterStateInfo`: Detailed information about filter status
+///
+/// # Examples
+///
+/// ```
+/// use bubbletea_widgets::list::{Item, ItemDelegate, FilterState, Model};
+/// use std::fmt::Display;
+///
+/// #[derive(Clone)]
+/// struct MyItem {
+///     name: String,
+///     value: i32,
+/// }
+///
+/// impl Display for MyItem {
+///     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+///         write!(f, "{}: {}", self.name, self.value)
+///     }
+/// }
+///
+/// impl Item for MyItem {
+///     fn filter_value(&self) -> String {
+///         format!("{} {}", self.name, self.value)
+///     }
+/// }
+/// ```
+pub use types::{FilterState, FilterStateInfo, Item, ItemDelegate};
+
+/// Ready-to-use implementations for common list scenarios.
+///
+/// These provide drop-in functionality for typical list use cases:
+///
+/// - `DefaultItem`: Simple string-based items with title and description
+/// - `DefaultDelegate`: Standard item rendering with highlighting support
+/// - `DefaultItemStyles`: Styling configuration for default rendering
+///
+/// Perfect for prototyping or applications that don't need custom item types.
+///
+/// # Examples
+///
+/// ```
+/// use bubbletea_widgets::list::{DefaultItem, DefaultDelegate, DefaultItemStyles, Model};
+///
+/// // Create items using the default implementation
+/// let items = vec![
+///     DefaultItem::new("First Item", "Description 1"),
+///     DefaultItem::new("Second Item", "Description 2"),
+/// ];
+///
+/// // Use the default delegate for rendering
+/// let delegate = DefaultDelegate::new();
+/// let list = Model::new(items, delegate, 80, 24);
+/// ```
+pub use defaultitem::{DefaultDelegate, DefaultItem, DefaultItemStyles};
+
+use crate::{help, key};
 use bubbletea_rs::{Cmd, KeyMsg, Model as BubbleTeaModel, Msg};
 use crossterm::event::KeyCode;
-use fuzzy_matcher::skim::SkimMatcherV2;
-use fuzzy_matcher::FuzzyMatcher;
-use lipgloss_extras::lipgloss;
-use std::fmt::Display;
 
-// --- Traits (Interfaces) ---
-
-/// An item that can be displayed in the list.
-pub trait Item: Display + Clone {
-    /// The value to use when filtering this item.
-    fn filter_value(&self) -> String;
-}
-
-/// A delegate encapsulates the functionality for a list item.
-pub trait ItemDelegate<I: Item> {
-    /// Renders the item's view.
-    fn render(&self, m: &Model<I>, index: usize, item: &I) -> String;
-    /// The height of the list item.
-    fn height(&self) -> usize;
-    /// The spacing between list items.
-    fn spacing(&self) -> usize;
-    /// The update loop for the item.
-    fn update(&self, msg: &Msg, m: &mut Model<I>) -> Option<Cmd>;
-}
-
-// --- Filter ---
-#[derive(Debug, Clone)]
-#[allow(dead_code)]
-struct FilteredItem<I: Item> {
-    index: usize, // index in original items list
-    item: I,
-    matches: Vec<usize>,
-}
-
-// --- Model ---
-
-/// Current filtering state of the list.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FilterState {
-    /// No filtering is active; all items are shown.
-    Unfiltered,
-    /// User is typing a filter term; live filtering UI is shown.
-    Filtering,
-    /// A filter term has been applied; only matching items are shown.
-    FilterApplied,
-}
-
-/// List model containing items, filtering, pagination, and styling.
-pub struct Model<I: Item> {
-    /// Title rendered in the list header when not filtering.
-    pub title: String,
-    items: Vec<I>,
-    delegate: Box<dyn ItemDelegate<I> + Send + Sync>,
-
-    // Components
-    /// Text input used for entering the filter term.
-    pub filter_input: textinput::Model,
-    /// Paginator controlling visible item slice.
-    pub paginator: paginator::Model,
-    /// Spinner used during expensive operations (optional usage).
-    pub spinner: spinner::Model,
-    /// Help model for displaying key bindings.
-    pub help: help::Model,
-    /// Key bindings for list navigation and filtering.
-    pub keymap: keys::ListKeyMap,
-
-    // State
-    filter_state: FilterState,
-    filtered_items: Vec<FilteredItem<I>>,
-    cursor: usize,
-    /// First visible item index for smooth scrolling.
-    ///
-    /// This field enables smooth viewport scrolling instead of jarring page jumps.
-    /// Unlike paginator-based scrolling which jumps entire pages at once, this approach
-    /// tracks the exact starting position of the visible window, allowing the viewport
-    /// to slide smoothly as the cursor moves.
-    ///
-    /// Key behaviors:
-    /// - Only scrolls when cursor moves outside visible bounds
-    /// - Preserves context by keeping previously visible items in view when possible
-    /// - Provides one-item-at-a-time scrolling for better user experience
-    ///
-    /// This was added to fix the issue where page-based scrolling caused:
-    /// 1. Loss of cursor highlighting during viewport changes
-    /// 2. Jarring jumps that lost visual context
-    /// 3. Poor upward scrolling behavior
-    viewport_start: usize,
-    width: usize,
-    height: usize,
-
-    // Styles
-    /// Visual styles for list elements and states.
-    pub styles: style::ListStyles,
-
-    // Status bar labeling
-    status_item_singular: Option<String>,
-    status_item_plural: Option<String>,
-}
-
-impl<I: Item + Send + Sync + 'static> Model<I> {
-    /// Creates a new list with items, delegate, and initial dimensions.
-    pub fn new(
-        items: Vec<I>,
-        delegate: impl ItemDelegate<I> + Send + Sync + 'static,
-        width: usize,
-        height: usize,
-    ) -> Self {
-        let mut filter_input = textinput::new();
-        filter_input.set_placeholder("Filter...");
-        let mut paginator = paginator::Model::new();
-        paginator.set_per_page(10);
-
-        let mut s = Self {
-            title: "List".to_string(),
-            items,
-            delegate: Box::new(delegate),
-            filter_input,
-            paginator,
-            spinner: spinner::Model::new(),
-            help: help::Model::new(),
-            keymap: keys::ListKeyMap::default(),
-            filter_state: FilterState::Unfiltered,
-            filtered_items: vec![],
-            cursor: 0,
-            viewport_start: 0,
-            width,
-            height,
-            styles: style::ListStyles::default(),
-            status_item_singular: None,
-            status_item_plural: None,
-        };
-        s.update_pagination();
-        s
-    }
-
-    /// Replace all items in the list and reset pagination if needed.
-    pub fn set_items(&mut self, items: Vec<I>) {
-        self.items = items;
-        self.update_pagination();
-    }
-    /// Returns a copy of the items currently visible (filtered if applicable).
-    pub fn visible_items(&self) -> Vec<I> {
-        if self.filter_state == FilterState::Unfiltered {
-            self.items.clone()
-        } else {
-            self.filtered_items.iter().map(|f| f.item.clone()).collect()
-        }
-    }
-    /// Sets the filter input text.
-    pub fn set_filter_text(&mut self, s: &str) {
-        self.filter_input.set_value(s);
-    }
-    /// Sets the current filtering state.
-    pub fn set_filter_state(&mut self, st: FilterState) {
-        self.filter_state = st;
-    }
-    /// Sets the singular/plural nouns used in the status bar.
-    pub fn set_status_bar_item_name(&mut self, singular: &str, plural: &str) {
-        self.status_item_singular = Some(singular.to_string());
-        self.status_item_plural = Some(plural.to_string());
-    }
-    /// Renders the status bar string, including position and help.
-    pub fn status_view(&self) -> String {
-        self.view_footer()
-    }
-
-    /// Get matches for an item by its original index in the full items list.
-    /// Returns None if the item doesn't have matches (unfiltered or didn't match filter).
-    pub fn matches_for_original_item(&self, original_index: usize) -> Option<&Vec<usize>> {
-        if self.filter_state == FilterState::Unfiltered {
-            return None;
-        }
-
-        // Find the FilteredItem that corresponds to this original index
-        self.filtered_items
-            .iter()
-            .find(|fi| fi.index == original_index)
-            .map(|fi| &fi.matches)
-    }
-
-    /// Sets the list title and returns `self` for chaining.
-    pub fn with_title(mut self, title: &str) -> Self {
-        self.title = title.to_string();
-        self
-    }
-    /// Returns a reference to the currently selected item, if any.
-    pub fn selected_item(&self) -> Option<&I> {
-        if self.filter_state == FilterState::Unfiltered {
-            self.items.get(self.cursor)
-        } else {
-            self.filtered_items.get(self.cursor).map(|fi| &fi.item)
-        }
-    }
-    /// Returns the current cursor position (0-based).
-    pub fn cursor(&self) -> usize {
-        self.cursor
-    }
-    /// Returns the number of items in the current view (filtered or not).
-    pub fn len(&self) -> usize {
-        if self.filter_state == FilterState::Unfiltered {
-            self.items.len()
-        } else {
-            self.filtered_items.len()
-        }
-    }
-    /// Returns `true` if there are no items to display.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    fn update_pagination(&mut self) {
-        let item_count = self.len();
-        let item_height = self.delegate.height() + self.delegate.spacing();
-        let available_height = self.height.saturating_sub(4);
-        let per_page = if item_height > 0 {
-            available_height / item_height
-        } else {
-            10
-        }
-        .max(1);
-        self.paginator.set_per_page(per_page);
-        self.paginator
-            .set_total_pages(item_count.div_ceil(per_page));
-        if self.cursor >= item_count {
-            self.cursor = item_count.saturating_sub(1);
-        }
-    }
-
-    /// Synchronize the viewport with the cursor position using smooth scrolling.
-    ///
-    /// This method implements smooth, context-preserving viewport scrolling that only adjusts
-    /// the view when necessary. It replaces the previous page-jumping behavior that caused
-    /// cursor highlighting issues and poor user experience.
-    ///
-    /// ## Algorithm
-    /// 1. If all items fit in the viewport, no scrolling is needed
-    /// 2. Calculate current viewport bounds (start to start + size)
-    /// 3. Only scroll if cursor moves outside visible bounds:
-    ///    - Cursor above viewport: Scroll up to show cursor at top
-    ///    - Cursor below viewport: Scroll down just enough to show cursor at bottom
-    ///    - Cursor within viewport: Don't scroll (preserves context)
-    /// 4. Clamp viewport to valid range to prevent overscrolling
-    ///
-    /// ## Benefits over page-based scrolling
-    /// - **Smooth movement**: One-item-at-a-time instead of page jumps
-    /// - **Context preservation**: Keeps previously visible items when possible
-    /// - **Cursor highlighting**: Index tracking remains consistent
-    /// - **Better UX**: Natural scrolling that follows cursor movement
-    ///
-    /// ## Bug fixes addressed
-    /// - Fixed cursor highlighting loss during viewport transitions
-    /// - Fixed upward scrolling display issues
-    /// - Fixed jarring page jumps that disoriented users
-    ///
-    /// This ensures the cursor remains visible while preserving context and avoiding page jumps.
-    fn sync_viewport_with_cursor(&mut self) {
-        let viewport_size = self.paginator.per_page;
-        let total_items = self.len();
-
-        if viewport_size == 0 || total_items <= viewport_size {
-            // All items fit in viewport, no scrolling needed
-            self.viewport_start = 0;
-            return;
-        }
-
-        // Calculate current viewport bounds
-        let viewport_end = self.viewport_start + viewport_size;
-
-        // Only adjust viewport if cursor is outside visible bounds
-        if self.cursor < self.viewport_start {
-            // Cursor moved up beyond viewport, scroll up to show cursor
-            self.viewport_start = self.cursor;
-        } else if self.cursor >= viewport_end {
-            // Cursor moved down beyond viewport, scroll down just enough to show cursor
-            self.viewport_start = self.cursor - viewport_size + 1;
-        }
-        // If cursor is within viewport bounds, don't change anything (preserves context)
-
-        // Clamp viewport_start to valid range
-        self.viewport_start = self
-            .viewport_start
-            .min(total_items.saturating_sub(viewport_size));
-    }
-
-    #[allow(dead_code)]
-    fn matches_for_item(&self, index: usize) -> Option<&Vec<usize>> {
-        if index < self.filtered_items.len() {
-            Some(&self.filtered_items[index].matches)
-        } else {
-            None
-        }
-    }
-
-    fn apply_filter(&mut self) {
-        let filter_term = self.filter_input.value().to_lowercase();
-        if filter_term.is_empty() {
-            self.filter_state = FilterState::Unfiltered;
-            self.filtered_items.clear();
-        } else {
-            let matcher = SkimMatcherV2::default();
-            self.filtered_items = self
-                .items
-                .iter()
-                .enumerate()
-                .filter_map(|(i, item)| {
-                    matcher
-                        .fuzzy_indices(&item.filter_value(), &filter_term)
-                        .map(|(_score, indices)| FilteredItem {
-                            index: i,
-                            item: item.clone(),
-                            matches: indices,
-                        })
-                })
-                .collect();
-            // CRITICAL FIX: Set state to Filtering (not FilterApplied) here so the user can
-            // continue typing. State changes to FilterApplied only happen on Enter/Esc.
-            //
-            // This prevents the filter input bug where typing subsequent characters
-            // after the first one was ignored, while still allowing len() to work correctly.
-            self.filter_state = FilterState::Filtering;
-        }
-        self.cursor = 0;
-        self.update_pagination();
-    }
-
-    fn view_header(&self) -> String {
-        if self.filter_state == FilterState::Filtering {
-            let prompt = self.styles.filter_prompt.clone().render("Filter:");
-            format!("{} {}", prompt, self.filter_input.view())
-        } else {
-            let mut header = self.title.clone();
-            if self.filter_state == FilterState::FilterApplied {
-                header.push_str(&format!(" (filtered: {})", self.len()));
-            }
-            self.styles.title.clone().render(&header)
-        }
-    }
-
-    fn view_items(&self) -> String {
-        if self.is_empty() {
-            return self.styles.no_items.clone().render("No items");
-        }
-
-        let items_to_render: Vec<(usize, &I)> = if self.filter_state == FilterState::Unfiltered {
-            self.items.iter().enumerate().collect()
-        } else {
-            self.filtered_items
-                .iter()
-                .map(|fi| (fi.index, &fi.item))
-                .collect()
-        };
-
-        // VIEWPORT SCROLLING FIX: Use viewport-based bounds for smooth scrolling instead of paginator page jumps
-        //
-        // This replaces the previous paginator.get_slice_bounds() approach which caused jarring page jumps.
-        // Instead of jumping entire pages, we now use a sliding window (viewport_start + viewport_size)
-        // that moves smoothly as the cursor navigates. This provides:
-        // 1. Smooth one-item-at-a-time scrolling
-        // 2. Context preservation (previous items remain visible when possible)
-        // 3. Consistent cursor highlighting (no index confusion)
-        let start = self.viewport_start;
-        let viewport_size = self.paginator.per_page;
-        let end = (start + viewport_size).min(items_to_render.len());
-        let mut items = Vec::new();
-
-        // CURSOR HIGHLIGHTING FIX: Render each item individually using the delegate
-        //
-        // The key fix here is passing *orig_idx instead of a viewport-relative index.
-        // This ensures that cursor highlighting works correctly across viewport scrolling.
-        for (_filtered_idx, (orig_idx, item)) in items_to_render
-            .iter()
-            .enumerate()
-            .take(end.min(items_to_render.len()))
-            .skip(start)
-        {
-            // CRITICAL: Use the original item index for cursor highlighting comparison
-            //
-            // The cursor position (self.cursor) is always tracked in terms of the original item indices,
-            // not viewport-relative positions. By passing *orig_idx to the delegate's render method,
-            // we ensure that the delegate can correctly compare (index == m.cursor) for highlighting.
-            //
-            // Previous bug: Passing viewport-relative indices caused highlighting to break because
-            // the comparison (viewport_index == cursor_position) would fail when scrolling.
-            //
-            // Example: If cursor is at position 7 and viewport shows items 5-9:
-            // - Wrong: Pass viewport index 2 (for item 7 in viewport) -> highlighting breaks
-            // - Right: Pass original index 7 -> highlighting works correctly
-            let item_output = self.delegate.render(self, *orig_idx, item);
-            items.push(item_output);
-        }
-
-        // Join items with newlines, respecting spacing
-        let separator = "\n".repeat(self.delegate.spacing().max(1));
-        items.join(&separator)
-    }
-
-    fn view_footer(&self) -> String {
-        let mut footer = String::new();
-        if !self.is_empty() {
-            let singular = self.status_item_singular.as_deref().unwrap_or("item");
-            let plural = self.status_item_plural.as_deref().unwrap_or("items");
-            let noun = if self.len() == 1 { singular } else { plural };
-            footer.push_str(&format!("{}/{} {}", self.cursor + 1, self.len(), noun));
-        }
-        let help_view = self.help.view(self);
-        if !help_view.is_empty() {
-            footer.push('\n');
-            footer.push_str(&help_view);
-        }
-        footer
-    }
-}
-
-// Help integration from the list model
+// Help integration - provides contextual key bindings based on current state
 impl<I: Item> help::KeyMap for Model<I> {
+    /// Returns key bindings for compact help display.
+    ///
+    /// Provides a minimal set of the most important key bindings
+    /// based on the current list state. The bindings change depending
+    /// on whether the user is actively filtering or navigating.
+    ///
+    /// # Context-Sensitive Help
+    ///
+    /// - **While filtering**: Shows Enter (accept) and Escape (cancel) bindings
+    /// - **Normal navigation**: Shows up/down navigation and filter activation
     fn short_help(&self) -> Vec<&key::Binding> {
         match self.filter_state {
             FilterState::Filtering => vec![&self.keymap.accept_filter, &self.keymap.cancel_filter],
@@ -469,37 +248,86 @@ impl<I: Item> help::KeyMap for Model<I> {
                 &self.keymap.cursor_up,
                 &self.keymap.cursor_down,
                 &self.keymap.filter,
+                &self.keymap.quit,
             ],
         }
     }
+
+    /// Returns all key bindings organized into logical groups.
+    ///
+    /// Provides comprehensive help information with bindings grouped by
+    /// functionality. The grouping helps users understand related actions
+    /// and discover advanced features.
+    ///
+    /// # Binding Groups
+    ///
+    /// 1. **Cursor movement**: Up/down navigation
+    /// 2. **Page navigation**: Page up/down, home/end
+    /// 3. **Filtering**: Start filter, clear filter, accept
+    /// 4. **Help and quit**: Show help, quit application
     fn full_help(&self) -> Vec<Vec<&key::Binding>> {
-        match self.filter_state {
-            FilterState::Filtering => {
-                vec![vec![&self.keymap.accept_filter, &self.keymap.cancel_filter]]
-            }
-            _ => vec![
-                vec![
-                    &self.keymap.cursor_up,
-                    &self.keymap.cursor_down,
-                    &self.keymap.next_page,
-                    &self.keymap.prev_page,
-                ],
-                vec![
-                    &self.keymap.go_to_start,
-                    &self.keymap.go_to_end,
-                    &self.keymap.filter,
-                    &self.keymap.clear_filter,
-                ],
+        vec![
+            vec![&self.keymap.cursor_up, &self.keymap.cursor_down],
+            vec![&self.keymap.next_page, &self.keymap.prev_page],
+            vec![
+                &self.keymap.go_to_start,
+                &self.keymap.go_to_end,
+                &self.keymap.filter,
+                &self.keymap.clear_filter,
             ],
-        }
+        ]
     }
 }
 
+// BubbleTeaModel implementation - integrates with bubbletea-rs runtime
 impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
+    /// Initializes a new empty list model with default settings.
+    ///
+    /// This creates a new list with no items, using the default delegate
+    /// and standard dimensions. This method is called by the BubbleTea
+    /// runtime when the model is first created.
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing:
+    /// - The initialized list model with default settings
+    /// - `None` (no initial command to execute)
+    ///
+    /// # Default Configuration
+    ///
+    /// - Empty items list
+    /// - `DefaultDelegate` for rendering
+    /// - 80 columns × 24 rows dimensions
+    /// - Default styling and key bindings
     fn init() -> (Self, Option<Cmd>) {
         let model = Self::new(vec![], defaultitem::DefaultDelegate::new(), 80, 24);
         (model, None)
     }
+
+    /// Handles keyboard input and state updates.
+    ///
+    /// This method processes all user input and updates the list state accordingly.
+    /// It implements different input handling modes based on the current filtering state:
+    ///
+    /// ## While Filtering (`FilterState::Filtering`)
+    ///
+    /// - **Escape**: Cancel filtering, return to previous state
+    /// - **Enter**: Accept current filter, change to `FilterApplied` state
+    /// - **Characters**: Add to filter text, update results in real-time
+    /// - **Backspace**: Remove characters from filter
+    /// - **Arrow keys**: Navigate filter input cursor position
+    ///
+    /// ## Normal Navigation (other states)
+    ///
+    /// - **Up/Down**: Move cursor through items with smooth viewport scrolling
+    /// - **Home/End**: Jump to first/last item
+    /// - **/** : Start filtering mode
+    /// - **Ctrl+C**: Clear any active filter
+    ///
+    /// # Viewport Management
+    ///
+    /// The update method automatically manages viewport scrolling to ensure
+    /// the cursor remains visible when navigating through items.
     fn update(&mut self, msg: Msg) -> Option<Cmd> {
         if self.filter_state == FilterState::Filtering {
             if let Some(key_msg) = msg.downcast_ref::<KeyMsg>() {
@@ -520,12 +348,10 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                         return None;
                     }
                     crossterm::event::KeyCode::Char(c) => {
-                        // FILTER INPUT FIX: Create a new KeyMsg specifically for the textinput component
-                        //
-                        // This replaces the previous manual string manipulation approach which was
-                        // error-prone and didn't handle all textinput features correctly.
-                        // By forwarding the key event directly to the textinput component, we ensure
-                        // proper character accumulation and input handling.
+                        // Forward character input to the textinput component for proper handling.
+                        // Creating a new KeyMsg preserves the original event context while ensuring
+                        // the textinput receives all necessary information for features like cursor
+                        // positioning, selection, and character encoding.
                         let textinput_msg = Box::new(KeyMsg {
                             key: KeyCode::Char(c),
                             modifiers: key_msg.modifiers,
@@ -534,10 +360,9 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                         self.apply_filter();
                     }
                     crossterm::event::KeyCode::Backspace => {
-                        // FILTER INPUT FIX: Forward backspace to textinput for proper handling
-                        //
-                        // Previous approach used manual string.pop() which didn't handle cursor
-                        // positioning or other textinput features. This ensures consistent behavior.
+                        // Forward backspace events to textinput for complete input handling.
+                        // The textinput component manages cursor positioning, selection deletion,
+                        // and other editing features that require coordinated state management.
                         let textinput_msg = Box::new(KeyMsg {
                             key: KeyCode::Backspace,
                             modifiers: key_msg.modifiers,
@@ -545,7 +370,7 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                         self.filter_input.update(textinput_msg);
                         self.apply_filter();
                     }
-                    crossterm::event::KeyCode::Delete => { /* ignore delete for now */ }
+                    // Handle cursor movement within filter input
                     crossterm::event::KeyCode::Left => {
                         let pos = self.filter_input.position();
                         if pos > 0 {
@@ -572,28 +397,28 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
             if self.keymap.cursor_up.matches(key_msg) {
                 if self.cursor > 0 {
                     self.cursor -= 1;
-                    // SMOOTH SCROLLING FIX: Sync viewport after every cursor movement
-                    // This ensures the cursor remains visible and the viewport scrolls smoothly
+                    // Synchronize viewport after cursor movement to keep selection visible.
+                    // This triggers smooth scrolling when the cursor moves outside the current view.
                     self.sync_viewport_with_cursor();
                 }
             } else if self.keymap.cursor_down.matches(key_msg) {
                 if self.cursor < self.len().saturating_sub(1) {
                     self.cursor += 1;
-                    // SMOOTH SCROLLING FIX: Sync viewport after every cursor movement
-                    // This replaces the previous page-jumping behavior with smooth scrolling
+                    // Synchronize viewport to maintain cursor visibility during navigation.
+                    // Enables smooth scrolling instead of discrete page transitions.
                     self.sync_viewport_with_cursor();
                 }
             } else if self.keymap.go_to_start.matches(key_msg) {
                 self.cursor = 0;
-                // SMOOTH SCROLLING FIX: Ensure viewport shows the beginning of the list
+                // Adjust viewport to show the beginning of the list when jumping to start.
                 self.sync_viewport_with_cursor();
             } else if self.keymap.go_to_end.matches(key_msg) {
                 self.cursor = self.len().saturating_sub(1);
-                // SMOOTH SCROLLING FIX: Ensure viewport shows the end of the list
+                // Adjust viewport to show the end of the list when jumping to last item.
                 self.sync_viewport_with_cursor();
             } else if self.keymap.filter.matches(key_msg) {
                 self.filter_state = FilterState::Filtering;
-                // propagate the blink command so it is polled by runtime
+                // Return focus command to enable cursor blinking in filter input
                 return Some(self.filter_input.focus());
             } else if self.keymap.clear_filter.matches(key_msg) {
                 self.filter_input.set_value("");
@@ -605,531 +430,74 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
         }
         None
     }
+
+    /// Renders the complete list view as a formatted string.
+    ///
+    /// This method combines all visual components of the list into a single
+    /// string suitable for terminal display. The layout adapts based on the
+    /// current filtering state and available content.
+    ///
+    /// # Returns
+    ///
+    /// A formatted string containing the complete list UI with ANSI styling codes.
+    ///
+    /// # Layout Structure
+    ///
+    /// The view consists of three vertically stacked sections:
+    ///
+    /// 1. **Header**: Title or filter input (depending on state)
+    ///    - Normal: "List Title" or "List Title (filtered: N)"
+    ///    - Filtering: "Filter: > user_input"
+    ///
+    /// 2. **Items**: The main content area showing visible items
+    ///    - Styled according to the current delegate
+    ///    - Shows "No items" message when empty
+    ///    - Viewport-based rendering for large lists
+    ///
+    /// 3. **Footer**: Status and help information
+    ///    - Status: "X/Y items" format
+    ///    - Help: Context-sensitive key bindings
+    ///
+    /// # Performance
+    ///
+    /// The view method only renders items currently visible in the viewport,
+    /// ensuring consistent performance regardless of total item count.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
+    /// # use bubbletea_rs::Model as BubbleTeaModel;
+    /// let list = Model::new(
+    ///     vec![DefaultItem::new("Item 1", "Description")],
+    ///     DefaultDelegate::new(),
+    ///     80, 24
+    /// );
+    ///
+    /// let output = list.view();
+    /// // Contains formatted list with title, items, and status bar
+    /// ```
     fn view(&self) -> String {
-        lipgloss::join_vertical(
-            lipgloss::LEFT,
-            &[&self.view_header(), &self.view_items(), &self.view_footer()],
-        )
-    }
-}
-
-// Re-export commonly used types
-pub use defaultitem::{DefaultDelegate, DefaultItem, DefaultItemStyles};
-pub use keys::ListKeyMap;
-pub use style::ListStyles;
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[derive(Clone)]
-    struct S(&'static str);
-    impl std::fmt::Display for S {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "{}", self.0)
-        }
-    }
-    impl Item for S {
-        fn filter_value(&self) -> String {
-            self.0.to_string()
-        }
-    }
-
-    #[test]
-    fn test_status_bar_item_name() {
-        let mut list = Model::new(
-            vec![S("foo"), S("bar")],
-            defaultitem::DefaultDelegate::new(),
-            10,
-            10,
-        );
-        let v = list.status_view();
-        assert!(v.contains("2 items"));
-        list.set_items(vec![S("foo")]);
-        let v = list.status_view();
-        assert!(v.contains("1 item"));
-    }
-
-    #[test]
-    fn test_status_bar_without_items() {
-        let list = Model::new(Vec::<S>::new(), defaultitem::DefaultDelegate::new(), 10, 10);
-        assert!(list.status_view().contains("No items") || list.is_empty());
-    }
-
-    #[test]
-    fn test_custom_status_bar_item_name() {
-        let mut list = Model::new(
-            vec![S("foo"), S("bar")],
-            defaultitem::DefaultDelegate::new(),
-            10,
-            10,
-        );
-        list.set_status_bar_item_name("connection", "connections");
-        assert!(list.status_view().contains("2 connections"));
-        list.set_items(vec![S("foo")]);
-        assert!(list.status_view().contains("1 connection"));
-        list.set_items(vec![]);
-        // When empty, status_view currently just shows help or empty; ensure no panic
-        let _ = list.status_view();
-    }
-
-    #[test]
-    fn test_set_filter_text_and_state_visible_items() {
-        let tc = vec![S("foo"), S("bar"), S("baz")];
-        let mut list = Model::new(tc.clone(), defaultitem::DefaultDelegate::new(), 10, 10);
-        list.set_filter_text("ba");
-        list.set_filter_state(FilterState::Unfiltered);
-        assert_eq!(list.visible_items().len(), tc.len());
-
-        list.set_filter_state(FilterState::Filtering);
-        list.apply_filter();
-        let vis = list.visible_items();
-        assert_eq!(vis.len(), 2); // bar, baz
-
-        list.set_filter_state(FilterState::FilterApplied);
-        let vis2 = list.visible_items();
-        assert_eq!(vis2.len(), 2);
-    }
-
-    #[test]
-    fn test_selection_highlighting_works() {
-        let items = vec![S("first item"), S("second item"), S("third item")];
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
-
-        // Test that view renders without crashing and includes styling
-        let view_output = list.view();
-        assert!(!view_output.is_empty(), "View should not be empty");
-
-        // Test selection highlighting by checking that cursor position affects rendering
-        let first_view = list.view();
-        list.cursor = 1; // Move cursor to second item
-        let second_view = list.view();
-
-        // The views should be different because of selection highlighting
-        assert_ne!(
-            first_view, second_view,
-            "Selection highlighting should change the view"
-        );
-    }
-
-    #[test]
-    fn test_filter_highlighting_works() {
-        let items = vec![S("apple pie"), S("banana bread"), S("carrot cake")];
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
-
-        // Apply filter that should match only some items
-        list.set_filter_text("ap");
-        list.apply_filter(); // Actually apply the filter to process matches
-
-        let filtered_view = list.view();
-        assert!(
-            !filtered_view.is_empty(),
-            "Filtered view should not be empty"
-        );
-
-        // Check that filtering worked ("ap" should only match "apple pie")
-        assert_eq!(list.len(), 1, "Should have 1 item matching 'ap'");
-
-        // Test that matches are stored correctly
-        assert!(
-            !list.filtered_items.is_empty(),
-            "Filtered items should have match data"
-        );
-        if !list.filtered_items.is_empty() {
-            assert!(
-                !list.filtered_items[0].matches.is_empty(),
-                "First filtered item should have matches"
-            );
-            // Check that the matched item is indeed "apple pie"
-            assert_eq!(list.filtered_items[0].item.0, "apple pie");
-        }
-    }
-
-    #[test]
-    fn test_filter_highlighting_segment_based() {
-        let items = vec![S("Nutella"), S("Linux"), S("Python")];
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
-
-        // Test contiguous match highlighting - filter "nut" should match only "Nutella"
-        list.set_filter_text("nut");
-        list.apply_filter();
-
-        assert_eq!(list.len(), 1, "Should have 1 item matching 'nut'");
-        assert_eq!(list.filtered_items[0].item.0, "Nutella");
-
-        // Verify that matches are [0, 1, 2] for "Nut" in "Nutella"
-        let matches = &list.filtered_items[0].matches;
-        assert_eq!(
-            matches.len(),
-            3,
-            "Should have 3 character matches for 'nut'"
-        );
-        assert_eq!(matches[0], 0, "First match should be at index 0 (N)");
-        assert_eq!(matches[1], 1, "Second match should be at index 1 (u)");
-        assert_eq!(matches[2], 2, "Third match should be at index 2 (t)");
-
-        // Test the actual highlighting by rendering - it should not have character separation
-        let rendered = list.view();
-
-        // The rendered output should not be empty and should render without errors
-        assert!(!rendered.is_empty(), "Rendered view should not be empty");
-
-        // Test that our highlighting function works directly with contiguous segments
-        use super::defaultitem::apply_character_highlighting;
-        let test_result = apply_character_highlighting(
-            "Nutella",
-            &[0, 1, 2], // Consecutive indices should be rendered as a single segment
-            &lipgloss::Style::new().bold(true),
-            &lipgloss::Style::new(),
-        );
-        // The result should contain styled text and be longer due to ANSI codes
-        assert!(
-            test_result.len() > "Nutella".len(),
-            "Highlighted text should be longer due to ANSI codes"
-        );
-
-        // Verify the fix works: test with non-consecutive matches too
-        let test_result_sparse = apply_character_highlighting(
-            "Nutella",
-            &[0, 2, 4], // Non-consecutive indices: N_t_l
-            &lipgloss::Style::new().underline(true),
-            &lipgloss::Style::new(),
-        );
-        assert!(
-            test_result_sparse.len() > "Nutella".len(),
-            "Sparse highlighted text should also work"
-        );
-    }
-
-    #[test]
-    fn test_filter_ansi_efficiency() {
-        // Test that consecutive matches use fewer ANSI codes than character-by-character
-        use super::defaultitem::apply_character_highlighting;
-        let highlight_style = lipgloss::Style::new().bold(true);
-        let normal_style = lipgloss::Style::new();
-
-        let consecutive_result = apply_character_highlighting(
-            "Hello",
-            &[0, 1, 2], // "Hel" - should be one ANSI block
-            &highlight_style,
-            &normal_style,
-        );
-
-        let sparse_result = apply_character_highlighting(
-            "Hello",
-            &[0, 2, 4], // "H_l_o" - should be three ANSI blocks
-            &highlight_style,
-            &normal_style,
-        );
-
-        // Consecutive matches should result in more efficient ANSI usage
-        // This is a rough heuristic - consecutive should have fewer style applications
-        assert!(
-            consecutive_result.len() < sparse_result.len(),
-            "Consecutive highlighting should be more efficient than sparse highlighting"
-        );
-    }
-
-    #[test]
-    fn test_filter_unicode_characters() {
-        let items = vec![S("café"), S("naïve"), S("🦀 rust"), S("北京")];
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
-
-        // Test filtering with accented characters
-        list.set_filter_text("caf");
-        list.apply_filter();
-        assert_eq!(list.len(), 1);
-        assert_eq!(list.filtered_items[0].item.0, "café");
-
-        // Test filtering with emoji
-        list.set_filter_text("rust");
-        list.apply_filter();
-        assert_eq!(list.len(), 1);
-        assert_eq!(list.filtered_items[0].item.0, "🦀 rust");
-
-        // Ensure rendering doesn't crash with unicode
-        let rendered = list.view();
-        assert!(!rendered.is_empty());
-    }
-
-    #[test]
-    fn test_filter_highlighting_no_pipe_characters() {
-        // Regression test for issue where pipe characters (│) were inserted
-        // between highlighted and non-highlighted text segments
-        let items = vec![S("Nutella"), S("Linux"), S("Python")];
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
-
-        // Test case from debug output: filter "nut" should only match "Nutella"
-        list.set_filter_text("nut");
-        list.apply_filter();
-
-        assert_eq!(
-            list.len(),
-            1,
-            "Filter 'nut' should match exactly 1 item (Nutella)"
-        );
-        assert_eq!(list.filtered_items[0].item.0, "Nutella");
-
-        // First test non-selected state (cursor on different item)
-        // This should not have any borders/pipes
-        if !list.is_empty() {
-            list.cursor = list.len(); // Set cursor beyond items to deselect
-        }
-        let unselected_rendered = list.view();
-
-        // For unselected items, there should be no pipe characters between highlighted segments
-        // This is the specific issue from the debug output: "N│utella"
-        assert!(
-            !unselected_rendered.contains("N│u") && !unselected_rendered.contains("ut│e"),
-            "Unselected item rendering should not have pipe characters between highlighted segments. Output: {:?}",
-            unselected_rendered
-        );
-
-        // Selected items can have a left border pipe, but not between text segments
-        list.cursor = 0; // Select the first item
-        let selected_rendered = list.view();
-
-        // Check that the pipe is only at the beginning (left border) not between text
-        assert!(
-            !selected_rendered.contains("N│u") && !selected_rendered.contains("ut│e"),
-            "Selected item should not have pipe characters between highlighted text segments. Output: {:?}",
-            selected_rendered
-        );
-
-        // Test another case: filter "li" on "Linux" - test unselected first
-        list.set_filter_text("li");
-        list.apply_filter();
-
-        assert_eq!(list.len(), 1);
-        assert_eq!(list.filtered_items[0].item.0, "Linux");
-
-        // Test unselected Linux (no borders)
-        list.cursor = list.len(); // Deselect
-        let linux_unselected = list.view();
-        assert!(
-            !linux_unselected.contains("Li│n") && !linux_unselected.contains("i│n"),
-            "Unselected Linux should not have pipes between highlighted segments. Output: {:?}",
-            linux_unselected
-        );
-    }
-
-    #[test]
-    fn test_filter_highlighting_visual_correctness() {
-        // This test focuses on the visual correctness of the rendered output
-        // to catch issues like unwanted characters, malformed ANSI, etc.
-        let items = vec![S("Testing"), S("Visual"), S("Correctness")];
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
-
-        // Test 1: Single character filter
-        list.set_filter_text("t");
-        list.apply_filter();
-
-        let rendered = list.view();
-        // Should not contain any malformed character sequences
-        assert!(
-            !rendered.contains("│T")
-                && !rendered.contains("T│")
-                && !rendered.contains("│t")
-                && !rendered.contains("t│"),
-            "Single character highlighting should not have pipe artifacts. Output: {:?}",
-            rendered
-        );
-
-        // Test 2: Multi-character contiguous filter
-        list.set_filter_text("test");
-        list.apply_filter();
-
-        let rendered = list.view();
-        // Should not have pipes between consecutive highlighted characters
-        assert!(
-            !rendered.contains("T│e") && !rendered.contains("e│s") && !rendered.contains("s│t"),
-            "Contiguous highlighting should not have character separation. Output: {:?}",
-            rendered
-        );
-
-        // Test 3: Check that highlighting preserves text integrity
-        // The word "Testing" should appear as a complete word, just with some characters styled
-        assert!(
-            rendered.contains("Testing") || rendered.matches("Test").count() > 0,
-            "Original text should be preserved in some form. Output: {:?}",
-            rendered
-        );
-    }
-
-    #[test]
-    fn test_filter_highlighting_ansi_efficiency() {
-        // Test that we don't generate excessive ANSI escape sequences
-        let items = vec![S("AbCdEfGh")];
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
-
-        // Filter that matches every other character: A_C_E_G
-        list.set_filter_text("aceg");
-        list.apply_filter();
-
-        // Test unselected state to avoid border artifacts
-        list.cursor = list.len(); // Deselect
-        let rendered = list.view();
-
-        // Count ANSI reset sequences - there should not be excessive resets
-        let reset_count = rendered.matches("\x1b[0m").count();
-        let total_length = rendered.len();
-
-        // Heuristic: if resets are more than 20% of total output length, something's wrong
-        assert!(
-            reset_count < total_length / 5,
-            "Too many ANSI reset sequences detected ({} resets in {} chars). This suggests inefficient styling. Output: {:?}",
-            reset_count, total_length, rendered
-        );
-
-        // Should not have malformed escape sequences
-        assert!(
-            !rendered.contains("\x1b[0m│") && !rendered.contains("│\x1b["),
-            "ANSI sequences should not be mixed with pipe characters. Output: {:?}",
-            rendered
-        );
-    }
-
-    #[test]
-    fn test_filter_highlighting_state_consistency() {
-        // Test that highlighting works consistently across different states
-        let items = vec![S("StateTest"), S("Another"), S("ThirdItem")];
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
-
-        list.set_filter_text("st");
-        list.apply_filter();
-
-        // Test unselected state
-        list.cursor = list.len(); // Deselect all
-        let unselected = list.view();
-
-        // Test selected state
-        list.cursor = 0; // Select first item
-        let selected = list.view();
-
-        // Both should be free of character separation artifacts
-        assert!(
-            !unselected.contains("S│t") && !unselected.contains("t│a"),
-            "Unselected state should not have character separation. Output: {:?}",
-            unselected
-        );
-
-        assert!(
-            !selected.contains("S│t") && !selected.contains("t│a"),
-            "Selected state should not have character separation. Output: {:?}",
-            selected
-        );
-
-        // Selected state can have left border, but it should be at the beginning
-        if selected.contains("│") {
-            let lines: Vec<&str> = selected.lines().collect();
-            for line in lines {
-                if line.contains("StateTest") || line.contains("st") {
-                    // If there's a pipe, it should be at the start of content, not between characters
-                    if let Some(pipe_pos) = line.find("│") {
-                        let after_pipe = &line[pipe_pos + "│".len()..];
-                        assert!(
-                            !after_pipe.contains("│"),
-                            "Only one pipe should appear per line (left border). Line: {:?}",
-                            line
-                        );
-                    }
-                }
-            }
-        }
-    }
-
-    #[test]
-    fn test_filter_highlighting_spacing_issue() {
-        // Regression test for extra space between highlighted and non-highlighted segments
-        // This test reproduces the exact scenario reported by the user
-        let items = vec![
-            S("Raspberry Pi's"),
-            S("Nutella"),
-            S("Bitter melon"),
-            S("Nice socks"),
-            S("Eight hours of sleep"),
-            S("Cats"),
-            S("Plantasia, the album"),
-            S("Pour over coffee"),
-            S("VR"),
-            S("Noguchi Lamps"),
-            S("Linux"),
-            S("Business school"),
-        ];
-
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 24);
-
-        // Test filtering with 'n' to match multiple items including Nutella
-        list.set_filter_text("n");
-        list.apply_filter();
-
-        // Make sure Nutella is in the filtered results
-        let has_nutella = list
-            .filtered_items
-            .iter()
-            .any(|item| item.item.0 == "Nutella");
-        assert!(has_nutella, "Nutella should be in filtered results");
-
-        // Find Nutella in the filtered results and select it
-        for (i, filtered_item) in list.filtered_items.iter().enumerate() {
-            if filtered_item.item.0 == "Nutella" {
-                list.cursor = i;
-                break;
-            }
+        let mut sections = Vec::new();
+
+        // Header: Title or filter input
+        let header = self.view_header();
+        if !header.is_empty() {
+            sections.push(header);
         }
 
-        let rendered = list.view();
-
-        // Debug: Print the rendered output to console for manual inspection
-        println!("\n=== FILTER HIGHLIGHTING TEST OUTPUT ===");
-        println!("{}", rendered);
-        println!("=== END OUTPUT ===\n");
-
-        // Check for the exact spacing issue the user reported: "│ N utella"
-        let has_nutella_spacing_issue =
-            rendered.contains("│ N utella") || rendered.contains("N utella");
-
-        if has_nutella_spacing_issue {
-            panic!(
-                "❌ SPACING ISSUE DETECTED: Found '│ N utella' or 'N utella' in output. \
-                   Expected '│ Nutella' or 'Nutella' without extra spaces."
-            );
+        // Items: Main content area
+        let items = self.view_items();
+        if !items.is_empty() {
+            sections.push(items);
         }
 
-        // Also check for other spacing issues mentioned in the user report
-        let other_spacing_issues = rendered.contains("I t's") ||  // "It's" broken up
-                                  rendered.contains("N  ice") ||  // "Nice" with extra space
-                                  rendered.contains("Li  n  ux"); // "Linux" with multiple spaces
-
-        if other_spacing_issues {
-            panic!("❌ ADDITIONAL SPACING ISSUES: Found other words with extra spaces in highlighting.");
+        // Footer: Status and help
+        let footer = self.view_footer();
+        if !footer.is_empty() {
+            sections.push(footer);
         }
 
-        println!("✅ No spacing issues detected in filter highlighting.");
-    }
-
-    #[test]
-    fn test_filter_edge_cases() {
-        let items = vec![S("a"), S("ab"), S("abc"), S(""), S("   ")];
-        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);
-
-        // Single character filtering
-        list.set_filter_text("a");
-        list.apply_filter();
-        assert!(list.len() >= 3, "Should match 'a', 'ab', 'abc'");
-
-        // Empty filter should show all non-empty items
-        list.set_filter_text("");
-        list.apply_filter();
-        assert_eq!(list.filter_state, FilterState::Unfiltered);
-
-        // Very short items
-        list.set_filter_text("ab");
-        list.apply_filter();
-        assert!(list.len() >= 2, "Should match 'ab', 'abc'");
-
-        // Ensure no panics with edge cases
-        let rendered = list.view();
-        assert!(!rendered.is_empty());
+        sections.join("\n")
     }
 }

@@ -320,7 +320,8 @@ pub use key::{
 pub use list::Model as List;
 pub use list::{
     DefaultDelegate as ListDefaultDelegate, DefaultItem as ListDefaultItem,
-    DefaultItemStyles as ListDefaultItemStyles, ListKeyMap, ListStyles,
+    DefaultItemStyles as ListDefaultItemStyles, FilterState, FilterStateInfo, ListKeyMap,
+    ListStyles,
 };
 pub use paginator::Model as Paginator;
 pub use progress::Model as Progress;
@@ -421,7 +422,8 @@ pub mod prelude {
     pub use crate::list::Model as List;
     pub use crate::list::{
         DefaultDelegate as ListDefaultDelegate, DefaultItem as ListDefaultItem,
-        DefaultItemStyles as ListDefaultItemStyles, ListKeyMap, ListStyles,
+        DefaultItemStyles as ListDefaultItemStyles, FilterState, FilterStateInfo, ListKeyMap,
+        ListStyles,
     };
     pub use crate::paginator::Model as Paginator;
     pub use crate::progress::Model as Progress;
