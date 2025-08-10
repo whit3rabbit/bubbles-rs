@@ -875,6 +875,76 @@ mod tests {
     }
 
     #[test]
+    fn test_filter_highlighting_spacing_issue() {
+        // Regression test for extra space between highlighted and non-highlighted segments
+        // This test reproduces the exact scenario reported by the user
+        let items = vec![
+            S("Raspberry Pi's"),
+            S("Nutella"),
+            S("Bitter melon"),
+            S("Nice socks"),
+            S("Eight hours of sleep"),
+            S("Cats"),
+            S("Plantasia, the album"),
+            S("Pour over coffee"),
+            S("VR"),
+            S("Noguchi Lamps"),
+            S("Linux"),
+            S("Business school"),
+        ];
+
+        let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 24);
+
+        // Test filtering with 'n' to match multiple items including Nutella
+        list.set_filter_text("n");
+        list.apply_filter();
+
+        // Make sure Nutella is in the filtered results
+        let has_nutella = list
+            .filtered_items
+            .iter()
+            .any(|item| item.item.0 == "Nutella");
+        assert!(has_nutella, "Nutella should be in filtered results");
+
+        // Find Nutella in the filtered results and select it
+        for (i, filtered_item) in list.filtered_items.iter().enumerate() {
+            if filtered_item.item.0 == "Nutella" {
+                list.cursor = i;
+                break;
+            }
+        }
+
+        let rendered = list.view();
+
+        // Debug: Print the rendered output to console for manual inspection
+        println!("\n=== FILTER HIGHLIGHTING TEST OUTPUT ===");
+        println!("{}", rendered);
+        println!("=== END OUTPUT ===\n");
+
+        // Check for the exact spacing issue the user reported: "│ N utella"
+        let has_nutella_spacing_issue =
+            rendered.contains("│ N utella") || rendered.contains("N utella");
+
+        if has_nutella_spacing_issue {
+            panic!(
+                "❌ SPACING ISSUE DETECTED: Found '│ N utella' or 'N utella' in output. \
+                   Expected '│ Nutella' or 'Nutella' without extra spaces."
+            );
+        }
+
+        // Also check for other spacing issues mentioned in the user report
+        let other_spacing_issues = rendered.contains("I t's") ||  // "It's" broken up
+                                  rendered.contains("N  ice") ||  // "Nice" with extra space
+                                  rendered.contains("Li  n  ux"); // "Linux" with multiple spaces
+
+        if other_spacing_issues {
+            panic!("❌ ADDITIONAL SPACING ISSUES: Found other words with extra spaces in highlighting.");
+        }
+
+        println!("✅ No spacing issues detected in filter highlighting.");
+    }
+
+    #[test]
     fn test_filter_edge_cases() {
         let items = vec![S("a"), S("ab"), S("abc"), S(""), S("   ")];
         let mut list = Model::new(items, defaultitem::DefaultDelegate::new(), 80, 20);

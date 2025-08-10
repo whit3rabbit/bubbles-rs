@@ -4,6 +4,31 @@
 //! The `DefaultItem` is a simple item with a title and description, while `DefaultDelegate` handles
 //! the rendering and interaction logic for these items.
 //!
+//! ## Filter Highlighting Architecture
+//!
+//! This module implements a sophisticated filter highlighting system that avoids common ANSI
+//! rendering issues. The key insight is that lipgloss styles with padding/borders cause spacing
+//! problems when applied to individual text segments.
+//!
+//! ### The Problem
+//! When highlighting individual characters in filtered text, naively applying styles with padding
+//! results in extra spaces between segments:
+//! - Input: "Nutella" with 'N' highlighted
+//! - Broken: "│ N utella" (space between N and utella)
+//! - Correct: "│ Nutella" (seamless text)
+//!
+//! ### The Solution
+//! 1. **Segment-Based Highlighting**: Group consecutive match indices to minimize ANSI sequences
+//! 2. **Clean Styles**: Use styles without padding/borders for `apply_character_highlighting`
+//! 3. **Manual Layout**: Apply borders and padding manually after highlighting is complete
+//!
+//! ### Visual States
+//! - **Selected Items**: Left border (│) + 1 space + highlighted text
+//! - **Unselected Items**: 2 spaces + highlighted text (no border)
+//! - **Dimmed Items**: Faded colors when filter input is empty
+//!
+//! This approach ensures perfect text rendering while maintaining the visual hierarchy.
+//!
 //! ## Default Item Structure
 //!
 //! The `DefaultItem` represents a basic list item with:
@@ -15,7 +40,7 @@
 //! The `DefaultDelegate` handles:
 //! - Rendering items with different visual states (normal, selected, dimmed)
 //! - Managing item height and spacing
-//! - Filtering and match highlighting (when implemented)
+//! - Complex filter highlighting with seamless text rendering
 //!
 //! ## Styling
 //!
@@ -40,19 +65,34 @@ use lipgloss_extras::prelude::*;
 
 /// Applies segment-based highlighting to a string based on match indices.
 ///
-/// This function takes a string and a vector of character indices that should be highlighted,
-/// then applies the given styles to create highlighted and non-highlighted segments.
-/// Unlike character-level highlighting, this groups consecutive match indices into contiguous
-/// segments to avoid ANSI escape sequence insertion between individual characters.
+/// This function is the core of the filter highlighting system. It takes a string and character
+/// indices that should be highlighted, then applies styles to create highlighted and non-highlighted
+/// segments. The key insight is to group consecutive match indices into contiguous segments rather
+/// than styling individual characters.
+///
+/// ## Why Segment-Based Highlighting?
+///
+/// Character-by-character highlighting would create excessive ANSI escape sequences:
+/// - "Nutella" with matches [0,1,2] would become: `[style]N[reset][style]u[reset][style]t[reset]ella`
+/// - Segment-based approach creates: `[style]Nut[reset]ella` (much more efficient)
+///
+/// ## Critical Implementation Detail
+///
+/// The styles passed to this function MUST NOT contain padding or borders, as lipgloss will
+/// apply padding to each individual segment, causing extra spaces between segments. For example:
+/// - ❌ With padding: "N utella" (space inserted between segments)  
+/// - ✅ Without padding: "Nutella" (segments render seamlessly)
+///
+/// Border and padding should be applied manually AFTER this function returns.
 ///
 /// # Arguments
 /// * `text` - The text to apply highlighting to
-/// * `matches` - Vector of character indices that should be highlighted
-/// * `highlight_style` - Style to apply to matched segments
-/// * `normal_style` - Style to apply to non-matched segments
+/// * `matches` - Vector of character indices that should be highlighted (from fuzzy matching)
+/// * `highlight_style` - Style to apply to matched segments (should have NO padding/borders)
+/// * `normal_style` - Style to apply to non-matched segments (should have NO padding/borders)
 ///
 /// # Returns
-/// A styled string with highlighting applied to contiguous segments
+/// A styled string with highlighting applied to contiguous segments, ready for border/padding application
 pub(super) fn apply_character_highlighting(
     text: &str,
     matches: &[usize],
@@ -505,33 +545,54 @@ impl DefaultDelegate {
 impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
     /// Renders an item as a styled string for display in the list.
     ///
-    /// This method handles the complete rendering pipeline for list items, including:
-    /// - State detection (normal, selected, dimmed)
-    /// - Filter highlighting with character-level precision
-    /// - Style application based on current state
-    /// - Layout formatting (single-line or with description)
+    /// This method implements the complete rendering pipeline for list items, with special
+    /// handling for filter highlighting that avoids common ANSI spacing issues.
     ///
-    /// The rendering adapts to the current list state, applying different styles
-    /// for selected items, dimmed items during filtering, and highlighting
-    /// characters that match the current filter.
+    /// ## Rendering Pipeline
+    ///
+    /// 1. **State Detection**: Determine if item is selected, dimmed, or has filter matches
+    /// 2. **Filter Highlighting**: Apply character-level highlighting using segment-based approach
+    /// 3. **Style Application**: Apply colors, borders, and padding based on item state
+    /// 4. **Layout Formatting**: Combine title and description if enabled
+    ///
+    /// ## Filter Highlighting Implementation
+    ///
+    /// The filter highlighting system is complex due to lipgloss rendering behavior:
+    ///
+    /// ### Problem
+    /// Lipgloss styles with padding add spaces when applied to individual text segments.
+    /// If we pass styles with padding directly to `apply_character_highlighting`, we get:
+    /// - Input: "Nutella" with matches \[0\] (highlighting 'N')
+    /// - Expected: "│ Nutella"
+    /// - Actual: "│ N utella" (extra space between 'N' and 'utella')
+    ///
+    /// ### Solution
+    /// 1. Create "base" styles WITHOUT padding/borders for segment highlighting
+    /// 2. Apply highlighting using these clean styles via `apply_character_highlighting`
+    /// 3. Manually apply border and padding AFTER highlighting is complete
+    ///
+    /// ### Selected vs Unselected Items
+    /// - **Selected**: Left border (│) + 1 space padding + colored text
+    /// - **Unselected**: No border + 2 spaces padding + normal text color
+    ///
+    /// This approach ensures seamless text rendering while preserving visual hierarchy.
     ///
     /// # Arguments
     ///
-    /// * `m` - The list model containing state information
-    /// * `index` - The index of this item in the list
+    /// * `m` - The list model containing state and filter information
+    /// * `index` - The index of this item in the current list view
     /// * `item` - The item to render
     ///
     /// # Returns
     ///
-    /// A formatted string with ANSI styling codes that represents the visual
-    /// appearance of the item. Returns an empty string if the list width is 0.
+    /// A formatted string with ANSI styling codes. Returns empty string if list width is 0.
     ///
     /// # Visual States
     ///
-    /// - **Normal**: Standard appearance for unselected items
-    /// - **Selected**: Highlighted with left border and accent colors
-    /// - **Dimmed**: Faded appearance when filtering with empty input
-    /// - **Filtered**: Normal or selected appearance with character highlights
+    /// - **Normal**: Standard appearance with left padding
+    /// - **Selected**: Highlighted with left border and accent colors  
+    /// - **Dimmed**: Faded appearance when filter input is empty
+    /// - **Filtered**: Normal or selected appearance with character-level match highlighting
     fn render(&self, m: &Model<I>, index: usize, item: &I) -> String {
         let title = item.to_string();
         let desc = if let Some(di) = (item as &dyn std::any::Any).downcast_ref::<DefaultItem>() {
@@ -546,14 +607,21 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
 
         let s = &self.styles;
         let is_selected = index == m.cursor;
+
+        // Check if we're in the special "empty filter" dimmed state
+        // This happens when user has pressed '/' to filter but hasn't typed anything yet
         let empty_filter =
             m.filter_state == super::FilterState::Filtering && m.filter_input.value().is_empty();
+
+        // Determine if any kind of filtering is active (typing or applied)
         let is_filtered = matches!(
             m.filter_state,
             super::FilterState::Filtering | super::FilterState::FilterApplied
         );
 
-        // Get filter matches for this item if filtering is active
+        // Extract character match indices from the fuzzy search results
+        // These indices tell us which characters in the text should be highlighted
+        // Note: matches are only available for items that passed the filter
         let matches = if is_filtered && index < m.filtered_items.len() {
             Some(&m.filtered_items[index].matches)
         } else {
@@ -563,98 +631,151 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
         let mut title_out = title.clone();
         let mut desc_out = desc.clone();
 
+        // RENDERING BRANCH 1: Empty Filter State (Dimmed)
+        // When user presses '/' but hasn't typed anything, show all items in dimmed colors
         if empty_filter {
             title_out = s.dimmed_title.clone().render(&title_out);
             desc_out = s.dimmed_desc.clone().render(&desc_out);
+        // RENDERING BRANCH 2: Selected Item (with potential highlighting)
+        // Selected items get a left border and accent colors, plus highlighting if filtered
         } else if is_selected && m.filter_state != super::FilterState::Filtering {
-            // Apply highlighting for selected items
             if let Some(match_indices) = matches {
-                // Create border-free versions of selected styles for character highlighting
-                // to prevent pipe character insertion between segments
-                let selected_title_no_border = s
-                    .selected_title
-                    .clone()
-                    .border_top(false)
-                    .border_right(false)
-                    .border_bottom(false)
-                    .border_left(false);
-                let selected_desc_no_border = s
-                    .selected_desc
-                    .clone()
-                    .border_top(false)
-                    .border_right(false)
-                    .border_bottom(false)
-                    .border_left(false);
+                // SELECTED ITEM WITH FILTER HIGHLIGHTING
+                //
+                // Problem: The default selected_title style has padding(0,0,0,1) and a border.
+                // If we pass this directly to apply_character_highlighting, lipgloss applies
+                // the padding to each text segment individually, creating spaces between them:
+                //   "Nutella" with 'N' highlighted becomes "│ N utella" instead of "│ Nutella"
+                //
+                // Solution: Use clean styles without padding/borders for highlighting, then
+                // manually add the border and padding afterward.
 
-                let highlight_style = selected_title_no_border
-                    .clone()
-                    .inherit(s.filter_match.clone());
+                // Step 1: Create clean base styles (colors only, no padding/borders)
+                let selected_base_style = Style::new().foreground(AdaptiveColor {
+                    Light: "#EE6FF8", // Selected item text color
+                    Dark: "#EE6FF8",
+                });
+                let selected_desc_base_style = Style::new().foreground(AdaptiveColor {
+                    Light: "#F793FF", // Selected description color
+                    Dark: "#AD58B4",
+                });
+
+                // Step 2: Apply character-level highlighting using clean styles
+                let highlight_style = selected_base_style.clone().inherit(s.filter_match.clone());
                 title_out = apply_character_highlighting(
                     &title,
                     match_indices,
-                    &highlight_style,
-                    &selected_title_no_border,
+                    &highlight_style, // Highlighted segments: selected color + underline/bold
+                    &selected_base_style, // Normal segments: just selected color
                 );
                 if !desc.is_empty() {
-                    let desc_highlight_style = selected_desc_no_border
+                    let desc_highlight_style = selected_desc_base_style
                         .clone()
                         .inherit(s.filter_match.clone());
                     desc_out = apply_character_highlighting(
                         &desc,
                         match_indices,
                         &desc_highlight_style,
-                        &selected_desc_no_border,
+                        &selected_desc_base_style,
                     );
                 }
 
-                // For highlighted items, we need to apply the border separately
-                // since the highlighting already applied the appropriate colors
-                let border_only_style = Style::new()
-                    .border_style(normal_border())
-                    .border_top(false)
-                    .border_right(false)
-                    .border_bottom(false)
-                    .border_left(true)
-                    .border_left_foreground(AdaptiveColor {
-                        Light: "#F793FF",
-                        Dark: "#AD58B4",
-                    })
-                    .padding(0, 0, 0, 1);
-
-                title_out = border_only_style.render(&title_out);
+                // Step 3: Manually add border and padding to avoid lipgloss segment spacing
+                // This ensures "│ Nutella" instead of "│ N utella"
+                let border_char = "│";
+                let padding = " "; // 1 space after border for selected items
+                title_out = format!(
+                    "{}{}{}",
+                    Style::new()
+                        .foreground(AdaptiveColor {
+                            Light: "#F793FF",
+                            Dark: "#AD58B4",
+                        })
+                        .render(border_char), // Colored border character
+                    padding,   // Manual spacing
+                    title_out  // Pre-highlighted text
+                );
                 if !desc.is_empty() {
-                    desc_out = border_only_style.render(&desc_out);
+                    desc_out = format!(
+                        "{}{}{}",
+                        Style::new()
+                            .foreground(AdaptiveColor {
+                                Light: "#F793FF",
+                                Dark: "#AD58B4",
+                            })
+                            .render(border_char),
+                        padding,
+                        desc_out
+                    );
                 }
             } else {
+                // SELECTED ITEM WITHOUT FILTER HIGHLIGHTING
+                // No filter matches, so use the standard selected styles (with border and padding)
                 title_out = s.selected_title.clone().render(&title_out);
                 desc_out = s.selected_desc.clone().render(&desc_out);
             }
         } else {
-            // Apply highlighting for normal (unselected) items
+            // RENDERING BRANCH 3: Unselected/Normal Item (with potential highlighting)
+            // Unselected items have no border, just left padding for alignment
             if let Some(match_indices) = matches {
-                let highlight_style = s.normal_title.clone().inherit(s.filter_match.clone());
+                // UNSELECTED ITEM WITH FILTER HIGHLIGHTING
+                //
+                // Same issue as selected items: normal_title style has padding(0,0,0,2).
+                // Applying this to individual segments creates: "Li  n  ux" instead of "Linux"
+                //
+                // Solution: Use the same approach - clean styles for highlighting,
+                // then manual padding.
+
+                // Step 1: Create clean base styles (colors only, no padding)
+                let normal_base_style = Style::new().foreground(AdaptiveColor {
+                    Light: "#1a1a1a", // Normal item text color (dark on light, light on dark)
+                    Dark: "#dddddd",
+                });
+                let normal_desc_base_style = Style::new().foreground(AdaptiveColor {
+                    Light: "#A49FA5", // Normal description color (muted)
+                    Dark: "#777777",
+                });
+
+                // Step 2: Apply character-level highlighting using clean styles
+                let highlight_style = normal_base_style.clone().inherit(s.filter_match.clone());
                 title_out = apply_character_highlighting(
                     &title,
                     match_indices,
-                    &highlight_style,
-                    &s.normal_title,
+                    &highlight_style, // Highlighted segments: normal color + underline/bold
+                    &normal_base_style, // Normal segments: just normal color
                 );
                 if !desc.is_empty() {
-                    let desc_highlight_style =
-                        s.normal_desc.clone().inherit(s.filter_match.clone());
+                    let desc_highlight_style = normal_desc_base_style
+                        .clone()
+                        .inherit(s.filter_match.clone());
                     desc_out = apply_character_highlighting(
                         &desc,
                         match_indices,
                         &desc_highlight_style,
-                        &s.normal_desc,
+                        &normal_desc_base_style,
                     );
                 }
+
+                // Step 3: Apply padding manually (no border for unselected items)
+                // This ensures "  Linux" instead of "  Li  n  ux"
+                let padding = "  "; // 2 spaces for normal items (to align with selected items' border+space)
+                title_out = format!("{}{}", padding, title_out);
+                if !desc.is_empty() {
+                    desc_out = format!("{}{}", padding, desc_out);
+                }
             } else {
+                // UNSELECTED ITEM WITHOUT FILTER HIGHLIGHTING
+                // No filter matches, so use the standard normal styles (with padding)
                 title_out = s.normal_title.clone().render(&title_out);
                 desc_out = s.normal_desc.clone().render(&desc_out);
             }
         }
 
+        // FINAL LAYOUT: Combine title and description based on delegate settings
+        // At this point, title_out and desc_out are fully styled with proper spacing:
+        // - Selected items: "│ Nutella" (border + space + text)
+        // - Unselected items: "  Linux" (2 spaces + text)
+        // - Filter highlighting is seamlessly integrated without spacing artifacts
         if self.show_description && !desc_out.is_empty() {
             format!("{}\n{}", title_out, desc_out)
         } else {

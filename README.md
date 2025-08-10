@@ -14,7 +14,7 @@ Add `bubbletea-widgets` to your `Cargo.toml` dependencies. You will also need `b
 ```toml
 [dependencies]
 bubbletea-rs = "0.0.6"
-bubbletea-widgets = "0.1.3"
+bubbletea-widgets = "0.1.4"
 lipgloss-extras = { version = "0.0.8", features = ["full"] }
 ```
 
@@ -225,6 +225,20 @@ sense in Rust, and to keep the codebase clean and idiomatic.
 
 This crate is a Rust implementation/port. Design, API concepts, and many behaviors
 are derived from the Go implementation by Charmbracelet and contributors.
+
+## Examples
+
+Check out the interactive examples in the `examples/` directory:
+
+```bash
+# Run the main list example
+cargo run --example list-default --bin list-default
+
+# Run debug versions for testing filter highlighting
+cargo run --example list-default --bin debug-filter
+```
+
+The examples demonstrate the list component with filtering functionality and can be used to test the filter highlighting features.
 
 ## License
 
