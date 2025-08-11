@@ -181,8 +181,9 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         }
 
         // Calculate available height for items
-        let header_height = 1; // Title or filter input
-        let footer_height = if self.show_status_bar { 2 } else { 0 }; // Status + help
+        let header_height = if self.show_title && self.show_status_bar { 2 } else { 1 };
+        let footer_height = if self.show_help { 1 } else { 0 } + 
+                           if self.show_pagination { 1 } else { 0 };
         let available_height = self.height.saturating_sub(header_height + footer_height);
         let items_per_view = (available_height / item_height).max(1);
 

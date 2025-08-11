@@ -320,14 +320,16 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
     /// ## Normal Navigation (other states)
     ///
     /// - **Up/Down**: Move cursor through items with smooth viewport scrolling
+    /// - **Page Up/Page Down**: Move cursor by one page (viewport height)
     /// - **Home/End**: Jump to first/last item
     /// - **/** : Start filtering mode
     /// - **Ctrl+C**: Clear any active filter
     ///
-    /// # Viewport Management
+    /// # Viewport and Paginator Management
     ///
-    /// The update method automatically manages viewport scrolling to ensure
-    /// the cursor remains visible when navigating through items.
+    /// The update method automatically:
+    /// - Manages viewport scrolling to ensure the cursor remains visible
+    /// - Synchronizes the paginator component to reflect the current page
     fn update(&mut self, msg: Msg) -> Option<Cmd> {
         if self.filter_state == FilterState::Filtering {
             if let Some(key_msg) = msg.downcast_ref::<KeyMsg>() {
@@ -416,6 +418,19 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                 self.cursor = self.len().saturating_sub(1);
                 // Adjust viewport to show the end of the list when jumping to last item.
                 self.sync_viewport_with_cursor();
+            } else if self.keymap.next_page.matches(key_msg) {
+                // Page Down: Move cursor forward by one page (viewport height).
+                // This provides quick navigation through long lists.
+                let items_len = self.len();
+                if items_len > 0 {
+                    self.cursor = (self.cursor + self.per_page).min(items_len - 1);
+                    self.sync_viewport_with_cursor();
+                }
+            } else if self.keymap.prev_page.matches(key_msg) {
+                // Page Up: Move cursor backward by one page (viewport height).
+                // Saturating subtraction ensures we don't underflow.
+                self.cursor = self.cursor.saturating_sub(self.per_page);
+                self.sync_viewport_with_cursor();
             } else if self.keymap.filter.matches(key_msg) {
                 self.filter_state = FilterState::Filtering;
                 // Return focus command to enable cursor blinking in filter input
@@ -426,6 +441,11 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                 self.filtered_items.clear();
                 self.cursor = 0;
                 self.update_pagination();
+            } else if self.keymap.show_full_help.matches(key_msg) || self.keymap.close_full_help.matches(key_msg) {
+                self.help.show_all = !self.help.show_all;
+                self.update_pagination(); // Recalculate layout since help height changes
+            } else if self.keymap.quit.matches(key_msg) {
+                return Some(bubbletea_rs::quit());
             } else if key_msg.key == crossterm::event::KeyCode::Enter {
                 // Handle item selection
                 if let Some(selected_item) = self.selected_item() {
@@ -443,6 +463,14 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                         return Some(cmd);
                     }
                 }
+            }
+            
+            // Synchronize the paginator component with the current cursor position.
+            // This calculation determines which "page" the cursor is on based on
+            // items per page, ensuring the pagination indicator (dots) accurately
+            // reflects the user's position in the list.
+            if self.per_page > 0 {
+                self.paginator.page = self.cursor / self.per_page;
             }
         }
         None

@@ -21,20 +21,33 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     ///
     /// A styled string containing the appropriate header content.
     pub(super) fn view_header(&self) -> String {
+        let mut sections = Vec::new();
+        
         if self.filter_state == FilterState::Filtering {
             // Show filter input interface when actively filtering
-            format!("Filter: {}", self.filter_input.view())
+            sections.push(format!("Filter: {}", self.filter_input.view()));
         } else if self.show_title {
-            // Show title, optionally with filter status
-            let mut header = self.title.clone();
+            let mut title = self.title.clone();
+
+            // When a filter is applied, show the number of matched items
             if self.filter_state == FilterState::FilterApplied {
-                header.push_str(&format!(" (filtered: {})", self.len()));
+                let filter_info = format!(" ({} matched)", self.len());
+                title = format!("{}{}", title, filter_info);
             }
-            self.styles.title.render(&header)
-        } else {
-            // Title is hidden
-            String::new()
+            
+            // Add styled title
+            sections.push(self.styles.title.render(&title));
         }
+
+        // Add status bar in header position (like Go version) when not filtering
+        if self.show_status_bar && self.filter_state != FilterState::Filtering {
+            let status = self.view_status_line();
+            if !status.is_empty() {
+                sections.push(status);
+            }
+        }
+
+        sections.join("\n")
     }
 
     /// Renders the visible items section of the list.
@@ -81,8 +94,9 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         }
 
         // Calculate available height for items
-        let header_height = 1; // Title or filter input
-        let footer_height = if self.show_status_bar { 2 } else { 0 }; // Status + help
+        let header_height = if self.show_title && self.show_status_bar { 2 } else { 1 };
+        let footer_height = if self.show_help { 1 } else { 0 } + 
+                           if self.show_pagination { 1 } else { 0 };
         let available_height = self.height.saturating_sub(header_height + footer_height);
         let max_visible_items = (available_height / item_height).max(1);
 
@@ -129,38 +143,61 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         result
     }
 
-    /// Renders the footer containing status information and help.
+    /// Renders the status line for header display (matching Go version layout).
     ///
-    /// The footer includes:
-    /// - Status bar showing current selection and item count (if enabled)
-    /// - Contextual help text based on current state and key bindings
+    /// This creates a simple status line showing item counts that appears in the header
+    /// area between the title and items, just like the Go version.
+    ///
+    /// # Returns
+    ///
+    /// A formatted string containing just the item count status.
+    pub(super) fn view_status_line(&self) -> String {
+        let total_items = self.items.len();
+        let visible_items = self.len();
+
+        // Simple item count status (like Go version)
+        let singular = self.status_item_singular.as_deref().unwrap_or("item");
+        let plural = self.status_item_plural.as_deref().unwrap_or("items");
+        let noun = if visible_items == 1 { singular } else { plural };
+        
+        if total_items == 0 {
+            "No items".to_string()
+        } else if self.is_empty() && self.filter_state == FilterState::FilterApplied {
+            "Nothing matched".to_string()
+        } else if self.filter_state == FilterState::FilterApplied {
+            // When filtering, show filter query and results like Go
+            let query = self.filter_input.value();
+            let num_filtered = total_items.saturating_sub(visible_items);
+            if !query.is_empty() && num_filtered > 0 {
+                format!("\"{}\" {} {} • {} filtered", query, visible_items, noun, num_filtered)
+            } else if !query.is_empty() {
+                format!("\"{}\" {} {}", query, visible_items, noun)
+            } else {
+                format!("{} {}", visible_items, noun)
+            }
+        } else {
+            // Normal unfiltered state - simple count
+            format!("{} {}", visible_items, noun)
+        }
+    }
+
+    /// Renders the footer containing only help information (matching Go version layout).
+    ///
+    /// The footer now only includes help text, as status information has been moved
+    /// to the header area to match the Go version's layout.
     ///
     /// The help content automatically adapts to the current filtering state,
     /// showing relevant key bindings for the user's current context.
     ///
     /// # Returns
     ///
-    /// A formatted string containing the status bar and help information,
-    /// or an empty string if the status bar is disabled.
+    /// A formatted string containing just the help information,
+    /// or an empty string if help is disabled.
     pub(super) fn view_footer(&self) -> String {
-        if !self.show_status_bar {
+        if !self.show_help {
             return String::new();
         }
 
-        let mut footer = String::new();
-        if !self.is_empty() {
-            let singular = self.status_item_singular.as_deref().unwrap_or("item");
-            let plural = self.status_item_plural.as_deref().unwrap_or("items");
-            let noun = if self.len() == 1 { singular } else { plural };
-            footer.push_str(&format!("{}/{} {}", self.cursor + 1, self.len(), noun));
-        }
-        if self.show_help {
-            let help_view = self.help.view(self);
-            if !help_view.is_empty() {
-                footer.push('\n');
-                footer.push_str(&help_view);
-            }
-        }
-        footer
+        self.help.view(self)
     }
 }

@@ -7,7 +7,7 @@
 //! ## Navigation Keys
 //!
 //! - **Cursor Movement**: `↑/k` (up), `↓/j` (down)
-//! - **Page Navigation**: `→/l/pgdn` (next page), `←/h/pgup` (prev page)
+//! - **Page Navigation**: `→/l/pgdn/f/d` (next page), `←/h/pgup/b/u` (prev page)
 //! - **Jump Navigation**: `g/home` (go to start), `G/end` (go to end)
 //!
 //! ## Filtering Keys

@@ -1,0 +1,17 @@
+[package]
+name = "list-default-example"
+version = "0.1.0"
+edition = "2021"
+default-run = "list-default"
+
+[[bin]]
+name = "list-default"
+path = "main.rs"
+
+[dependencies]
+bubbletea-rs = "0.0.6"
+bubbletea-widgets = { path = "../.." }
+lipgloss-extras = { version = "0.0.8", features = ["full"] }
+crossterm = "0.29"
+tokio = { version = "1.0", features = ["full"] }
+strip-ansi-escapes = "0.2"

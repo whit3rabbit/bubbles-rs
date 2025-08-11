@@ -216,7 +216,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             status_item_plural: None,
             show_pagination: true,
             help: help::Model::new(),
-            show_help: false,
+            show_help: true,
             keymap: ListKeyMap::default(),
             filter_state: FilterState::Unfiltered,
             filtered_items: vec![],
@@ -368,14 +368,19 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         // Calculate how many items can fit in the available height
         if self.height > 0 {
             let item_height = self.delegate.height() + self.delegate.spacing();
-            let header_height = 1; // Title or filter input
-            let footer_height = if self.show_status_bar { 2 } else { 0 }; // Status + help
+            
+            // Header now includes title AND status line (like Go version)
+            let header_height = if self.show_title && self.show_status_bar { 2 } else { 1 };
+            
+            // Footer includes help (1 line) + optional pagination dots
+            let footer_height = if self.show_help { 1 } else { 0 } + 
+                               if self.show_pagination { 1 } else { 0 };
 
             let available_height = self.height.saturating_sub(header_height + footer_height);
             let items_per_page = if item_height > 0 {
                 (available_height / item_height).max(1)
             } else {
-                10 // Fallback to default value
+                5 // Match Go version default
             };
 
             self.per_page = items_per_page;
