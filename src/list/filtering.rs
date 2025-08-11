@@ -227,8 +227,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
 
         // Calculate available height for items (updated for pagination padding)
         let header_height =
-            (if self.show_title { 1 } else { 0 }) +
-            (if self.show_status_bar { 1 } else { 0 });
+            (if self.show_title { 1 } else { 0 }) + (if self.show_status_bar { 1 } else { 0 });
         let footer_height =
             if self.show_help { 1 } else { 0 } + if self.show_pagination { 3 } else { 0 };
         let available_height = self.height.saturating_sub(header_height + footer_height);
@@ -252,7 +251,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
 
         let items_per_view = self.calculate_items_per_view();
         let viewport_end = self.viewport_start + items_per_view;
-        
+
         // Cursor is at bottom if it's at the last visible item in viewport
         // (but not necessarily at the very end of the list)
         self.cursor + 1 >= viewport_end && self.cursor + 1 < self.len()
@@ -270,7 +269,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         if self.is_empty() {
             return false;
         }
-        
+
         // Cursor is at top if it's at the viewport start and we're not at list beginning
         self.cursor == self.viewport_start && self.cursor > 0
     }

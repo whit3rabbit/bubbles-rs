@@ -268,13 +268,27 @@ impl<I: Item> help::KeyMap for Model<I> {
     /// 4. **Help and quit**: Show help, quit application
     fn full_help(&self) -> Vec<Vec<&key::Binding>> {
         vec![
-            vec![&self.keymap.cursor_up, &self.keymap.cursor_down],
-            vec![&self.keymap.next_page, &self.keymap.prev_page],
+            // Column 1: Primary Navigation
             vec![
+                &self.keymap.cursor_up,
+                &self.keymap.cursor_down,
+                &self.keymap.next_page,
+                &self.keymap.prev_page,
                 &self.keymap.go_to_start,
                 &self.keymap.go_to_end,
+            ],
+            // Column 2: Filtering Actions
+            vec![
                 &self.keymap.filter,
                 &self.keymap.clear_filter,
+                &self.keymap.accept_filter,
+                &self.keymap.cancel_filter,
+            ],
+            // Column 3: Help and Quit
+            vec![
+                &self.keymap.show_full_help,
+                &self.keymap.close_full_help,
+                &self.keymap.quit,
             ],
         ]
     }

@@ -125,10 +125,23 @@ impl key::KeyMap for ListKeyMap {
 
     fn full_help(&self) -> Vec<Vec<&key::Binding>> {
         vec![
-            vec![&self.cursor_up, &self.cursor_down],
-            vec![&self.next_page, &self.prev_page],
-            vec![&self.go_to_start, &self.go_to_end],
-            vec![&self.filter, &self.clear_filter, &self.accept_filter],
+            // Column 1: Primary Navigation
+            vec![
+                &self.cursor_up,
+                &self.cursor_down,
+                &self.next_page,
+                &self.prev_page,
+                &self.go_to_start,
+                &self.go_to_end,
+            ],
+            // Column 2: Filtering Actions
+            vec![
+                &self.filter,
+                &self.clear_filter,
+                &self.accept_filter,
+                &self.cancel_filter,
+            ],
+            // Column 3: Help and Quit
             vec![&self.show_full_help, &self.quit],
         ]
     }

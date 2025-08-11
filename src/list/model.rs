@@ -224,7 +224,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             viewport_start: 0,
             filter_input: textinput::new(),
         };
-        
+
         // Calculate the actual pagination based on the provided height
         list.update_pagination();
         list
@@ -1698,14 +1698,16 @@ mod tests {
     #[test]
     fn test_pagination_calculation_fix() {
         // Test that our pagination calculation fix works correctly
-        let items: Vec<DefaultItem> = (0..23).map(|i| DefaultItem::new(&format!("Item {}", i), "Description")).collect();
+        let items: Vec<DefaultItem> = (0..23)
+            .map(|i| DefaultItem::new(&format!("Item {}", i), "Description"))
+            .collect();
         let delegate = DefaultDelegate::new();
 
         // Test different terminal heights like the user mentioned
         for terminal_height in [24, 30, 34] {
             let doc_margin = 2; // doc_style margin from the example
             let list_height = terminal_height - doc_margin;
-            
+
             let list = Model::new(items.clone(), delegate.clone(), 80, list_height)
                 .with_title("Test List");
 
@@ -1714,22 +1716,33 @@ mod tests {
             let status_height = list.calculate_element_height("status_bar"); // 2
             let pagination_height = list.calculate_element_height("pagination"); // 1
             let help_height = list.calculate_element_height("help"); // 2
-            
+
             let header_height = title_height + status_height; // 4
             let footer_height = pagination_height + help_height; // 3
             let total_reserved = header_height + footer_height; // 7
             let available_height = list_height - total_reserved;
-            
+
             // DefaultDelegate uses 3 lines per item (2 content + 1 spacing)
             let delegate_item_height = 3;
             let expected_per_page = available_height / delegate_item_height;
-            let expected_total_pages = (items.len() as f32 / expected_per_page as f32).ceil() as usize;
+            let expected_total_pages =
+                (items.len() as f32 / expected_per_page as f32).ceil() as usize;
 
             println!("Terminal height {}: list_height={}, available={}, expected_per_page={}, expected_pages={}, actual_per_page={}, actual_pages={}", 
                 terminal_height, list_height, available_height, expected_per_page, expected_total_pages, list.per_page(), list.total_pages());
 
-            assert_eq!(list.per_page(), expected_per_page, "Items per page mismatch for terminal height {}", terminal_height);
-            assert_eq!(list.total_pages(), expected_total_pages, "Total pages mismatch for terminal height {}", terminal_height);
+            assert_eq!(
+                list.per_page(),
+                expected_per_page,
+                "Items per page mismatch for terminal height {}",
+                terminal_height
+            );
+            assert_eq!(
+                list.total_pages(),
+                expected_total_pages,
+                "Total pages mismatch for terminal height {}",
+                terminal_height
+            );
         }
     }
 }
