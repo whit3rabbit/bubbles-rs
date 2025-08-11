@@ -94,12 +94,23 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             return String::new();
         }
 
-        // Calculate available height for items
-        let header_height =
-            (if self.show_title { 1 } else { 0 }) +
-            (if self.show_status_bar { 1 } else { 0 });
-        let footer_height =
-            if self.show_help { 1 } else { 0 } + if self.show_pagination { 3 } else { 0 };
+        // Calculate available height for items using the same logic as update_pagination()
+        let mut header_height = 0;
+        if self.show_title {
+            header_height += self.calculate_element_height("title");
+        }
+        if self.show_status_bar {
+            header_height += self.calculate_element_height("status_bar");
+        }
+
+        let mut footer_height = 0;
+        if self.show_help {
+            footer_height += self.calculate_element_height("help");
+        }
+        if self.show_pagination {
+            footer_height += self.calculate_element_height("pagination");
+        }
+
         let available_height = self.height.saturating_sub(header_height + footer_height);
         let max_visible_items = (available_height / item_height).max(1);
 

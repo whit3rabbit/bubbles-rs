@@ -198,7 +198,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         paginator.active_dot = styles.active_pagination_dot.render("");
         paginator.inactive_dot = styles.inactive_pagination_dot.render("");
 
-        Self {
+        let mut list = Self {
             title: "List".to_string(),
             items,
             delegate: Box::new(delegate),
@@ -223,7 +223,11 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             cursor: 0,
             viewport_start: 0,
             filter_input: textinput::new(),
-        }
+        };
+        
+        // Calculate the actual pagination based on the provided height
+        list.update_pagination();
+        list
     }
 
     /// Sets the items displayed in the list.
@@ -403,6 +407,59 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         self.height
     }
 
+    /// Returns the current items per page setting.
+    ///
+    /// # Returns
+    ///
+    /// The number of items displayed per page.
+    pub fn per_page(&self) -> usize {
+        self.per_page
+    }
+
+    /// Returns the total number of pages in the paginator.
+    ///
+    /// # Returns
+    ///
+    /// The total number of pages based on item count and per_page setting.
+    pub fn total_pages(&self) -> usize {
+        self.paginator.total_pages
+    }
+
+    /// Calculates the actual rendered height of UI elements based on their known configurations.
+    ///
+    /// This method mimics Go's `lipgloss.Height()` function by using the known style
+    /// configurations to determine how many terminal lines each element will actually occupy
+    /// when rendered, matching the default padding values set in style.rs.
+    ///
+    /// # Arguments
+    ///
+    /// * `element` - A string identifier for the UI element type
+    ///
+    /// # Returns
+    ///
+    /// The total number of terminal lines this element will occupy.
+    pub fn calculate_element_height(&self, element: &str) -> usize {
+        match element {
+            "title" => {
+                // title: .padding(0, 1, 1, 2) = 1 content + 0 top + 1 bottom = 2 lines
+                2
+            }
+            "status_bar" => {
+                // status_bar: .padding(0, 0, 1, 2) = 1 content + 0 top + 1 bottom = 2 lines
+                2
+            }
+            "pagination" => {
+                // pagination_style: .padding_left(2) = 1 content + 0 top + 0 bottom = 1 line
+                1
+            }
+            "help" => {
+                // help_style: .padding(1, 0, 0, 2) = 1 content + 1 top + 0 bottom = 2 lines
+                2
+            }
+            _ => 1, // Default fallback
+        }
+    }
+
     /// Updates pagination settings based on current item count and page size.
     ///
     /// This method recalculates pagination after changes to item count or
@@ -416,14 +473,23 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         if self.height > 0 {
             let item_height = self.delegate.height() + self.delegate.spacing();
 
-            // Header includes title (1 line) + status line (1 line) as separate sections
-            let header_height = 
-                (if self.show_title { 1 } else { 0 }) +
-                (if self.show_status_bar { 1 } else { 0 });
+            // Calculate actual header height based on styles (matching Go's lipgloss.Height() approach)
+            let mut header_height = 0;
+            if self.show_title {
+                header_height += self.calculate_element_height("title");
+            }
+            if self.show_status_bar {
+                header_height += self.calculate_element_height("status_bar");
+            }
 
-            // Footer includes help (1 line) + optional pagination dots (1 line)
-            let footer_height =
-                if self.show_help { 1 } else { 0 } + if self.show_pagination { 1 } else { 0 };
+            // Calculate actual footer height based on styles
+            let mut footer_height = 0;
+            if self.show_help {
+                footer_height += self.calculate_element_height("help");
+            }
+            if self.show_pagination {
+                footer_height += self.calculate_element_height("pagination");
+            }
 
             let available_height = self.height.saturating_sub(header_height + footer_height);
             let items_per_page = if item_height > 0 {
@@ -434,6 +500,8 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
 
             self.per_page = items_per_page;
             self.paginator.set_per_page(items_per_page);
+            // Recalculate total pages with the new per_page value
+            self.paginator.set_total_items(self.len());
         }
     }
 
@@ -1620,4 +1688,48 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     }
 
     // === Advanced Filtering API ===
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::list::{DefaultDelegate, DefaultItem};
+
+    #[test]
+    fn test_pagination_calculation_fix() {
+        // Test that our pagination calculation fix works correctly
+        let items: Vec<DefaultItem> = (0..23).map(|i| DefaultItem::new(&format!("Item {}", i), "Description")).collect();
+        let delegate = DefaultDelegate::new();
+
+        // Test different terminal heights like the user mentioned
+        for terminal_height in [24, 30, 34] {
+            let doc_margin = 2; // doc_style margin from the example
+            let list_height = terminal_height - doc_margin;
+            
+            let list = Model::new(items.clone(), delegate.clone(), 80, list_height)
+                .with_title("Test List");
+
+            // Calculate expected values
+            let title_height = list.calculate_element_height("title"); // 2
+            let status_height = list.calculate_element_height("status_bar"); // 2
+            let pagination_height = list.calculate_element_height("pagination"); // 1
+            let help_height = list.calculate_element_height("help"); // 2
+            
+            let header_height = title_height + status_height; // 4
+            let footer_height = pagination_height + help_height; // 3
+            let total_reserved = header_height + footer_height; // 7
+            let available_height = list_height - total_reserved;
+            
+            // DefaultDelegate uses 3 lines per item (2 content + 1 spacing)
+            let delegate_item_height = 3;
+            let expected_per_page = available_height / delegate_item_height;
+            let expected_total_pages = (items.len() as f32 / expected_per_page as f32).ceil() as usize;
+
+            println!("Terminal height {}: list_height={}, available={}, expected_per_page={}, expected_pages={}, actual_per_page={}, actual_pages={}", 
+                terminal_height, list_height, available_height, expected_per_page, expected_total_pages, list.per_page(), list.total_pages());
+
+            assert_eq!(list.per_page(), expected_per_page, "Items per page mismatch for terminal height {}", terminal_height);
+            assert_eq!(list.total_pages(), expected_total_pages, "Total pages mismatch for terminal height {}", terminal_height);
+        }
+    }
 }

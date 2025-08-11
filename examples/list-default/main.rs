@@ -117,9 +117,6 @@ impl BubbleTeaModel for Model {
         // Render list view with document style (matching Go version)
         let view = self.list.view();
 
-        // Additional debug info can be added here if needed
-        // For example, we could show our filter state vs widget filter state
-
         doc_style().render(&view)
     }
 }
