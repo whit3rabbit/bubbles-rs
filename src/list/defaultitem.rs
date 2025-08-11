@@ -694,16 +694,14 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
                 // manually add the border and padding afterward.
 
                 // Step 1: Create clean base styles (colors only, no padding/borders)
-                let selected_base_style = Style::new()
-                    .foreground(AdaptiveColor {
-                        Light: "#EE6FF8", // Selected item text color (matching Go)
-                        Dark: "#EE6FF8",
-                    });
-                let selected_desc_base_style = Style::new()
-                    .foreground(AdaptiveColor {
-                        Light: "#F793FF", // Selected description color (matching Go)
-                        Dark: "#AD58B4",
-                    });
+                let selected_base_style = Style::new().foreground(AdaptiveColor {
+                    Light: "#EE6FF8", // Selected item text color (matching Go)
+                    Dark: "#EE6FF8",
+                });
+                let selected_desc_base_style = Style::new().foreground(AdaptiveColor {
+                    Light: "#F793FF", // Selected description color (matching Go)
+                    Dark: "#AD58B4",
+                });
 
                 // Step 2: Apply character-level highlighting using clean styles
                 let highlight_style = selected_base_style.clone().inherit(s.filter_match.clone());

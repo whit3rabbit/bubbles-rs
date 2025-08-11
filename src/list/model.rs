@@ -373,7 +373,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
     /// let mut list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
-    /// 
+    ///
     /// // Resize list to match new terminal size
     /// list.set_size(100, 30);
     /// assert_eq!(list.width(), 100);
@@ -415,13 +415,15 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         // Calculate how many items can fit in the available height
         if self.height > 0 {
             let item_height = self.delegate.height() + self.delegate.spacing();
-            
-            // Header now includes title AND status line (like Go version)
-            let header_height = if self.show_title && self.show_status_bar { 2 } else { 1 };
-            
-            // Footer includes help (1 line) + optional pagination dots
-            let footer_height = if self.show_help { 1 } else { 0 } + 
-                               if self.show_pagination { 1 } else { 0 };
+
+            // Header includes title (1 line) + status line (1 line) as separate sections
+            let header_height = 
+                (if self.show_title { 1 } else { 0 }) +
+                (if self.show_status_bar { 1 } else { 0 });
+
+            // Footer includes help (1 line) + optional pagination dots (1 line)
+            let footer_height =
+                if self.show_help { 1 } else { 0 } + if self.show_pagination { 1 } else { 0 };
 
             let available_height = self.height.saturating_sub(header_height + footer_height);
             let items_per_page = if item_height > 0 {
@@ -1419,7 +1421,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// ```
     /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
     /// let list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
-    /// assert!(!list.show_help()); // help is hidden by default
+    /// assert!(list.show_help()); // help is shown by default
     /// ```
     pub fn show_help(&self) -> bool {
         self.show_help

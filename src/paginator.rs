@@ -786,11 +786,11 @@ impl Model {
     ///
     /// // Dots mode  
     /// paginator.paginator_type = Type::Dots;
-    /// assert_eq!(paginator.view(), "• ○ ○ ○ ○");
+    /// assert_eq!(paginator.view(), "•○○○○"); // Active page shows filled bullet, others are hollow
     ///
     /// // Move to page 2
     /// paginator.page = 2;
-    /// assert_eq!(paginator.view(), "○ ○ • ○ ○");
+    /// assert_eq!(paginator.view(), "○○•○○"); // Third bullet filled (active page), others hollow
     /// ```
     pub fn view(&self) -> String {
         match self.paginator_type {
@@ -813,9 +813,8 @@ impl Model {
             } else {
                 s.push_str(&self.inactive_dot);
             }
-            if i < self.total_pages - 1 {
-                s.push(' ');
-            }
+            // Remove spacing between dots to match Go version (••••)
+            // Go version shows compact dots without spaces
         }
         s
     }

@@ -3,12 +3,14 @@
 // This is a minimal implementation that matches the simplicity of the Go version.
 // The rich help text is provided automatically by bubbletea-widgets.
 
-use bubbletea_rs::{window_size, Cmd, KeyMsg, Model as BubbleTeaModel, Msg, Program, WindowSizeMsg};
-use bubbletea_widgets::list::{DefaultItem, DefaultDelegate, Model as List};
+use bubbletea_rs::{
+    window_size, Cmd, KeyMsg, Model as BubbleTeaModel, Msg, Program, WindowSizeMsg,
+};
+use bubbletea_widgets::list::{DefaultDelegate, DefaultItem, Model as List};
 use bubbletea_widgets::paginator::Type as PaginatorType;
 use crossterm::event::{KeyCode, KeyModifiers};
-use lipgloss_extras::lipgloss::Style;
 use lipgloss_extras::lipgloss::renderer::{self, ColorProfileKind};
+use lipgloss_extras::lipgloss::Style;
 
 // Synthetic message used to trigger the initial render immediately after startup.
 struct InitRenderMsg;
@@ -52,7 +54,10 @@ impl BubbleTeaModel for Model {
             DefaultItem::new("Stickers", "The thicker the vinyl the better"),
             DefaultItem::new("20° Weather", "Celsius, not Fahrenheit"),
             DefaultItem::new("Warm light", "Like around 2700 Kelvin"),
-            DefaultItem::new("The vernal equinox", "The autumnal equinox is pretty good too"),
+            DefaultItem::new(
+                "The vernal equinox",
+                "The autumnal equinox is pretty good too",
+            ),
             DefaultItem::new("Gaffer's tape", "Basically sticky fabric"),
             DefaultItem::new("Terrycloth", "In other words, towel fabric"),
         ];
@@ -62,9 +67,9 @@ impl BubbleTeaModel for Model {
 
         // Get initial terminal size (like Go version)
         let (terminal_width, terminal_height) = crossterm::terminal::size().unwrap_or((80, 24));
-        let frame_width = 4;  // 2 left + 2 right margin from doc_style
+        let frame_width = 4; // 2 left + 2 right margin from doc_style
         let frame_height = 2; // 1 top + 1 bottom margin from doc_style
-        
+
         let list_width = (terminal_width as usize).saturating_sub(frame_width);
         let list_height = (terminal_height as usize).saturating_sub(frame_height);
 
@@ -83,7 +88,9 @@ impl BubbleTeaModel for Model {
 
         // Handle Ctrl+C like the Go version (only custom key handling)
         if let Some(key_msg) = msg.downcast_ref::<KeyMsg>() {
-            if key_msg.key == KeyCode::Char('c') && key_msg.modifiers.contains(KeyModifiers::CONTROL) {
+            if key_msg.key == KeyCode::Char('c')
+                && key_msg.modifiers.contains(KeyModifiers::CONTROL)
+            {
                 return Some(bubbletea_rs::quit());
             }
         }
@@ -92,12 +99,12 @@ impl BubbleTeaModel for Model {
         if let Some(size_msg) = msg.downcast_ref::<WindowSizeMsg>() {
             // Go version: h, v := docStyle.GetFrameSize(); m.list.SetSize(msg.Width-h, msg.Height-v)
             // Calculate frame size from doc_style (margin 1,2 = 2 vertical, 4 horizontal)
-            let frame_width = 4;  // 2 left + 2 right margin
+            let frame_width = 4; // 2 left + 2 right margin
             let frame_height = 2; // 1 top + 1 bottom margin
-            
+
             let new_width = (size_msg.width as usize).saturating_sub(frame_width);
             let new_height = (size_msg.height as usize).saturating_sub(frame_height);
-            
+
             // Update list size to match terminal dimensions
             self.list.set_size(new_width, new_height);
         }
@@ -124,9 +131,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     renderer::set_color_profile(ColorProfileKind::TrueColor);
 
     // Create program with alt screen (matching Go version)
-    let program = Program::<Model>::builder()
-        .alt_screen(true)
-        .build()?;
+    let program = Program::<Model>::builder().alt_screen(true).build()?;
 
     // Run the program
     let _result = program.run().await?;

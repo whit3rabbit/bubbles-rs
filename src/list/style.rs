@@ -301,18 +301,18 @@ impl Default for ListStyles {
         };
 
         Self {
-            title_bar: Style::new().padding(0, 0, 1, 2),
+            title_bar: Style::new().padding(0, 0, 1, 1), // Reduce left padding to align title properly
             title: Style::new()
                 .background(Color::from("62"))
                 .foreground(Color::from("230"))
-                .padding(0, 1, 0, 1),
+                .padding(0, 1, 1, 2), // Keep minimal padding for clean purple background
             spinner: Style::new().foreground(AdaptiveColor {
                 Light: "#8E8E8E",
                 Dark: "#747373",
             }),
             filter_prompt: Style::new().foreground(AdaptiveColor {
-                Light: "#04B575",
-                Dark: "#ECFD65",
+                Light: "#04B575", // Match Go version exactly
+                Dark: "#ECFD65",  // Match Go version exactly
             }),
             filter_cursor: Style::new().foreground(AdaptiveColor {
                 Light: "#EE6FF8",
@@ -324,7 +324,7 @@ impl Default for ListStyles {
                     Light: "#A49FA5",
                     Dark: "#777777",
                 })
-                .padding(0, 0, 1, 2),
+                .padding(0, 0, 1, 2), // Match Go version exactly
             status_empty: Style::new().foreground(subdued_color.clone()),
             status_bar_active_filter: Style::new().foreground(AdaptiveColor {
                 Light: "#1a1a1a",
@@ -336,8 +336,8 @@ impl Default for ListStyles {
                 Dark: "#626262",
             }),
             arabic_pagination: Style::new().foreground(subdued_color.clone()),
-            pagination_style: Style::new().padding_left(2),
-            help_style: Style::new().padding(1, 0, 0, 2),
+            pagination_style: Style::new().padding(1, 0, 1, 2), // Add vertical padding like Go version
+            help_style: Style::new().padding(0, 0, 0, 2), // Increase left padding to better align with content
             active_pagination_dot: Style::new()
                 .foreground(AdaptiveColor {
                     Light: "#847A85",

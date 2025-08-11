@@ -22,7 +22,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// A styled string containing the appropriate header content.
     pub(super) fn view_header(&self) -> String {
         let mut sections = Vec::new();
-        
+
         if self.filter_state == FilterState::Filtering {
             // Show filter input interface when actively filtering
             sections.push(format!("Filter: {}", self.filter_input.view()));
@@ -34,7 +34,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
                 let filter_info = format!(" ({} matched)", self.len());
                 title = format!("{}{}", title, filter_info);
             }
-            
+
             // Add styled title
             sections.push(self.styles.title.render(&title));
         }
@@ -95,9 +95,11 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         }
 
         // Calculate available height for items
-        let header_height = if self.show_title && self.show_status_bar { 2 } else { 1 };
-        let footer_height = if self.show_help { 1 } else { 0 } + 
-                           if self.show_pagination { 1 } else { 0 };
+        let header_height =
+            (if self.show_title { 1 } else { 0 }) +
+            (if self.show_status_bar { 1 } else { 0 });
+        let footer_height =
+            if self.show_help { 1 } else { 0 } + if self.show_pagination { 3 } else { 0 };
         let available_height = self.height.saturating_sub(header_height + footer_height);
         let max_visible_items = (available_height / item_height).max(1);
 
@@ -160,7 +162,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         let singular = self.status_item_singular.as_deref().unwrap_or("item");
         let plural = self.status_item_plural.as_deref().unwrap_or("items");
         let noun = if visible_items == 1 { singular } else { plural };
-        
+
         if total_items == 0 {
             "No items".to_string()
         } else if self.is_empty() && self.filter_state == FilterState::FilterApplied {
@@ -170,7 +172,10 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             let query = self.filter_input.value();
             let num_filtered = total_items.saturating_sub(visible_items);
             if !query.is_empty() && num_filtered > 0 {
-                format!("\"{}\" {} {} • {} filtered", query, visible_items, noun, num_filtered)
+                format!(
+                    "\"{}\" {} {} • {} filtered",
+                    query, visible_items, noun, num_filtered
+                )
             } else if !query.is_empty() {
                 format!("\"{}\" {} {}", query, visible_items, noun)
             } else {
@@ -199,6 +204,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             return String::new();
         }
 
-        self.help.view(self)
+        let help_content = self.help.view(self);
+        self.styles.help_style.render(&help_content)
     }
 }

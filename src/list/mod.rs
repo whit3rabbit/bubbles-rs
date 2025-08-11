@@ -249,6 +249,7 @@ impl<I: Item> help::KeyMap for Model<I> {
                 &self.keymap.cursor_down,
                 &self.keymap.filter,
                 &self.keymap.quit,
+                &self.keymap.show_full_help, // Add "? more" to match Go version
             ],
         }
     }
@@ -398,17 +399,28 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
         if let Some(key_msg) = msg.downcast_ref::<KeyMsg>() {
             if self.keymap.cursor_up.matches(key_msg) {
                 if self.cursor > 0 {
-                    self.cursor -= 1;
-                    // Synchronize viewport after cursor movement to keep selection visible.
-                    // This triggers smooth scrolling when the cursor moves outside the current view.
-                    self.sync_viewport_with_cursor();
+                    if self.is_cursor_at_viewport_top() {
+                        // Page-turning behavior: move to last item of previous page
+                        let items_per_view = self.calculate_items_per_view();
+                        self.cursor -= 1;
+                        self.viewport_start = self.cursor.saturating_sub(items_per_view - 1);
+                    } else {
+                        // Normal single-item navigation
+                        self.cursor -= 1;
+                        self.sync_viewport_with_cursor();
+                    }
                 }
             } else if self.keymap.cursor_down.matches(key_msg) {
                 if self.cursor < self.len().saturating_sub(1) {
-                    self.cursor += 1;
-                    // Synchronize viewport to maintain cursor visibility during navigation.
-                    // Enables smooth scrolling instead of discrete page transitions.
-                    self.sync_viewport_with_cursor();
+                    if self.is_cursor_at_viewport_bottom() {
+                        // Page-turning behavior: move to first item of next page
+                        self.cursor += 1;
+                        self.viewport_start = self.cursor;
+                    } else {
+                        // Normal single-item navigation
+                        self.cursor += 1;
+                        self.sync_viewport_with_cursor();
+                    }
                 }
             } else if self.keymap.go_to_start.matches(key_msg) {
                 self.cursor = 0;
@@ -441,7 +453,9 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                 self.filtered_items.clear();
                 self.cursor = 0;
                 self.update_pagination();
-            } else if self.keymap.show_full_help.matches(key_msg) || self.keymap.close_full_help.matches(key_msg) {
+            } else if self.keymap.show_full_help.matches(key_msg)
+                || self.keymap.close_full_help.matches(key_msg)
+            {
                 self.help.show_all = !self.help.show_all;
                 self.update_pagination(); // Recalculate layout since help height changes
             } else if self.keymap.quit.matches(key_msg) {
@@ -464,7 +478,7 @@ impl<I: Item + Send + Sync + 'static> BubbleTeaModel for Model<I> {
                     }
                 }
             }
-            
+
             // Synchronize the paginator component with the current cursor position.
             // This calculation determines which "page" the cursor is on based on
             // items per page, ensuring the pagination indicator (dots) accurately

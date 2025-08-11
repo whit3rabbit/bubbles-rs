@@ -181,9 +181,13 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         }
 
         // Calculate available height for items
-        let header_height = if self.show_title && self.show_status_bar { 2 } else { 1 };
-        let footer_height = if self.show_help { 1 } else { 0 } + 
-                           if self.show_pagination { 1 } else { 0 };
+        let header_height = if self.show_title && self.show_status_bar {
+            2
+        } else {
+            1
+        };
+        let footer_height =
+            if self.show_help { 1 } else { 0 } + if self.show_pagination { 1 } else { 0 };
         let available_height = self.height.saturating_sub(header_height + footer_height);
         let items_per_view = (available_height / item_height).max(1);
 
@@ -204,5 +208,70 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         if self.viewport_start > max_viewport_start {
             self.viewport_start = max_viewport_start;
         }
+    }
+
+    /// Calculates how many items can fit in the current viewport.
+    ///
+    /// This is a helper method that encapsulates the viewport size calculation
+    /// logic used in various navigation and scrolling operations.
+    ///
+    /// # Returns
+    ///
+    /// The number of items that can be displayed in the current viewport,
+    /// or 1 if no items can fit (ensuring at least one item is always shown).
+    pub(super) fn calculate_items_per_view(&self) -> usize {
+        let item_height = self.delegate.height() + self.delegate.spacing();
+        if item_height == 0 {
+            return 1;
+        }
+
+        // Calculate available height for items (updated for pagination padding)
+        let header_height =
+            (if self.show_title { 1 } else { 0 }) +
+            (if self.show_status_bar { 1 } else { 0 });
+        let footer_height =
+            if self.show_help { 1 } else { 0 } + if self.show_pagination { 3 } else { 0 };
+        let available_height = self.height.saturating_sub(header_height + footer_height);
+
+        (available_height / item_height).max(1)
+    }
+
+    /// Checks if the cursor is currently positioned at the bottom of the viewport.
+    ///
+    /// This is used to detect when page-turning behavior should be triggered
+    /// instead of single-item scrolling.
+    ///
+    /// # Returns
+    ///
+    /// `true` if the cursor is at the last visible item in the current viewport,
+    /// `false` otherwise.
+    pub(super) fn is_cursor_at_viewport_bottom(&self) -> bool {
+        if self.is_empty() {
+            return false;
+        }
+
+        let items_per_view = self.calculate_items_per_view();
+        let viewport_end = self.viewport_start + items_per_view;
+        
+        // Cursor is at bottom if it's at the last visible item in viewport
+        // (but not necessarily at the very end of the list)
+        self.cursor + 1 >= viewport_end && self.cursor + 1 < self.len()
+    }
+
+    /// Checks if the cursor is currently positioned at the top of the viewport.
+    ///
+    /// This is used to detect when upward page-turning behavior should be triggered.
+    ///
+    /// # Returns
+    ///
+    /// `true` if the cursor is at the first visible item in the current viewport,
+    /// `false` otherwise.
+    pub(super) fn is_cursor_at_viewport_top(&self) -> bool {
+        if self.is_empty() {
+            return false;
+        }
+        
+        // Cursor is at top if it's at the viewport start and we're not at list beginning
+        self.cursor == self.viewport_start && self.cursor > 0
     }
 }
