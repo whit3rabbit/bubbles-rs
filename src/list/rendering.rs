@@ -43,7 +43,8 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         if self.show_status_bar && self.filter_state != FilterState::Filtering {
             let status = self.view_status_line();
             if !status.is_empty() {
-                sections.push(status);
+                // Apply status bar style with proper padding (matching Go version)
+                sections.push(self.styles.status_bar.render(&status));
             }
         }
 

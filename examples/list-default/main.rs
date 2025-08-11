@@ -8,6 +8,7 @@ use bubbletea_widgets::list::{DefaultItem, DefaultDelegate, Model as List};
 use bubbletea_widgets::paginator::Type as PaginatorType;
 use crossterm::event::{KeyCode, KeyModifiers};
 use lipgloss_extras::lipgloss::Style;
+use lipgloss_extras::lipgloss::renderer::{self, ColorProfileKind};
 
 // Synthetic message used to trigger the initial render immediately after startup.
 struct InitRenderMsg;
@@ -59,7 +60,15 @@ impl BubbleTeaModel for Model {
         // Create list with default delegate - simple like Go version
         let delegate = DefaultDelegate::new();
 
-        let list = List::new(items, delegate, 80, 24)
+        // Get initial terminal size (like Go version)
+        let (terminal_width, terminal_height) = crossterm::terminal::size().unwrap_or((80, 24));
+        let frame_width = 4;  // 2 left + 2 right margin from doc_style
+        let frame_height = 2; // 1 top + 1 bottom margin from doc_style
+        
+        let list_width = (terminal_width as usize).saturating_sub(frame_width);
+        let list_height = (terminal_height as usize).saturating_sub(frame_height);
+
+        let list = List::new(items, delegate, list_width, list_height)
             .with_title("My Fave Things")
             .with_pagination_type(PaginatorType::Dots); // Use dots pagination to match Go version
 
@@ -80,9 +89,17 @@ impl BubbleTeaModel for Model {
         }
 
         // Handle window size like Go version
-        if let Some(_size_msg) = msg.downcast_ref::<WindowSizeMsg>() {
+        if let Some(size_msg) = msg.downcast_ref::<WindowSizeMsg>() {
             // Go version: h, v := docStyle.GetFrameSize(); m.list.SetSize(msg.Width-h, msg.Height-v)
-            // bubbletea-widgets List handles resizing internally
+            // Calculate frame size from doc_style (margin 1,2 = 2 vertical, 4 horizontal)
+            let frame_width = 4;  // 2 left + 2 right margin
+            let frame_height = 2; // 1 top + 1 bottom margin
+            
+            let new_width = (size_msg.width as usize).saturating_sub(frame_width);
+            let new_height = (size_msg.height as usize).saturating_sub(frame_height);
+            
+            // Update list size to match terminal dimensions
+            self.list.set_size(new_width, new_height);
         }
 
         // Let list handle all other messages (like Go version)
@@ -102,6 +119,10 @@ impl BubbleTeaModel for Model {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Force TrueColor mode FIRST to ensure proper color rendering
+    // Must be set before any lipgloss styling operations
+    renderer::set_color_profile(ColorProfileKind::TrueColor);
+
     // Create program with alt screen (matching Go version)
     let program = Program::<Model>::builder()
         .alt_screen(true)

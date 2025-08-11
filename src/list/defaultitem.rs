@@ -694,14 +694,16 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
                 // manually add the border and padding afterward.
 
                 // Step 1: Create clean base styles (colors only, no padding/borders)
-                let selected_base_style = Style::new().foreground(AdaptiveColor {
-                    Light: "#EE6FF8", // Selected item text color
-                    Dark: "#EE6FF8",
-                });
-                let selected_desc_base_style = Style::new().foreground(AdaptiveColor {
-                    Light: "#F793FF", // Selected description color
-                    Dark: "#AD58B4",
-                });
+                let selected_base_style = Style::new()
+                    .foreground(AdaptiveColor {
+                        Light: "#EE6FF8", // Selected item text color (matching Go)
+                        Dark: "#EE6FF8",
+                    });
+                let selected_desc_base_style = Style::new()
+                    .foreground(AdaptiveColor {
+                        Light: "#F793FF", // Selected description color (matching Go)
+                        Dark: "#AD58B4",
+                    });
 
                 // Step 2: Apply character-level highlighting using clean styles
                 let highlight_style = selected_base_style.clone().inherit(s.filter_match.clone());
@@ -731,11 +733,11 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
                     "{}{}{}",
                     Style::new()
                         .foreground(AdaptiveColor {
-                            Light: "#F793FF",
+                            Light: "#F793FF", // Border color (matching Go)
                             Dark: "#AD58B4",
                         })
                         .render(border_char), // Colored border character
-                    padding,   // Manual spacing
+                    padding,   // Manual spacing (no styling needed)
                     title_out  // Pre-highlighted text
                 );
                 if !desc.is_empty() {
@@ -743,7 +745,7 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
                         "{}{}{}",
                         Style::new()
                             .foreground(AdaptiveColor {
-                                Light: "#F793FF",
+                                Light: "#F793FF", // Border color (matching Go)
                                 Dark: "#AD58B4",
                             })
                             .render(border_char),

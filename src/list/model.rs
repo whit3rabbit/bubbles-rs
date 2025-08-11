@@ -356,6 +356,53 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
         self.status_item_plural = Some(plural.to_string());
     }
 
+    /// Updates the list dimensions and recalculates layout.
+    ///
+    /// This method allows dynamic resizing of the list to match terminal
+    /// size changes, similar to the Go bubbles list's `SetSize` method.
+    /// It updates both width and height, then recalculates pagination
+    /// to show the appropriate number of items.
+    ///
+    /// # Arguments
+    ///
+    /// * `width` - New width in terminal columns
+    /// * `height` - New height in terminal rows
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bubbletea_widgets::list::{Model, DefaultDelegate, DefaultItem};
+    /// let mut list: Model<DefaultItem> = Model::new(vec![], DefaultDelegate::new(), 80, 24);
+    /// 
+    /// // Resize list to match new terminal size
+    /// list.set_size(100, 30);
+    /// assert_eq!(list.width(), 100);
+    /// assert_eq!(list.height(), 30);
+    /// ```
+    pub fn set_size(&mut self, width: usize, height: usize) {
+        self.width = width;
+        self.height = height;
+        self.update_pagination(); // Recalculate items per page
+    }
+
+    /// Returns the current width of the list.
+    ///
+    /// # Returns
+    ///
+    /// The current width in terminal columns.
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    /// Returns the current height of the list.
+    ///
+    /// # Returns
+    ///
+    /// The current height in terminal rows.
+    pub fn height(&self) -> usize {
+        self.height
+    }
+
     /// Updates pagination settings based on current item count and page size.
     ///
     /// This method recalculates pagination after changes to item count or
