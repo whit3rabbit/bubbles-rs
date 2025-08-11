@@ -677,8 +677,8 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
         // RENDERING BRANCH 1: Empty Filter State (Dimmed)
         // When user presses '/' but hasn't typed anything, show all items in dimmed colors
         if empty_filter {
-            title_out = s.dimmed_title.clone().render(&title_out);
-            desc_out = s.dimmed_desc.clone().render(&desc_out);
+            title_out = s.dimmed_title.render(&title_out);
+            desc_out = s.dimmed_desc.render(&desc_out);
         // RENDERING BRANCH 2: Selected Item (with potential highlighting)
         // Selected items get a left border and accent colors, plus highlighting if filtered
         } else if is_selected && m.filter_state != super::FilterState::Filtering {
@@ -754,8 +754,8 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
             } else {
                 // SELECTED ITEM WITHOUT FILTER HIGHLIGHTING
                 // No filter matches, so use the standard selected styles (with border and padding)
-                title_out = s.selected_title.clone().render(&title_out);
-                desc_out = s.selected_desc.clone().render(&desc_out);
+                title_out = s.selected_title.render(&title_out);
+                desc_out = s.selected_desc.render(&desc_out);
             }
         } else {
             // RENDERING BRANCH 3: Unselected/Normal Item (with potential highlighting)
@@ -809,8 +809,8 @@ impl<I: Item + 'static> ItemDelegate<I> for DefaultDelegate {
             } else {
                 // UNSELECTED ITEM WITHOUT FILTER HIGHLIGHTING
                 // No filter matches, so use the standard normal styles (with padding)
-                title_out = s.normal_title.clone().render(&title_out);
-                desc_out = s.normal_desc.clone().render(&desc_out);
+                title_out = s.normal_title.render(&title_out);
+                desc_out = s.normal_desc.render(&desc_out);
             }
         }
 

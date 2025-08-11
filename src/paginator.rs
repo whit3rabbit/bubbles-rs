@@ -361,6 +361,82 @@ impl Model {
         self.per_page = per_page.max(1);
     }
 
+    /// Sets the active dot character for dots mode (builder pattern).
+    ///
+    /// # Arguments
+    ///
+    /// * `dot` - The character or styled string to use for the active page
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::paginator::Model;
+    ///
+    /// let paginator = Model::new().with_active_dot("●");
+    /// assert_eq!(paginator.active_dot, "●");
+    /// ```
+    pub fn with_active_dot(mut self, dot: &str) -> Self {
+        self.active_dot = dot.to_string();
+        self
+    }
+
+    /// Sets the inactive dot character for dots mode (builder pattern).
+    ///
+    /// # Arguments
+    ///
+    /// * `dot` - The character or styled string to use for inactive pages
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::paginator::Model;
+    ///
+    /// let paginator = Model::new().with_inactive_dot("○");
+    /// assert_eq!(paginator.inactive_dot, "○");
+    /// ```
+    pub fn with_inactive_dot(mut self, dot: &str) -> Self {
+        self.inactive_dot = dot.to_string();
+        self
+    }
+
+    /// Sets the active dot character for dots mode (mutable version).
+    ///
+    /// # Arguments
+    ///
+    /// * `dot` - The character or styled string to use for the active page
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::paginator::Model;
+    ///
+    /// let mut paginator = Model::new();
+    /// paginator.set_active_dot("●");
+    /// assert_eq!(paginator.active_dot, "●");
+    /// ```
+    pub fn set_active_dot(&mut self, dot: &str) {
+        self.active_dot = dot.to_string();
+    }
+
+    /// Sets the inactive dot character for dots mode (mutable version).
+    ///
+    /// # Arguments
+    ///
+    /// * `dot` - The character or styled string to use for inactive pages
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::paginator::Model;
+    ///
+    /// let mut paginator = Model::new();
+    /// paginator.set_inactive_dot("○");
+    /// assert_eq!(paginator.inactive_dot, "○");
+    /// ```
+    pub fn set_inactive_dot(&mut self, dot: &str) {
+        self.inactive_dot = dot.to_string();
+    }
+
     /// Sets the total number of pages directly.
     ///
     /// The minimum value is 1; any value less than 1 will be clamped to 1.

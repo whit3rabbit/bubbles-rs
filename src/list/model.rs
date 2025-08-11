@@ -187,10 +187,16 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     where
         D: ItemDelegate<I> + Send + Sync + 'static,
     {
+        let styles = ListStyles::default();
         let mut paginator = paginator::Model::new();
         let per_page = 10;
         paginator.set_per_page(per_page);
         paginator.set_total_items(items.len());
+
+        // Set dots mode by default (like Go version) and apply styled dots
+        paginator.paginator_type = paginator::Type::Dots;
+        paginator.active_dot = styles.active_pagination_dot.render("");
+        paginator.inactive_dot = styles.inactive_pagination_dot.render("");
 
         Self {
             title: "List".to_string(),
@@ -203,7 +209,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             show_spinner: false,
             width,
             height,
-            styles: ListStyles::default(),
+            styles,
             show_status_bar: true,
             status_message_lifetime: 1,
             status_item_singular: None,
@@ -1511,6 +1517,9 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// list.set_styles(custom_styles);
     /// ```
     pub fn set_styles(&mut self, styles: ListStyles) {
+        // Update paginator dots from styled strings
+        self.paginator.active_dot = styles.active_pagination_dot.render("");
+        self.paginator.inactive_dot = styles.inactive_pagination_dot.render("");
         self.styles = styles;
     }
 

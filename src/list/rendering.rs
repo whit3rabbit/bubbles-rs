@@ -30,7 +30,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
             if self.filter_state == FilterState::FilterApplied {
                 header.push_str(&format!(" (filtered: {})", self.len()));
             }
-            self.styles.title.clone().render(&header)
+            self.styles.title.render(&header)
         } else {
             // Title is hidden
             String::new()
@@ -71,7 +71,7 @@ impl<I: Item + Send + Sync + 'static> Model<I> {
     /// A formatted string containing all visible items with proper styling and spacing.
     pub(super) fn view_items(&self) -> String {
         if self.is_empty() {
-            return self.styles.no_items.clone().render("No items.");
+            return self.styles.no_items.render("No items.");
         }
 
         // Calculate how many items can fit in the viewport

@@ -1164,7 +1164,11 @@ impl Model {
         let interval = self.interval;
 
         bubbletea_tick(interval, move |_| {
-            Box::new(TickMsg { id, timeout, tag }) as Msg
+            if timeout {
+                Box::new(TimeoutMsg { id }) as Msg
+            } else {
+                Box::new(TickMsg { id, timeout, tag }) as Msg
+            }
         })
     }
 
@@ -1449,9 +1453,17 @@ impl Model {
                 self.last_tick = Some(now);
             }
 
-            // In Go this uses tea.Batch to return multiple commands.
-            // For simplicity in Rust, we'll return just the tick command.
-            // The TimeoutMsg will be sent automatically when timeout is detected.
+            // Check if timer has expired after this tick
+            if self.timedout() {
+                // Timer has expired, send TimeoutMsg
+                let id = self.id;
+                return std::option::Option::Some(bubbletea_tick(
+                    Duration::from_nanos(1),
+                    move |_| Box::new(TimeoutMsg { id }) as Msg,
+                ));
+            }
+
+            // Timer still running, continue with next tick
             return std::option::Option::Some(self.tick());
         }
 

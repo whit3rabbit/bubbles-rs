@@ -52,7 +52,8 @@ mod textarea_tests {
 
     /// Normalize whitespace for testing
     fn normalize_string(s: &str) -> String {
-        s.lines()
+        lipgloss_extras::lipgloss::strip_ansi(s)
+            .lines()
             .map(|line| line.trim_end())
             .collect::<Vec<_>>()
             .join("\n")

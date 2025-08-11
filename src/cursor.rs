@@ -95,7 +95,7 @@ pub struct Model {
     char: String,
     id: usize,
     focus: bool,
-    blink: bool, // Inverted logic: when `blink` is true, the cursor is *not* showing its block style.
+    is_off_phase: bool, // When true, cursor is in "off" phase (hidden/showing text style)
     blink_tag: usize,
     mode: Mode,
 }
@@ -110,7 +110,7 @@ impl Default for Model {
             char: " ".to_string(),
             id: next_id(),
             focus: false,
-            blink: true, // Inverted logic: when `blink` is true, the cursor is *not* showing its block style.
+            is_off_phase: true, // Start in off phase (showing text style)
             blink_tag: 0,
             mode: Mode::Blink,
         }
@@ -125,7 +125,7 @@ impl Model {
 
     /// Sets the visibility of the cursor.
     pub fn set_visible(&mut self, visible: bool) {
-        self.blink = !visible;
+        self.is_off_phase = !visible;
     }
 
     /// Update is the Bubble Tea update loop. It handles cursor-related messages.
@@ -150,7 +150,7 @@ impl Model {
                 return None;
             }
 
-            self.blink = !self.blink;
+            self.is_off_phase = !self.is_off_phase;
             return self.blink_cmd();
         }
 
@@ -165,7 +165,7 @@ impl Model {
     /// Sets the model's cursor mode. This method returns a command.
     pub fn set_mode(&mut self, mode: Mode) -> Option<Cmd> {
         self.mode = mode;
-        self.blink = self.mode == Mode::Hide || !self.focus;
+        self.is_off_phase = self.mode == Mode::Hide || !self.focus;
         if mode == Mode::Blink {
             return Some(blink());
         }
@@ -189,7 +189,7 @@ impl Model {
     /// Focuses the cursor to allow it to blink if desired.
     pub fn focus(&mut self) -> Option<Cmd> {
         self.focus = true;
-        self.blink = self.mode == Mode::Hide; // Show the cursor unless we've explicitly hidden it
+        self.is_off_phase = self.mode == Mode::Hide; // Show the cursor unless we've explicitly hidden it
         if self.mode == Mode::Blink && self.focus {
             return self.blink_cmd();
         }
@@ -199,7 +199,7 @@ impl Model {
     /// Blurs the cursor.
     pub fn blur(&mut self) {
         self.focus = false;
-        self.blink = true;
+        self.is_off_phase = true;
     }
 
     /// Check if cursor is focused
@@ -214,11 +214,11 @@ impl Model {
 
     /// Renders the cursor.
     pub fn view(&self) -> String {
-        if self.mode == Mode::Hide || self.blink {
-            // When blinking is "on", we show the text style (cursor is hidden)
+        if self.mode == Mode::Hide || self.is_off_phase {
+            // When in off phase, we show the text style (cursor is hidden)
             return self.text_style.clone().inline(true).render(&self.char);
         }
-        // When blinking is "off", we show the cursor style (reversed)
+        // When in on phase, we show the cursor style (reversed)
         self.style
             .clone()
             .inline(true)

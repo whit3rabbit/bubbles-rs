@@ -32,7 +32,7 @@ Add `bubbletea-widgets` to your `Cargo.toml`. You will also need `bubbletea-rs` 
 
 ```toml
 [dependencies]
-bubbletea-widgets = "0.1.7"
+bubbletea-widgets = "0.1.8"
 bubbletea-rs = "0.0.6"
 lipgloss-extras = { version = "0.0.8", features = ["full"] }
 ```
@@ -1181,21 +1181,44 @@ A component for displaying and navigating tabular data with a fixed header.
 #### Creating a Table
 
 **`table::new(columns: Vec<Column>) -> Model`**
-Creates a new table with the specified column definitions.
+Creates a new table with the specified column definitions (standard constructor).
+
+**`table::Model::with_options(opts: Vec<TableOption>) -> Model`**
+Creates a new table with configuration options (Go-compatible constructor).
+
+#### Constructor Options
+
+| Function                                    | Description                                  |
+| ------------------------------------------- | -------------------------------------------- |
+| `with_columns(cols: Vec<Column>)`           | Sets the table columns during construction.  |
+| `with_rows(rows: Vec<Row>)`                 | Sets the table data rows during construction. |
+| `with_height(h: i32)`                       | Sets the table height during construction.   |
+| `with_width(w: i32)`                        | Sets the table width during construction.    |
+| `with_focused(f: bool)`                     | Sets the initial focus state during construction. |
+| `with_styles(s: Styles)`                    | Sets table styling during construction.      |
+| `with_key_map(km: TableKeyMap)`             | Sets custom key bindings during construction. |
 
 #### Core Concepts
 
 - **`struct Column { title: String, width: i32 }`**: Defines a table column.
 - **`struct Row { cells: Vec<String> }`**: Defines a table row.
+- **`type TableOption`**: Configuration option for flexible table construction.
 
 #### Public API
 
 | Method                                      | Description                                  |
 | ------------------------------------------- | -------------------------------------------- |
-| `with_rows(self, rows: Vec<Row>) -> Self`   | A builder-style method to add rows on creation. |
+| `with_rows(self, rows: Vec<Row>) -> Self`   | Builder-style method to add rows on creation. |
 | `update(&mut self, msg: Msg) -> Option<Cmd>` | Handles navigation.                          |
 | `view(&self) -> String`                     | Renders the table.                           |
 | `selected_row(&self) -> Option<&Row>`       | Gets the currently selected row.             |
+| `move_up(&mut self, n: usize)`              | Moves selection up by n rows.               |
+| `move_down(&mut self, n: usize)`            | Moves selection down by n rows.             |
+| `goto_top(&mut self)`                       | Moves selection to the first row.           |
+| `goto_bottom(&mut self)`                    | Moves selection to the last row.            |
+| `set_styles(&mut self, s: Styles)`          | Updates table styles and rebuilds viewport.  |
+| `update_viewport(&mut self)`                | Refreshes viewport content.                  |
+| `help_view(&self) -> String`                | Returns formatted help text for navigation.  |
 
 #### Usage Example
 
@@ -1217,7 +1240,7 @@ impl BubbleTeaModel for App {
             table::Row::new(vec!["Tokyo".into(), "37M".into()]),
             table::Row::new(vec!["Delhi".into(), "32M".into()]),
         ];
-        let table_model = Table::new(columns).with_rows(rows);
+        let table_model = table::Model::new(columns).with_rows(rows);
         (Self { table: table_model }, None)
     }
 
@@ -1231,22 +1254,79 @@ impl BubbleTeaModel for App {
 }
 ```
 
+**Alternative using with_options (Go-compatible pattern):**
+
+```rust
+use bubbletea_widgets::table::{Model, with_columns, with_rows, with_height, Column, Row};
+
+let table = Model::with_options(vec![
+    with_columns(vec![
+        Column::new("City", 15),
+        Column::new("Population", 10),
+    ]),
+    with_rows(vec![
+        Row::new(vec!["Tokyo".into(), "37M".into()]),
+        Row::new(vec!["Delhi".into(), "32M".into()]),
+    ]),
+    with_height(15),
+]);
+```
+
 ### FilePicker
 
-A component for navigating the filesystem and selecting a file or directory.
+A component for navigating the filesystem and selecting a file or directory with comprehensive filtering and configuration options.
 
 #### Creating a FilePicker
 
 **`filepicker::Model::init() -> (Model, Option<Cmd>)`**
 Initializes a new file picker, reading the current directory.
 
+**`filepicker::new() -> Model`**
+Creates a new file picker instance with default configuration.
+
+#### Public Structs
+
+**`ErrorMsg`**
+Represents an error that occurred during file operations.
+
+**`ReadDirMsg`**
+Message type for directory reading operations.
+
 #### Public API
 
 | Method                                         | Description                                                                  |
 | ---------------------------------------------- | ---------------------------------------------------------------------------- |
 | `update(&mut self, msg: Msg) -> Option<Cmd>`   | Handles navigation and selection.                                            |
-| `view(&self) -> String`                        | Renders the file list.                                                       |
-| `did_select_file(&self, msg: &Msg) -> (bool, Option<PathBuf>)` | Checks if a file was selected in the last update. Call this in your `update` loop. |
+| `view(&self) -> String`                        | Renders the file list with current configuration.                           |
+| `did_select_file(&self, msg: &Msg) -> (bool, String)` | Returns whether a user has selected a file and the file path. Only returns `true` for files that can actually be selected. |
+| `did_select_disabled_file(&self, msg: &Msg) -> (bool, String)` | Returns whether a user tried to select a disabled file and the file path. |
+| `set_height(&mut self, height: i32)`           | Sets the height of the file picker when auto_height is disabled.            |
+
+#### Configuration Fields
+
+| Field                    | Type                                           | Description                                    |
+| ------------------------ | ---------------------------------------------- | ---------------------------------------------- |
+| `allow_file_selection`   | `bool`                                        | Whether files can be selected                  |
+| `allow_dir_selection`    | `bool`                                        | Whether directories can be selected            |
+| `show_hidden`            | `bool`                                        | Whether to display hidden files                |
+| `show_permissions`       | `bool`                                        | Whether to display file permissions            |
+| `show_size`              | `bool`                                        | Whether to display file sizes                  |
+| `auto_height`            | `bool`                                        | Whether to automatically adjust height         |
+| `height`                 | `i32`                                         | Fixed height when auto_height is false         |
+| `max_entries`            | `Option<usize>`                               | Maximum number of entries to display           |
+| `min_height`             | `i32`                                         | Minimum height constraint                      |
+| `max_height`             | `i32`                                         | Maximum height constraint                      |
+| `dir_allowed`            | `Option<Box<dyn Fn(&DirEntry) -> bool>>`     | Filter for allowed directories                 |
+| `file_allowed`           | `Option<Box<dyn Fn(&DirEntry) -> bool>>`     | Filter for allowed files                       |
+
+#### Key Features
+
+- **Cross-platform hidden file detection**: Windows FILE_ATTRIBUTE_HIDDEN + Unix dotfiles
+- **Enhanced symlink resolution**: Proper handling of symbolic links with fallback
+- **Configurable filtering**: Custom functions for file and directory validation
+- **Responsive sizing**: Auto-height with min/max constraints
+- **Permission display**: Optional file permission information
+- **Size display**: Optional file size formatting
 
 #### Usage Example
 
@@ -1267,8 +1347,8 @@ impl BubbleTeaModel for App {
     }
 
     fn update(&mut self, msg: Msg) -> Option<Cmd> {
-        if let (true, Some(path)) = self.file_picker.did_select_file(&msg) {
-            self.selected_file = Some(path.to_string_lossy().to_string());
+        if let (true, path) = self.file_picker.did_select_file(&msg) {
+            self.selected_file = Some(path);
             return Some(bubbletea_rs::quit());
         }
         self.file_picker.update(msg)

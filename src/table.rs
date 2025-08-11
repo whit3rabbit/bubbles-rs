@@ -613,6 +613,222 @@ impl KeyMapTrait for TableKeyMap {
     }
 }
 
+/// Configuration option for table construction.
+///
+/// This type enables the flexible option-based constructor pattern used by
+/// the Go version. Each option is a function that modifies a table model
+/// during construction, allowing for clean, composable configuration.
+///
+/// # Examples
+///
+/// ```rust
+/// use bubbletea_widgets::table::{Model, TableOption, with_columns, with_rows, with_height, Column, Row};
+///
+/// let table = Model::with_options(vec![
+///     with_columns(vec![Column::new("Name", 20)]),
+///     with_rows(vec![Row::new(vec!["Alice".into()])]),
+///     with_height(15),
+/// ]);
+/// ```
+pub type TableOption = Box<dyn FnOnce(&mut Model) + Send>;
+
+/// Creates an option to set table columns during construction.
+///
+/// This option sets the column structure for the table, defining headers
+/// and column widths. This is typically the first option used when
+/// creating a new table.
+///
+/// # Arguments
+///
+/// * `cols` - Vector of column definitions
+///
+/// # Examples
+///
+/// ```rust
+/// use bubbletea_widgets::table::{Model, with_columns, Column};
+///
+/// let table = Model::with_options(vec![
+///     with_columns(vec![
+///         Column::new("ID", 8),
+///         Column::new("Name", 25),
+///         Column::new("Status", 12),
+///     ]),
+/// ]);
+/// assert_eq!(table.columns.len(), 3);
+/// ```
+pub fn with_columns(cols: Vec<Column>) -> TableOption {
+    Box::new(move |m: &mut Model| {
+        m.columns = cols;
+    })
+}
+
+/// Creates an option to set table rows during construction.
+///
+/// This option populates the table with initial data rows. Each row
+/// should have the same number of cells as there are columns.
+///
+/// # Arguments
+///
+/// * `rows` - Vector of row data
+///
+/// # Examples
+///
+/// ```rust
+/// use bubbletea_widgets::table::{Model, with_rows, Row};
+///
+/// let table = Model::with_options(vec![
+///     with_rows(vec![
+///         Row::new(vec!["001".into(), "Alice".into()]),
+///         Row::new(vec!["002".into(), "Bob".into()]),
+///     ]),
+/// ]);
+/// assert_eq!(table.rows.len(), 2);
+/// ```
+pub fn with_rows(rows: Vec<Row>) -> TableOption {
+    Box::new(move |m: &mut Model| {
+        m.rows = rows;
+    })
+}
+
+/// Creates an option to set table height during construction.
+///
+/// This option configures the vertical display space for the table,
+/// affecting how many rows are visible and viewport scrolling behavior.
+///
+/// # Arguments
+///
+/// * `h` - Height in terminal lines
+///
+/// # Examples
+///
+/// ```rust
+/// use bubbletea_widgets::table::{Model, with_height};
+///
+/// let table = Model::with_options(vec![
+///     with_height(25),
+/// ]);
+/// assert_eq!(table.height, 25);
+/// ```
+pub fn with_height(h: i32) -> TableOption {
+    Box::new(move |m: &mut Model| {
+        m.height = h;
+        m.sync_viewport_dimensions();
+    })
+}
+
+/// Creates an option to set table width during construction.
+///
+/// This option configures the horizontal display space for the table,
+/// affecting column layout and content wrapping behavior.
+///
+/// # Arguments
+///
+/// * `w` - Width in terminal columns
+///
+/// # Examples
+///
+/// ```rust
+/// use bubbletea_widgets::table::{Model, with_columns, with_width, Column};
+///
+/// let table = Model::with_options(vec![
+///     with_columns(vec![Column::new("Data", 20)]),
+///     with_width(80),
+/// ]);
+/// assert_eq!(table.width, 80);
+/// ```
+pub fn with_width(w: i32) -> TableOption {
+    Box::new(move |m: &mut Model| {
+        m.width = w;
+        m.sync_viewport_dimensions();
+    })
+}
+
+/// Creates an option to set table focus state during construction.
+///
+/// This option configures whether the table should be focused (and thus
+/// respond to keyboard input) when initially created.
+///
+/// # Arguments
+///
+/// * `f` - `true` for focused, `false` for unfocused
+///
+/// # Examples
+///
+/// ```rust
+/// use bubbletea_widgets::table::{Model, with_focused};
+///
+/// let table = Model::with_options(vec![
+///     with_focused(false),
+/// ]);
+/// assert!(!table.focus);
+/// ```
+pub fn with_focused(f: bool) -> TableOption {
+    Box::new(move |m: &mut Model| {
+        m.focus = f;
+    })
+}
+
+/// Creates an option to set table styles during construction.
+///
+/// This option applies custom styling configuration to the table,
+/// controlling the appearance of headers, cells, and selection.
+///
+/// # Arguments
+///
+/// * `s` - Styling configuration
+///
+/// # Examples
+///
+/// ```rust
+/// use bubbletea_widgets::table::{Model, with_styles, Styles};
+/// use lipgloss_extras::prelude::*;
+///
+/// let custom_styles = Styles {
+///     header: Style::new().bold(true),
+///     cell: Style::new().padding(0, 1, 0, 1),
+///     selected: Style::new().background(Color::from("green")),
+/// };
+///
+/// let table = Model::with_options(vec![
+///     with_styles(custom_styles),
+/// ]);
+/// ```
+pub fn with_styles(s: Styles) -> TableOption {
+    Box::new(move |m: &mut Model| {
+        m.styles = s;
+    })
+}
+
+/// Creates an option to set table key map during construction.
+///
+/// This option applies custom key bindings to the table, allowing
+/// applications to override the default navigation keys.
+///
+/// # Arguments
+///
+/// * `km` - Key mapping configuration
+///
+/// # Examples
+///
+/// ```rust
+/// use bubbletea_widgets::table::{Model, with_key_map, TableKeyMap};
+/// use bubbletea_widgets::key;
+/// use crossterm::event::KeyCode;
+///
+/// let mut custom_keymap = TableKeyMap::default();
+/// custom_keymap.row_up = key::Binding::new(vec![KeyCode::Char('w')])
+///     .with_help("w", "up");
+///
+/// let table = Model::with_options(vec![
+///     with_key_map(custom_keymap),
+/// ]);
+/// ```
+pub fn with_key_map(km: TableKeyMap) -> TableOption {
+    Box::new(move |m: &mut Model| {
+        m.keymap = km;
+    })
+}
+
 /// Interactive table model containing data, styling, navigation state,
 /// and a viewport for efficient rendering and scrolling.
 #[derive(Debug, Clone)]
@@ -662,6 +878,80 @@ impl Model {
         s
     }
 
+    /// Creates a new table with configuration options (Go-compatible constructor).
+    ///
+    /// This constructor provides a flexible, option-based approach to table creation
+    /// that matches the Go version's `New(opts...)` pattern. Each option is a
+    /// function that configures a specific aspect of the table.
+    ///
+    /// # Arguments
+    ///
+    /// * `opts` - Vector of configuration options to apply
+    ///
+    /// # Returns
+    ///
+    /// A configured table model with all options applied
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::table::{Model, with_columns, with_rows, with_height, Column, Row};
+    ///
+    /// // Create a fully configured table
+    /// let table = Model::with_options(vec![
+    ///     with_columns(vec![
+    ///         Column::new("ID", 8),
+    ///         Column::new("Name", 20),
+    ///         Column::new("Status", 12),
+    ///     ]),
+    ///     with_rows(vec![
+    ///         Row::new(vec!["001".into(), "Alice".into(), "Active".into()]),
+    ///         Row::new(vec!["002".into(), "Bob".into(), "Inactive".into()]),
+    ///     ]),
+    ///     with_height(15),
+    /// ]);
+    /// ```
+    ///
+    /// Creating an empty table (equivalent to Go's `New()`):
+    /// ```rust
+    /// use bubbletea_widgets::table::Model;
+    ///
+    /// let table = Model::with_options(vec![]);
+    /// assert_eq!(table.columns.len(), 0);
+    /// assert_eq!(table.rows.len(), 0);
+    /// ```
+    ///
+    /// # Constructor Philosophy
+    ///
+    /// This pattern provides the same flexibility as the Go version while
+    /// maintaining Rust's type safety and ownership semantics. Options are
+    /// applied in the order provided, allowing later options to override
+    /// earlier ones if they configure the same property.
+    pub fn with_options(opts: Vec<TableOption>) -> Self {
+        let mut m = Self {
+            columns: Vec::new(),
+            rows: Vec::new(),
+            selected: 0,
+            width: 0,
+            height: 20,
+            keymap: TableKeyMap::default(),
+            styles: Styles::default(),
+            focus: true,
+            help: help::Model::new(),
+            viewport: viewport::Model::new(0, 0),
+        };
+
+        // Apply all options in order
+        for opt in opts {
+            opt(&mut m);
+        }
+
+        // Initialize viewport after all options are applied
+        m.sync_viewport_dimensions();
+        m.rebuild_viewport_content();
+        m
+    }
+
     /// Sets the table rows on construction and returns `self` for chaining.
     pub fn with_rows(mut self, rows: Vec<Row>) -> Self {
         self.rows = rows;
@@ -699,6 +989,232 @@ impl Model {
         if !self.rows.is_empty() {
             self.selected = self.selected.saturating_sub(1);
         }
+    }
+
+    /// Moves the selection up by the specified number of rows (Go-compatible alias).
+    ///
+    /// This method provides Go API compatibility by matching the `MoveUp` method
+    /// signature and behavior from the original table implementation.
+    ///
+    /// # Arguments
+    ///
+    /// * `n` - Number of rows to move up
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::table::{Model, Column, Row};
+    ///
+    /// let mut table = Model::new(vec![Column::new("Data", 20)]);
+    /// table.rows = vec![
+    ///     Row::new(vec!["Row 1".into()]),
+    ///     Row::new(vec!["Row 2".into()]),
+    ///     Row::new(vec!["Row 3".into()]),
+    /// ];
+    /// table.selected = 2;
+    ///
+    /// table.move_up(1);
+    /// assert_eq!(table.selected, 1);
+    /// ```
+    pub fn move_up(&mut self, n: usize) {
+        if !self.rows.is_empty() {
+            self.selected = self.selected.saturating_sub(n);
+        }
+    }
+
+    /// Moves the selection down by the specified number of rows (Go-compatible alias).
+    ///
+    /// This method provides Go API compatibility by matching the `MoveDown` method
+    /// signature and behavior from the original table implementation.
+    ///
+    /// # Arguments
+    ///
+    /// * `n` - Number of rows to move down
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::table::{Model, Column, Row};
+    ///
+    /// let mut table = Model::new(vec![Column::new("Data", 20)]);
+    /// table.rows = vec![
+    ///     Row::new(vec!["Row 1".into()]),
+    ///     Row::new(vec!["Row 2".into()]),
+    ///     Row::new(vec!["Row 3".into()]),
+    /// ];
+    /// table.selected = 0;
+    ///
+    /// table.move_down(2);
+    /// assert_eq!(table.selected, 2);
+    /// ```
+    pub fn move_down(&mut self, n: usize) {
+        if !self.rows.is_empty() {
+            self.selected = (self.selected + n).min(self.rows.len() - 1);
+        }
+    }
+
+    /// Moves the selection to the first row (Go-compatible alias).
+    ///
+    /// This method provides Go API compatibility by matching the `GotoTop` method
+    /// from the original table implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::table::{Model, Column, Row};
+    ///
+    /// let mut table = Model::new(vec![Column::new("Data", 20)]);
+    /// table.rows = vec![
+    ///     Row::new(vec!["Row 1".into()]),
+    ///     Row::new(vec!["Row 2".into()]),
+    ///     Row::new(vec!["Row 3".into()]),
+    /// ];
+    /// table.selected = 2;
+    ///
+    /// table.goto_top();
+    /// assert_eq!(table.selected, 0);
+    /// ```
+    pub fn goto_top(&mut self) {
+        self.selected = 0;
+    }
+
+    /// Moves the selection to the last row (Go-compatible alias).
+    ///
+    /// This method provides Go API compatibility by matching the `GotoBottom` method
+    /// from the original table implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::table::{Model, Column, Row};
+    ///
+    /// let mut table = Model::new(vec![Column::new("Data", 20)]);
+    /// table.rows = vec![
+    ///     Row::new(vec!["Row 1".into()]),
+    ///     Row::new(vec!["Row 2".into()]),
+    ///     Row::new(vec!["Row 3".into()]),
+    /// ];
+    /// table.selected = 0;
+    ///
+    /// table.goto_bottom();
+    /// assert_eq!(table.selected, 2);
+    /// ```
+    pub fn goto_bottom(&mut self) {
+        if !self.rows.is_empty() {
+            self.selected = self.rows.len() - 1;
+        }
+    }
+
+    /// Sets table styles and rebuilds the viewport content.
+    ///
+    /// This method matches the Go version's `SetStyles` functionality by updating
+    /// the table's visual styling and ensuring the viewport content is rebuilt
+    /// to reflect the new styles.
+    ///
+    /// # Arguments
+    ///
+    /// * `s` - The new styling configuration to apply
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::table::{Model, Column, Styles};
+    /// use lipgloss_extras::prelude::*;
+    ///
+    /// let mut table = Model::new(vec![Column::new("Data", 20)]);
+    ///
+    /// let custom_styles = Styles {
+    ///     header: Style::new().bold(true).background(Color::from("blue")),
+    ///     cell: Style::new().padding(0, 1, 0, 1),
+    ///     selected: Style::new().background(Color::from("green")),
+    /// };
+    ///
+    /// table.set_styles(custom_styles);
+    /// // Table now uses the new styles and viewport is updated
+    /// ```
+    pub fn set_styles(&mut self, s: Styles) {
+        self.styles = s;
+        self.update_viewport();
+    }
+
+    /// Updates the viewport content based on current columns, rows, and styling.
+    ///
+    /// This method matches the Go version's `UpdateViewport` functionality by
+    /// rebuilding the rendered table content and ensuring the selected row
+    /// remains visible. It should be called after any changes to table
+    /// structure, data, or styling.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::table::{Model, Column, Row};
+    ///
+    /// let mut table = Model::new(vec![Column::new("Name", 20)]);
+    /// table.rows.push(Row::new(vec!["Alice".into()]));
+    ///
+    /// // After manual changes, update the viewport
+    /// table.update_viewport();
+    /// ```
+    ///
+    /// # When to Call
+    ///
+    /// This method is automatically called by most table methods, but you may
+    /// need to call it manually when:
+    /// - Directly modifying the `rows` or `columns` fields
+    /// - Changing dimensions or styling outside of provided methods
+    /// - Ensuring content is current after external modifications
+    pub fn update_viewport(&mut self) {
+        self.rebuild_viewport_content();
+    }
+
+    /// Renders help information for table navigation keys.
+    ///
+    /// This method matches the Go version's `HelpView` functionality by
+    /// generating formatted help text that documents all available key
+    /// bindings for table navigation.
+    ///
+    /// # Returns
+    ///
+    /// A formatted string containing help information for table navigation
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::table::{Model, Column};
+    ///
+    /// let table = Model::new(vec![Column::new("Data", 20)]);
+    /// let help_text = table.help_view();
+    ///
+    /// // Contains formatted help showing navigation keys
+    /// println!("Table Help:\n{}", help_text);
+    /// ```
+    ///
+    /// # Integration
+    ///
+    /// This method is typically used to display help information separately
+    /// from the main table view:
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::table::{Model, Column};
+    ///
+    /// struct App {
+    ///     table: Model,
+    ///     show_help: bool,
+    /// }
+    ///
+    /// impl App {
+    ///     fn view(&self) -> String {
+    ///         let mut output = self.table.view();
+    ///         if self.show_help {
+    ///             output.push_str("\n\n");
+    ///             output.push_str(&self.table.help_view());
+    ///         }
+    ///         output
+    ///     }
+    /// }
+    /// ```
+    pub fn help_view(&self) -> String {
+        self.help.view(self)
     }
 
     /// Renders the table as a string.
@@ -806,11 +1322,6 @@ impl Model {
     /// Removes keyboard focus from the table.
     pub fn blur(&mut self) {
         self.focus = false;
-    }
-
-    /// Renders the help view for the table's key bindings.
-    pub fn help_view(&self) -> String {
-        self.help.view(self)
     }
 }
 
@@ -931,8 +1442,8 @@ impl BubbleTeaModel for Model {
                 self.selected = (self.selected + (self.height as usize).max(1) / 2)
                     .min(self.rows.len().saturating_sub(1));
             }
-            // After any movement, refresh content and ensure visibility
-            self.rebuild_viewport_content();
+            // After any movement, ensure visibility without rebuilding content
+            self.ensure_selected_visible();
         }
         None
     }
@@ -988,7 +1499,7 @@ impl BubbleTeaModel for Model {
     /// }
     /// ```
     fn view(&self) -> String {
-        self.view()
+        self.viewport.view()
     }
 }
 

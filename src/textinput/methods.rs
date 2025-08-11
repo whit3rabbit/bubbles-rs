@@ -2,7 +2,6 @@
 
 use super::model::{paste, Model};
 use super::types::{EchoMode, PasteErrMsg, PasteMsg, ValidateFunc};
-use crate::key::matches_binding;
 use crate::Component;
 use bubbletea_rs::{Cmd, KeyMsg, Msg};
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -460,71 +459,17 @@ impl Model {
 
         // Handle key messages
         if let Some(key_msg) = msg.downcast_ref::<KeyMsg>() {
-            // Check for suggestion acceptance first
-            if matches_binding(key_msg, &self.key_map.accept_suggestion) {
-                if self.can_accept_suggestion() {
-                    let suggestion = &self.matched_suggestions[self.current_suggestion_index];
-                    let remaining: Vec<char> = suggestion[self.value.len()..].to_vec();
-                    self.value.extend(remaining);
-                    self.cursor_end();
-                }
-                return std::option::Option::None;
+            // Check key bindings in order of priority
+            if let Some(cmd) = self.handle_suggestion_keys(key_msg) {
+                return cmd;
+            }
+            if let Some(cmd) = self.handle_clipboard_keys(key_msg) {
+                return cmd;
             }
 
-            // Handle other key bindings
-            if matches_binding(key_msg, &self.key_map.delete_word_backward) {
-                self.delete_word_backward();
-            } else if matches_binding(key_msg, &self.key_map.delete_character_backward) {
-                self.err = None;
-                if !self.value.is_empty() && self.pos > 0 {
-                    self.value.remove(self.pos - 1);
-                    self.pos -= 1;
-                    self.err = self.validate_runes(&self.value);
-                }
-            } else if matches_binding(key_msg, &self.key_map.word_backward) {
-                self.word_backward();
-            } else if matches_binding(key_msg, &self.key_map.character_backward) {
-                if self.pos > 0 {
-                    self.set_cursor(self.pos - 1);
-                }
-            } else if matches_binding(key_msg, &self.key_map.word_forward) {
-                self.word_forward();
-            } else if matches_binding(key_msg, &self.key_map.character_forward) {
-                if self.pos < self.value.len() {
-                    self.set_cursor(self.pos + 1);
-                }
-            } else if matches_binding(key_msg, &self.key_map.line_start) {
-                self.cursor_start();
-            } else if matches_binding(key_msg, &self.key_map.delete_character_forward) {
-                if !self.value.is_empty() && self.pos < self.value.len() {
-                    self.value.remove(self.pos);
-                    self.err = self.validate_runes(&self.value);
-                }
-            } else if matches_binding(key_msg, &self.key_map.line_end) {
-                self.cursor_end();
-            } else if matches_binding(key_msg, &self.key_map.delete_after_cursor) {
-                self.delete_after_cursor();
-            } else if matches_binding(key_msg, &self.key_map.delete_before_cursor) {
-                self.delete_before_cursor();
-            } else if matches_binding(key_msg, &self.key_map.paste) {
-                return std::option::Option::Some(paste());
-            } else if matches_binding(key_msg, &self.key_map.delete_word_forward) {
-                self.delete_word_forward();
-            } else if matches_binding(key_msg, &self.key_map.next_suggestion) {
-                self.next_suggestion();
-            } else if matches_binding(key_msg, &self.key_map.prev_suggestion) {
-                self.previous_suggestion();
-            } else {
-                // Regular character input (no Ctrl/Alt modifiers)
-                if let KeyCode::Char(ch) = key_msg.key {
-                    // Accept when no control/alt modifiers; allow shift (encoded in char case)
-                    if !key_msg.modifiers.contains(KeyModifiers::CONTROL)
-                        && !key_msg.modifiers.contains(KeyModifiers::ALT)
-                    {
-                        self.insert_runes_from_user_input(vec![ch]);
-                    }
-                }
-            }
+            self.handle_deletion_keys(key_msg);
+            self.handle_movement_keys(key_msg);
+            self.handle_character_input(key_msg);
 
             self.update_suggestions();
         }
@@ -544,6 +489,107 @@ impl Model {
 
         self.handle_overflow();
         cursor_cmd
+    }
+
+    /// Handle suggestion-related key bindings
+    fn handle_suggestion_keys(&mut self, key_msg: &KeyMsg) -> Option<Option<Cmd>> {
+        use crate::key::matches_binding;
+
+        // Check for suggestion acceptance first
+        if matches_binding(key_msg, &self.key_map.accept_suggestion) {
+            if self.can_accept_suggestion() {
+                let suggestion = &self.matched_suggestions[self.current_suggestion_index];
+                let remaining: Vec<char> = suggestion[self.value.len()..].to_vec();
+                self.value.extend(remaining);
+                self.cursor_end();
+            }
+            return Some(None);
+        }
+
+        // Handle suggestion navigation
+        if matches_binding(key_msg, &self.key_map.next_suggestion) {
+            self.next_suggestion();
+        } else if matches_binding(key_msg, &self.key_map.prev_suggestion) {
+            self.previous_suggestion();
+        } else {
+            return None; // No suggestion key was matched
+        }
+
+        Some(None)
+    }
+
+    /// Handle clipboard-related key bindings  
+    fn handle_clipboard_keys(&mut self, key_msg: &KeyMsg) -> Option<Option<Cmd>> {
+        use crate::key::matches_binding;
+
+        if matches_binding(key_msg, &self.key_map.paste) {
+            return Some(Some(paste()));
+        }
+
+        None
+    }
+
+    /// Handle deletion-related key bindings
+    fn handle_deletion_keys(&mut self, key_msg: &KeyMsg) {
+        use crate::key::matches_binding;
+
+        if matches_binding(key_msg, &self.key_map.delete_word_backward) {
+            self.delete_word_backward();
+        } else if matches_binding(key_msg, &self.key_map.delete_character_backward) {
+            self.err = None;
+            if !self.value.is_empty() && self.pos > 0 {
+                self.value.remove(self.pos - 1);
+                self.pos -= 1;
+                self.err = self.validate_runes(&self.value);
+            }
+        } else if matches_binding(key_msg, &self.key_map.delete_character_forward) {
+            if !self.value.is_empty() && self.pos < self.value.len() {
+                self.value.remove(self.pos);
+                self.err = self.validate_runes(&self.value);
+            }
+        } else if matches_binding(key_msg, &self.key_map.delete_after_cursor) {
+            self.delete_after_cursor();
+        } else if matches_binding(key_msg, &self.key_map.delete_before_cursor) {
+            self.delete_before_cursor();
+        } else if matches_binding(key_msg, &self.key_map.delete_word_forward) {
+            self.delete_word_forward();
+        }
+    }
+
+    /// Handle movement-related key bindings
+    fn handle_movement_keys(&mut self, key_msg: &KeyMsg) {
+        use crate::key::matches_binding;
+
+        if matches_binding(key_msg, &self.key_map.word_backward) {
+            self.word_backward();
+        } else if matches_binding(key_msg, &self.key_map.character_backward) {
+            if self.pos > 0 {
+                self.set_cursor(self.pos - 1);
+            }
+        } else if matches_binding(key_msg, &self.key_map.word_forward) {
+            self.word_forward();
+        } else if matches_binding(key_msg, &self.key_map.character_forward) {
+            if self.pos < self.value.len() {
+                self.set_cursor(self.pos + 1);
+            }
+        } else if matches_binding(key_msg, &self.key_map.line_start) {
+            self.cursor_start();
+        } else if matches_binding(key_msg, &self.key_map.line_end) {
+            self.cursor_end();
+        }
+    }
+
+    /// Handle regular character input
+    fn handle_character_input(&mut self, key_msg: &KeyMsg) {
+        // Regular character input (no Ctrl/Alt modifiers)
+        if let KeyCode::Char(ch) = key_msg.key {
+            // Accept when no control/alt modifiers; allow shift (encoded in char case)
+            if !key_msg.modifiers.contains(KeyModifiers::CONTROL)
+                && !key_msg.modifiers.contains(KeyModifiers::ALT)
+            {
+                self.insert_runes_from_user_input(vec![ch]);
+            }
+        }
     }
 
     /// Internal method to handle text insertion from user input

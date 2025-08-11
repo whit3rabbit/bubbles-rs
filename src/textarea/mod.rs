@@ -1186,8 +1186,7 @@ impl Model {
             s.push('\n');
         }
 
-        // Strip ANSI codes for consistent test output
-        lipgloss::strip_ansi(&s)
+        s
     }
 
     /// Get prompt string for a given display line - port of Go's getPromptString()
@@ -1343,24 +1342,57 @@ impl Model {
 
     /// Handle key messages - port of Go's key handling logic
     fn handle_key_msg(&mut self, key_msg: &bubbletea_rs::KeyMsg) -> Option<bubbletea_rs::Cmd> {
-        use crate::key::matches_binding;
-
         // Store old cursor position to determine if cursor moved
         let old_row = self.row;
         let old_col = self.col;
+
+        // Handle different types of key operations
+        if let Some(cmd) = self.handle_clipboard_keys(key_msg) {
+            return Some(cmd);
+        }
+
+        self.handle_movement_keys(key_msg);
+        self.handle_deletion_keys(key_msg);
+        self.handle_text_operations(key_msg);
+        self.handle_text_insertion(key_msg);
+        self.handle_character_input(key_msg);
+
+        // Reposition viewport if cursor moved or content changed
+        if self.row != old_row || self.col != old_col {
+            self.reposition_view();
+        }
+
+        None
+    }
+
+    /// Handle clipboard-related key bindings
+    fn handle_clipboard_keys(
+        &mut self,
+        key_msg: &bubbletea_rs::KeyMsg,
+    ) -> Option<bubbletea_rs::Cmd> {
+        use crate::key::matches_binding;
+
+        if matches_binding(key_msg, &self.key_map.paste) {
+            return Some(self.paste_command());
+        }
+
+        None
+    }
+
+    /// Handle movement-related key bindings
+    fn handle_movement_keys(&mut self, key_msg: &bubbletea_rs::KeyMsg) {
+        use crate::key::matches_binding;
 
         // Character movement
         if matches_binding(key_msg, &self.key_map.character_forward) {
             self.character_right();
         } else if matches_binding(key_msg, &self.key_map.character_backward) {
             self.character_left(false);
-
         // Word movement
         } else if matches_binding(key_msg, &self.key_map.word_forward) {
             self.word_right();
         } else if matches_binding(key_msg, &self.key_map.word_backward) {
             self.word_left();
-
         // Line movement
         } else if matches_binding(key_msg, &self.key_map.line_next) {
             self.cursor_down();
@@ -1370,15 +1402,19 @@ impl Model {
             self.cursor_start();
         } else if matches_binding(key_msg, &self.key_map.line_end) {
             self.cursor_end();
-
         // Input navigation
         } else if matches_binding(key_msg, &self.key_map.input_begin) {
             self.move_to_begin();
         } else if matches_binding(key_msg, &self.key_map.input_end) {
             self.move_to_end();
+        }
+    }
 
-        // Deletion
-        } else if matches_binding(key_msg, &self.key_map.delete_character_backward) {
+    /// Handle deletion-related key bindings
+    fn handle_deletion_keys(&mut self, key_msg: &bubbletea_rs::KeyMsg) {
+        use crate::key::matches_binding;
+
+        if matches_binding(key_msg, &self.key_map.delete_character_backward) {
             self.delete_character_backward();
         } else if matches_binding(key_msg, &self.key_map.delete_character_forward) {
             self.delete_character_forward();
@@ -1390,17 +1426,14 @@ impl Model {
             self.delete_after_cursor();
         } else if matches_binding(key_msg, &self.key_map.delete_before_cursor) {
             self.delete_before_cursor();
+        }
+    }
 
-        // Text insertion
-        } else if matches_binding(key_msg, &self.key_map.insert_newline) {
-            self.insert_newline();
+    /// Handle text transformation operations
+    fn handle_text_operations(&mut self, key_msg: &bubbletea_rs::KeyMsg) {
+        use crate::key::matches_binding;
 
-        // Clipboard operations
-        } else if matches_binding(key_msg, &self.key_map.paste) {
-            return Some(self.paste_command());
-
-        // Advanced text operations
-        } else if matches_binding(key_msg, &self.key_map.uppercase_word_forward) {
+        if matches_binding(key_msg, &self.key_map.uppercase_word_forward) {
             self.uppercase_right();
         } else if matches_binding(key_msg, &self.key_map.lowercase_word_forward) {
             self.lowercase_right();
@@ -1408,23 +1441,28 @@ impl Model {
             self.capitalize_right();
         } else if matches_binding(key_msg, &self.key_map.transpose_character_backward) {
             self.transpose_left();
-        } else {
-            // Handle regular character input
-            if let Some(ch) = self.extract_character_from_key_msg(key_msg) {
-                if ch.is_control() {
-                    // Ignore control characters that aren't handled above
-                    return None;
-                }
-                self.insert_rune(ch);
+        }
+    }
+
+    /// Handle text insertion operations
+    fn handle_text_insertion(&mut self, key_msg: &bubbletea_rs::KeyMsg) {
+        use crate::key::matches_binding;
+
+        if matches_binding(key_msg, &self.key_map.insert_newline) {
+            self.insert_newline();
+        }
+    }
+
+    /// Handle regular character input
+    fn handle_character_input(&mut self, key_msg: &bubbletea_rs::KeyMsg) {
+        // Handle regular character input
+        if let Some(ch) = self.extract_character_from_key_msg(key_msg) {
+            if ch.is_control() {
+                // Ignore control characters that aren't handled above
+                return;
             }
+            self.insert_rune(ch);
         }
-
-        // Reposition viewport if cursor moved or content changed
-        if self.row != old_row || self.col != old_col {
-            self.reposition_view();
-        }
-
-        None
     }
 
     /// Extract character from key message for regular text input
