@@ -1094,7 +1094,7 @@ impl Model {
     /// let help = Model::new_model(); // Deprecated
     /// let help = Model::new();       // Preferred
     /// ```
-    #[deprecated(since = "0.1.8", note = "Use Model::new() instead")]
+    #[deprecated(since = "0.1.9", note = "Use Model::new() instead")]
     pub fn new_model() -> Self {
         Self::new()
     }
