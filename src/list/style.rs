@@ -336,7 +336,7 @@ impl Default for ListStyles {
                 Dark: "#626262",
             }),
             arabic_pagination: Style::new().foreground(subdued_color.clone()),
-            pagination_style: Style::new().padding_left(2), // Match Go version exactly (1 line high)
+            pagination_style: Style::new().padding(1, 0, 0, 2), // Add top padding to separate items from pagination
             help_style: Style::new().padding(1, 0, 0, 2), // Match Go version exactly (2 lines high)
             active_pagination_dot: Style::new()
                 .foreground(AdaptiveColor {
