@@ -704,7 +704,9 @@ impl Model {
         false
     }
 
-    fn read_dir(&mut self) {
+    /// Reads the current directory and populates the files list.
+    /// Clears any existing files and error state before reading.
+    pub fn read_dir(&mut self) {
         self.files.clear();
         self.error = None;
         match std::fs::read_dir(&self.current_directory) {
@@ -782,6 +784,105 @@ impl Model {
                 self.error = Some(format!("Failed to read directory: {}", err));
             }
         }
+    }
+
+    /// Creates a command to read the current directory.
+    ///
+    /// This method allows external code to trigger a directory read without
+    /// directly calling the private `read_dir` method. It's useful for
+    /// initializing the filepicker with a specific directory.
+    ///
+    /// # Returns
+    ///
+    /// A command that will trigger a ReadDirMsg when executed
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use bubbletea_widgets::filepicker::Model;
+    ///
+    /// let mut picker = Model::new();
+    /// picker.current_directory = std::path::PathBuf::from("/home/user");
+    /// let cmd = picker.read_dir_cmd();
+    /// // This command can be returned from init() or update()
+    /// ```
+    pub fn read_dir_cmd(&self) -> Cmd {
+        // Use bubbletea_rs tick with minimal delay to create an immediate command
+        let current_dir = self.current_directory.clone();
+        let id = self.id;
+
+        bubbletea_rs::tick(std::time::Duration::from_nanos(1), move |_| {
+            let mut entries = Vec::new();
+
+            if let Ok(dir_entries) = std::fs::read_dir(&current_dir) {
+                for entry in dir_entries.flatten() {
+                    let path = entry.path();
+                    let name = path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("?")
+                        .to_string();
+
+                    // Skip hidden files by default (can be configured later)
+                    if name.starts_with('.') {
+                        continue;
+                    }
+
+                    // Get file metadata
+                    let (is_dir, is_symlink, size, mode, symlink_target) =
+                        if let Ok(metadata) = entry.metadata() {
+                            let is_symlink = metadata.file_type().is_symlink();
+                            let mut is_dir = metadata.is_dir();
+                            let size = metadata.len();
+
+                            #[cfg(unix)]
+                            let mode = {
+                                use std::os::unix::fs::PermissionsExt;
+                                metadata.permissions().mode()
+                            };
+                            #[cfg(not(unix))]
+                            let mode = 0;
+
+                            // Handle symlink resolution
+                            let symlink_target = if is_symlink {
+                                match std::fs::canonicalize(&path) {
+                                    Ok(target) => {
+                                        // Check if symlink points to a directory
+                                        if let Ok(target_meta) = std::fs::metadata(&target) {
+                                            if target_meta.is_dir() {
+                                                is_dir = true;
+                                            }
+                                        }
+                                        Some(target)
+                                    }
+                                    Err(_) => None,
+                                }
+                            } else {
+                                None
+                            };
+
+                            (is_dir, is_symlink, size, mode, symlink_target)
+                        } else {
+                            (path.is_dir(), false, 0, 0, None)
+                        };
+
+                    entries.push(FileEntry {
+                        name,
+                        path,
+                        is_dir,
+                        is_symlink,
+                        size,
+                        mode,
+                        symlink_target,
+                    });
+                }
+            }
+
+            // Sort directories first, then files, then alphabetically
+            entries.sort_by(|a, b| b.is_dir.cmp(&a.is_dir).then_with(|| a.name.cmp(&b.name)));
+
+            Box::new(ReadDirMsg { id, entries }) as Msg
+        })
     }
 }
 
@@ -878,21 +979,58 @@ impl BubbleTeaModel for Model {
     }
 
     fn update(&mut self, msg: Msg) -> Option<Cmd> {
-        // Handle readDirMsg and errorMsg (would be async in real implementation)
-        if let Some(read_dir_msg) = msg.downcast_ref::<ReadDirMsg>() {
-            if read_dir_msg.id == self.id {
-                self.files = read_dir_msg.entries.clone();
-                self.max = std::cmp::max(self.max, self.height.saturating_sub(1));
-            }
-            return None;
-        }
-
-        // Handle window size messages
+        // Handle window size messages FIRST to ensure height is set correctly
         if let Some(_window_msg) = msg.downcast_ref::<bubbletea_rs::WindowSizeMsg>() {
             if self.auto_height {
                 self.height = (_window_msg.height as usize).saturating_sub(MARGIN_BOTTOM);
             }
-            self.max = self.height.saturating_sub(1);
+            // Update max based on new height, but ensure it doesn't exceed file count
+            self.max = if self.files.is_empty() {
+                self.height.saturating_sub(1)
+            } else {
+                std::cmp::min(
+                    self.height.saturating_sub(1),
+                    self.files.len().saturating_sub(1),
+                )
+            };
+
+            // Adjust min if necessary to keep viewport consistent
+            if self.max < self.selected {
+                self.min = self.selected.saturating_sub(self.height.saturating_sub(1));
+                self.max = self.selected;
+            }
+            return None;
+        }
+
+        // Handle readDirMsg and errorMsg (would be async in real implementation)
+        if let Some(read_dir_msg) = msg.downcast_ref::<ReadDirMsg>() {
+            if read_dir_msg.id == self.id {
+                self.files = read_dir_msg.entries.clone();
+
+                // Calculate max properly based on current height and file count
+                if self.files.is_empty() {
+                    self.max = 0;
+                } else {
+                    // Ensure max doesn't exceed available files or viewport height
+                    let viewport_max = self.height.saturating_sub(1);
+                    let file_max = self.files.len().saturating_sub(1);
+                    self.max = std::cmp::min(viewport_max, file_max);
+
+                    // Ensure selected index is within bounds
+                    if self.selected >= self.files.len() {
+                        self.selected = file_max;
+                    }
+
+                    // Adjust viewport if selected item is outside current view
+                    if self.selected > self.max {
+                        self.min = self.selected.saturating_sub(viewport_max);
+                        self.max = self.selected;
+                    } else if self.selected < self.min {
+                        self.min = self.selected;
+                        self.max = std::cmp::min(self.min + viewport_max, file_max);
+                    }
+                }
+            }
             return None;
         }
 

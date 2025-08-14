@@ -1,0 +1,16 @@
+[package]
+name = "filepicker-example"
+version = "0.1.0"
+edition = "2021"
+default-run = "filepicker"
+
+[[bin]]
+name = "filepicker"
+path = "main.rs"
+
+[dependencies]
+bubbletea-rs = "0.0.6"
+bubbletea-widgets = { path = "../.." }
+lipgloss-extras = { version = "0.0.8", features = ["full"] }
+crossterm = "0.29"
+tokio = { version = "1.0", features = ["full"] }

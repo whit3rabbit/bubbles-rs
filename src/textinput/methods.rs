@@ -688,7 +688,7 @@ impl Component for Model {
     /// Sets the component to focused state.
     ///
     /// This implementation wraps the existing focus() method to match the Component trait's
-    /// expected signature of returning Option<Cmd> instead of Cmd.
+    /// expected signature of returning `Option<Cmd>` instead of `Cmd`.
     ///
     /// # Returns
     ///

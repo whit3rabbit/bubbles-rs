@@ -32,7 +32,7 @@ Add `bubbletea-widgets` to your `Cargo.toml`. You will also need `bubbletea-rs` 
 
 ```toml
 [dependencies]
-bubbletea-widgets = "0.1.9"
+bubbletea-widgets = "0.1.10"
 bubbletea-rs = "0.0.6"
 lipgloss-extras = { version = "0.0.8", features = ["full"] }
 ```
@@ -1390,24 +1390,28 @@ Message type for directory reading operations.
 | `view(&self) -> String`                        | Renders the file list with current configuration.                           |
 | `did_select_file(&self, msg: &Msg) -> (bool, String)` | Returns whether a user has selected a file and the file path. Only returns `true` for files that can actually be selected. |
 | `did_select_disabled_file(&self, msg: &Msg) -> (bool, String)` | Returns whether a user tried to select a disabled file and the file path. |
-| `set_height(&mut self, height: i32)`           | Sets the height of the file picker when auto_height is disabled.            |
+| `set_height(&mut self, height: usize)`         | Sets the height of the file picker when auto_height is disabled.            |
+| `read_dir(&mut self)`                          | Manually reads the current directory and populates the files list.          |
+| `read_dir_cmd(&self) -> Cmd`                   | Creates a command to read the current directory asynchronously.             |
 
 #### Configuration Fields
 
 | Field                    | Type                                           | Description                                    |
 | ------------------------ | ---------------------------------------------- | ---------------------------------------------- |
-| `allow_file_selection`   | `bool`                                        | Whether files can be selected                  |
-| `allow_dir_selection`    | `bool`                                        | Whether directories can be selected            |
+| `file_allowed`           | `bool`                                        | Whether files can be selected                  |
+| `dir_allowed`            | `bool`                                        | Whether directories can be selected            |
 | `show_hidden`            | `bool`                                        | Whether to display hidden files                |
 | `show_permissions`       | `bool`                                        | Whether to display file permissions            |
 | `show_size`              | `bool`                                        | Whether to display file sizes                  |
 | `auto_height`            | `bool`                                        | Whether to automatically adjust height         |
-| `height`                 | `i32`                                         | Fixed height when auto_height is false         |
-| `max_entries`            | `Option<usize>`                               | Maximum number of entries to display           |
-| `min_height`             | `i32`                                         | Minimum height constraint                      |
-| `max_height`             | `i32`                                         | Maximum height constraint                      |
-| `dir_allowed`            | `Option<Box<dyn Fn(&DirEntry) -> bool>>`     | Filter for allowed directories                 |
-| `file_allowed`           | `Option<Box<dyn Fn(&DirEntry) -> bool>>`     | Filter for allowed files                       |
+| `height`                 | `usize`                                       | Fixed height when auto_height is false         |
+| `current_directory`      | `PathBuf`                                     | The directory currently being browsed          |
+| `allowed_types`          | `Vec<String>`                                 | File extensions that can be selected           |
+| `file_selected`          | `String`                                      | Name of the most recently selected file        |
+| `cursor`                 | `String`                                      | The cursor string to display (e.g., "> ")     |
+| `error`                  | `Option<String>`                              | Error message for failed directory operations  |
+| `keymap`                 | `FilepickerKeyMap`                            | Key bindings configuration                     |
+| `styles`                 | `Styles`                                      | Visual styling configuration                   |
 
 #### Key Features
 
@@ -1452,6 +1456,22 @@ impl BubbleTeaModel for App {
     }
 }
 ```
+
+#### Running the Example
+
+A complete, runnable filepicker example is available:
+
+```bash
+cargo run --manifest-path examples/filepicker/Cargo.toml
+```
+
+This example demonstrates:
+- Keyboard navigation (arrow keys, j/k, h/l)
+- File filtering by allowed types (.mod, .sum, .go, .txt, .md, .rs, .toml)
+- Permission and size display
+- Proper error handling and status messages
+- Escape key, 'q', or Ctrl+C to quit
+- Enter to select files
 
 ### Cursor
 
