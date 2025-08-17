@@ -9,7 +9,7 @@ name = "filepicker"
 path = "main.rs"
 
 [dependencies]
-bubbletea-rs = "0.0.6"
+bubbletea-rs = "0.0.7"
 bubbletea-widgets = { path = "../.." }
 lipgloss-extras = { version = "0.0.8", features = ["full"] }
 crossterm = "0.29"

@@ -32,8 +32,8 @@ Add `bubbletea-widgets` to your `Cargo.toml`. You will also need `bubbletea-rs` 
 
 ```toml
 [dependencies]
-bubbletea-widgets = "0.1.10"
-bubbletea-rs = "0.0.6"
+bubbletea-widgets = "0.1.11"
+bubbletea-rs = "0.0.7"
 lipgloss-extras = { version = "0.0.8", features = ["full"] }
 ```
 

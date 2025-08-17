@@ -1,6 +1,6 @@
 [package]
 name = "bubbletea-widgets"
-version = "0.1.10"
+version = "0.1.11"
 edition = "2021"
 description = "A collection of reusable TUI components for building terminal applications with bubbletea-rs"
 license = "MIT"
@@ -19,8 +19,8 @@ features = []
 no-default-features = true
 
 [dependencies]
-bubbletea-rs = "0.0.6"
-lipgloss-extras = { version = "0.0.8", features = ["full"] }
+bubbletea-rs = "0.0.7"
+lipgloss-extras = { version = "0.1.0", features = ["full"] }
 crossterm = "0.29"
 unicode-width = "0.2"
 fuzzy-matcher = "0.3.7"
