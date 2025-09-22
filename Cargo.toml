@@ -19,7 +19,7 @@ features = []
 no-default-features = true
 
 [dependencies]
-bubbletea-rs = "0.0.7"
+bubbletea-rs = "0.0.8"
 lipgloss-extras = { version = "0.1.0", features = ["full"] }
 crossterm = "0.29"
 unicode-width = "0.2"
